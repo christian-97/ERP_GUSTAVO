@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sazón — Sistema de Ventas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--wd:#241C15;--wm:#362A1E;--wl:#4A3A29;--pp:#F4ECDD;--pd:#B7A488;--gd:#C98A3B;--gl:#E8B95B;--gr:#6B8F5A;--rd:#B5573F;--bl:#6B87A8}
+*{box-sizing:border-box}body{margin:0;background:var(--wd);color:var(--pp);font-family:Inter,sans-serif;min-height:100vh}
+h1,h3,.fr{font-family:Fraunces,serif}
+.app{max-width:480px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column}
+.top{padding:16px 18px;border-bottom:1px solid var(--wl);display:flex;justify-content:space-between;align-items:center}
+.brand{font-size:19px;font-weight:600}.brand span{color:var(--gl)}
+.tag{font-size:12px;color:var(--pd)}
+.logout{background:none;border:1px solid var(--wl);color:var(--pd);width:30px;height:30px;border-radius:8px;cursor:pointer}
+.content{flex:1;padding:16px 16px 90px;overflow-y:auto}
+.pt{font-size:21px;font-weight:600;margin:2px 0 3px}.ps{font-size:12px;color:var(--pd);margin:0 0 14px}
+.card{background:var(--wm);border:1px solid var(--wl);border-radius:14px;padding:16px;margin-bottom:12px}
+.ch{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
+.ch .l{font-size:12px;color:var(--pd)}.ch .p{font-family:Fraunces,serif;font-size:21px;font-weight:600;color:var(--gl)}
+.bt{height:8px;border-radius:5px;background:var(--wd);overflow:hidden;border:1px solid var(--wl)}
+.bf{height:100%;background:linear-gradient(90deg,var(--gd),var(--gl));border-radius:5px;transition:width .3s ease}
+.bf.b{background:linear-gradient(90deg,var(--bl),#8FA9C4)}.bf.r{background:var(--rd)}
+.gn{display:flex;justify-content:space-between;margin-top:7px;font-size:12px;color:var(--pd)}.gn strong{color:var(--pp)}
+.sec{font-size:14px;font-weight:600;margin:18px 0 8px}
+input[type=text],input[type=number],input[type=password],input[type=date],input[type=time]{width:100%;background:var(--wd);border:1px solid var(--wl);color:var(--pp);padding:11px 13px;border-radius:9px;font-size:15px;font-family:Inter}
+input:focus{border-color:var(--gd);outline:none}
+.btn{border:none;border-radius:9px;padding:12px 16px;font-size:13px;font-weight:600;cursor:pointer;width:100%;transition:background .2s}
+.pri{background:var(--gd);color:#241C15}.gho{background:transparent;color:var(--pd);border:1px solid var(--wl)}.dan{background:var(--rd);color:#fff}
+.sm{padding:8px 10px;font-size:12px;width:auto}
+.row{display:flex;justify-content:space-between;align-items:center;padding:10px 2px;border-bottom:1px solid var(--wl);font-size:13px}
+.row:last-child{border-bottom:none}
+.prow{padding:11px 2px;border-bottom:1px solid var(--wl)}.prow:last-child{border-bottom:none}
+.pname{display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px}.pname b{font-weight:600}
+.pctrl{display:flex;gap:6px;align-items:center}
+.pctrl input{width:70px;text-align:center;padding:8px}
+.qbtn{background:var(--wd);border:1px solid var(--wl);color:var(--pp);width:34px;height:34px;border-radius:8px;font-size:16px;cursor:pointer}
+.stats{display:flex;gap:8px;margin-bottom:14px}.sb{flex:1;background:var(--wm);border:1px solid var(--wl);border-radius:12px;padding:12px}
+.sb .n{font-family:Fraunces,serif;font-size:18px;font-weight:600;color:var(--gl)}.sb .l{font-size:10px;color:var(--pd);margin-top:2px}
+.sub{display:flex;gap:6px;margin-bottom:12px}.st{flex:1;text-align:center;padding:8px 4px;border-radius:8px;border:1px solid var(--wl);background:var(--wm);font-size:11px;color:var(--pd);cursor:pointer}
+.st.a{background:var(--gd);border-color:var(--gd);color:#241C15;font-weight:600}
+.nav{position:sticky;bottom:0;background:var(--wm);border-top:1px solid var(--wl);display:flex;padding:7px 6px calc(7px + env(safe-area-inset-bottom));gap:3px;z-index:40}
+.nb{flex:1;background:none;border:none;color:var(--pd);font-size:10px;padding:6px 1px;border-radius:9px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px}
+.nb.a{color:var(--gl);background:var(--wd)}.nb .i{font-size:16px}
+.chk{width:20px;height:20px;border-radius:6px;border:1.5px solid var(--wl);background:var(--wd);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:12px;flex-shrink:0}
+.chk.d{background:var(--gr);border-color:var(--gr);color:#fff}
+.tag2{font-size:10px;padding:2px 7px;border-radius:10px;background:var(--wd);color:var(--pd)}
+.tag2.late{background:var(--rd);color:#fff}
+.mbd{position:fixed;inset:0;background:rgba(0,0,0,.65);display:flex;align-items:flex-end;justify-content:center;z-index:80}
+.mbox{background:var(--wm);border:1px solid var(--wl);border-radius:18px 18px 0 0;padding:20px 18px calc(20px + env(safe-area-inset-bottom));width:100%;max-width:480px;max-height:85vh;overflow-y:auto}
+.mbox h3{margin:0 0 14px;font-size:18px}
+.field{margin-bottom:12px}
+select{width:100%;background:var(--wd);border:1px solid var(--wl);color:var(--pp);padding:11px 13px;border-radius:9px;font-size:15px;font-family:Inter}
+::selection{background:var(--gd);color:#241C15}
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid var(--pd);border-top-color:var(--gl);border-radius:50%;animation:spin 0.8s linear infinite;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style></head><body><div id="root" class="app"></div>
+<script>
+window.onerror=function(m,s,l,c,e){try{document.getElementById('root').insertAdjacentHTML('beforeend','<div style="position:fixed;bottom:80px;left:12px;right:12px;background:#B5573F;color:#fff;padding:10px 14px;border-radius:9px;font-size:12px;z-index:99">Error: '+m+' (línea '+l+')</div>')}catch(e){}};
+</script>
+<script>
+(function(){
+// ===================================================================
+// CONFIGURACIÓN PÚBLICA DEL CLIENTE (LOCAL / GITHUB PAGES)
+// ===================================================================
+const CONFIG_KEY = 'sazon_api_url';
+const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+const DEFAULT_REMOTE_API = 'https://sazon-api.christian-97.workers.dev';
+const API_URL = localStorage.getItem(CONFIG_KEY) || (isLocalhost ? window.location.origin : DEFAULT_REMOTE_API);
+
+// ===================================================================
+// CAPA CENTRALIZADA DE API REST (api.*)
+// ===================================================================
+const api = {
+  token: localStorage.getItem('sazon_auth_token') || null,
+  setToken(t) {
+    this.token = t;
+    if (t) localStorage.setItem('sazon_auth_token', t);
+    else localStorage.removeItem('sazon_auth_token');
+  },
+  async request(path, options = {}) {
+    const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
+    if (this.token) {
+      headers['Authorization'] = `Bearer ${this.token}`;
+    }
+    const res = await fetch(`${API_URL}${path}`, { ...options, headers });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Error en la solicitud a la API');
+    return data;
+  },
+  async health() { return this.request('/api/health'); },
+  async login(code) {
+    const data = await this.request('/api/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ code })
+    });
+    if (data.token) this.setToken(data.token);
+    return data;
+  },
+  async getUsers() { return this.request('/api/users'); },
+  async createUser(u) { return this.request('/api/users', { method: 'POST', body: JSON.stringify(u) }); },
+  async updateUser(id, u) { return this.request(`/api/users/${id}`, { method: 'PUT', body: JSON.stringify(u) }); },
+  async getProducts(all = false) { return this.request(`/api/products${all ? '?all=true' : ''}`); },
+  async createProduct(p) { return this.request('/api/products', { method: 'POST', body: JSON.stringify(p) }); },
+  async updateProduct(id, p) { return this.request(`/api/products/${id}`, { method: 'PUT', body: JSON.stringify(p) }); },
+  async getSales(params = {}) {
+    const qs = new URLSearchParams(params).toString();
+    return this.request(`/api/sales${qs ? '?' + qs : ''}`);
+  },
+  async recordSale(s) { return this.request('/api/sales', { method: 'POST', body: JSON.stringify(s) }); },
+  async updateSale(id, s) { return this.request(`/api/sales/${id}`, { method: 'PUT', body: JSON.stringify(s) }); },
+  async getGoals(params = {}) {
+    const qs = new URLSearchParams(params).toString();
+    return this.request(`/api/goals${qs ? '?' + qs : ''}`);
+  },
+  async saveGoal(g) { return this.request('/api/goals', { method: 'POST', body: JSON.stringify(g) }); },
+  async getPromotions() { return this.request('/api/promotions'); },
+  async createPromotion(p) { return this.request('/api/promotions', { method: 'POST', body: JSON.stringify(p) }); },
+  async getTasks() { return this.request('/api/tasks'); },
+  async createTask(t) { return this.request('/api/tasks', { method: 'POST', body: JSON.stringify(t) }); },
+  async toggleTask(id, completed, observations) {
+    return this.request(`/api/tasks/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify({ action: 'toggle_complete', completed, observations })
+    });
+  },
+  async getEvents() { return this.request('/api/events'); },
+  async createEvent(e) { return this.request('/api/events', { method: 'POST', body: JSON.stringify(e) }); },
+  async deleteEvent(id) { return this.request(`/api/events/${id}`, { method: 'DELETE' }); },
+  async getKpi(params = {}) {
+    const qs = new URLSearchParams(params).toString();
+    return this.request(`/api/kpi${qs ? '?' + qs : ''}`);
+  }
+};
+
+// ===================================================================
+// ESTADO GLOBAL DE LA SPA
+// ===================================================================
+function today(){ return new Date() }
+function dim(){ const d=today(); return new Date(d.getFullYear(), d.getMonth()+1, 0).getDate() }
+
+const S = {
+  session: JSON.parse(localStorage.getItem('sazon_session') || 'null'),
+  tab: 'ventas',
+  sub: 'mozo',
+  toast: null,
+  modal: null,
+  expandedWaiter: null,
+  loading: false,
+  // Cache reactivo cargado desde D1
+  users: [],
+  products: [],
+  sales: [],
+  goals: { storeTargets: [], productGoals: [] },
+  promotions: [],
+  tasks: [],
+  events: [],
+  kpi: null,
+  monthDays: dim(),
+  currentDay: today().getDate()
+};
+
+function saveSession(sess){
+  S.session = sess;
+  if(sess) localStorage.setItem('sazon_session', JSON.stringify(sess));
+  else localStorage.removeItem('sazon_session');
+}
+
+function esc(s){ return String(s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])) }
+function money(n){ return 'S/ ' + (Math.round(n||0)).toLocaleString('es-PE') }
+function pct(a,b){ return b>0 ? Math.round(a/b*100) : 0 }
+function toast(m){ S.toast=m; render(); setTimeout(()=>{S.toast=null; render()}, 2200) }
+function openM(type,data){ S.modal={type, data:data||{}}; render() }
+function closeM(){ S.modal=null; render() }
+
+// Carga asíncrona de datos desde Cloudflare D1
+async function syncFromD1(){
+  if(!S.session) return;
+  S.loading = true;
+  try {
+    const now = today();
+    const currentMonth = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+    const [uRes, pRes, sRes, gRes, tRes, eRes, kRes, proRes] = await Promise.all([
+      api.getUsers(),
+      api.getProducts(true),
+      api.getSales({ month: currentMonth }),
+      api.getGoals({ month: currentMonth }),
+      api.getTasks(),
+      api.getEvents(),
+      api.getKpi({ month: currentMonth }),
+      api.getPromotions().catch(()=>({ promotions: [] }))
+    ]);
+
+    S.users = uRes.users || [];
+    S.products = pRes.products || [];
+    S.sales = sRes.sales || [];
+    S.goals = gRes;
+    S.tasks = tRes.tasks || [];
+    S.events = eRes.events || [];
+    S.kpi = kRes;
+    S.promotions = proRes.promotions || [];
+  } catch(e) {
+    console.error('Error sincronizando con D1:', e);
+    toast('Aviso: ' + e.message);
+  } finally {
+    S.loading = false;
+    render();
+  }
+}
+
+// Helpers de catálogo y metas
+function catalog(role){
+  return S.products.filter(p => p.active && (p.target_role === 'ALL' || p.target_role === (role||'MOZO').toUpperCase()));
+}
+
+function goalForProduct(productId, workerId){
+  const found = (S.goals.productGoals||[]).find(g => g.product_id === productId && (!workerId || g.worker_id === workerId));
+  if (found) return found.target_quantity;
+  // Valores iniciales
+  const p = S.products.find(x => x.id === productId);
+  return (p && p.name === '1/4 Pollo') ? 200 : 40;
+}
+
+function qtyForWorkerProduct(workerId, productId){
+  return S.sales.filter(s => s.worker_id === workerId && s.product_id === productId)
+    .reduce((acc, s) => acc + (s.quantity || 0), 0);
+}
+
+function totalPollosForWorker(workerId){
+  const pCuarto = S.products.find(p => p.name === '1/4 Pollo');
+  if(!pCuarto) return 0;
+  return qtyForWorkerProduct(workerId, pCuarto.id) / 4;
+}
+
+function goalPace(goal){
+  return Math.round(goal * (S.currentDay / S.monthDays));
+}
+
+// ===================================================================
+// VISTAS (LOGIN, VENTAS, GENERAL, PROYECTADO, TAREAS, CRONOS, CONFIG)
+// ===================================================================
+
+// 1. LOGIN
+function vLogin(){
+  return `
+  <div class="top"><div class="brand">Saz<span>ó</span>n</div><div class="tag">Sistema de ventas</div></div>
+  <div class="content" style="padding-top:60px">
+    <h1 class="fr" style="font-size:32px;line-height:1.1;margin-bottom:8px">Ingresa tu código</h1>
+    <p class="ps" style="margin-bottom:24px">Mozo, anfitriona o administrador</p>
+    <div class="field"><input id="lc" type="password" placeholder="••••" style="margin-bottom:8px"></div>
+    <div id="le" style="color:var(--rd);font-size:12px;min-height:16px;margin-bottom:12px"></div>
+    <button class="btn pri" id="lb">Ingresar al sistema</button>
+  </div>`;
+}
+
+function wLogin(r){
+  const ic = r.querySelector('#lc'), b = r.querySelector('#lb'), e = r.querySelector('#le');
+  async function go(){
+    const c = ic.value.trim();
+    if(!c){ e.textContent = 'Ingresa tu código de empleado.'; return; }
+    b.disabled = true; b.innerHTML = '<span class="spinner"></span> Verificando...';
+    try {
+      const data = await api.login(c);
+      saveSession(data.user);
+      S.tab = 'ventas';
+      await syncFromD1();
+    } catch(err){
+      e.textContent = err.message || 'Código no reconocido.';
+      b.disabled = false; b.textContent = 'Ingresar al sistema';
+    }
+  }
+  b.addEventListener('click', go);
+  ic.addEventListener('keydown', ev => { if(ev.key === 'Enter') go(); });
+}
+
+// 2. VENTAS (USER)
+function vVentasUser(){
+  const w = S.session;
+  const prods = catalog(w.role);
+  const done = prods.filter(p => qtyForWorkerProduct(w.id, p.id) >= goalForProduct(p.id, w.id)).length;
+  const pollos = totalPollosForWorker(w.id);
+
+  let html = `<div class="pt">Ventas — ${esc(w.name)}</div><p class="ps">Actualiza tus ventas directamente a Cloudflare D1</p>`;
+  html += `<div class="stats"><div class="sb"><div class="n">${done}/${prods.length}</div><div class="l">Metas logradas</div></div><div class="sb"><div class="n">${pollos.toFixed(1)}</div><div class="l">Pollos enteros (apoyo)</div></div></div>`;
+
+  html += `<div class="sec">Tus productos rentables</div><div class="card" style="padding:2px 12px">`;
+  prods.forEach(prod => {
+    const g = goalForProduct(prod.id, w.id);
+    const q = qtyForWorkerProduct(w.id, prod.id);
+    const pace = goalPace(g);
+    const p = pct(q, g);
+    html += `<div class="prow"><div class="pname"><span>${esc(prod.name)} <small style="color:var(--pd);font-weight:normal">(S/ ${prod.price})</small></span><b>${q} / ${g}</b></div>
+    <div class="bt"><div class="bf ${q >= pace ? '' : 'r'}" style="width:${Math.min(100, p)}%"></div></div>
+    <div class="gn"><span>Ritmo hoy: ${pace}</span>
+    <span class="pctrl"><button class="qbtn" data-dec="${prod.id}">–</button><span style="min-width:32px;text-align:center;font-weight:600">${q}</span><button class="qbtn" data-inc="${prod.id}">+</button></span></div></div>`;
+  });
+  html += '</div>';
+
+  html += `<div class="sec">Avance del equipo</div><div class="card" style="padding:4px 12px">`;
+  S.users.filter(x => x.role === w.role && x.active).forEach(x => {
+    const d2 = prods.filter(p => qtyForWorkerProduct(x.id, p.id) >= goalForProduct(p.id, x.id)).length;
+    html += `<div class="row"><span>${esc(x.name)}${x.id === w.id ? ' (tú)' : ''}</span><span>${d2}/${prods.length} logrados</span></div>`;
+  });
+  html += '</div>';
+  return html;
+}
+
+// 3. VENTAS (ADMIN)
+function vVentasAdmin(){
+  const sub = S.sub || 'mozo';
+  const role = sub === 'mozo' ? 'MOZO' : 'ANFITRIONA';
+  let html = `<div class="pt">Ventas por personal</div>
+  <div class="sub"><div class="st ${sub==='mozo'?'a':''}" data-sub="mozo">Mozos</div><div class="st ${sub!=='mozo'?'a':''}" data-sub="anf">Anfitrionas</div></div>`;
+
+  const prods = catalog(role);
+  html += `<div class="sec">Catálogo de productos (${role === 'MOZO' ? 'mozos' : 'anfitrionas'})</div><div class="card" style="padding:4px 12px">`;
+  if(prods.length === 0) html += '<div class="ps">Aún no hay productos en esta categoría.</div>';
+  prods.forEach(p => {
+    const g = goalForProduct(p.id, null);
+    html += `<div class="row"><span>${esc(p.name)} <span class="tag2">S/ ${p.price} · Meta: ${g}</span></span>
+    <span style="display:flex;gap:6px"><button class="gho sm" data-editgoal="${p.id}" data-role="${role}">Meta</button><button class="dan sm" data-delprod="${p.id}">✕</button></span></div>`;
+  });
+  html += `</div><button class="btn gho" id="add-prod-btn" data-role="${role}" style="margin-top:8px">+ Agregar producto</button>`;
+
+  html += `<div class="sec">Comparativo y registro de ventas por colaborador</div><div class="card" style="padding:4px 12px">`;
+  const ws = S.users.filter(u => u.role === role && u.active);
+  if(ws.length === 0) html += '<div class="ps">No hay colaboradores activos en este rol.</div>';
+  ws.forEach(w => {
+    const d = prods.filter(p => qtyForWorkerProduct(w.id, p.id) >= goalForProduct(p.id, w.id)).length;
+    html += `<div class="row" data-toggleuser="${w.id}" style="cursor:pointer"><span>${esc(w.name)}</span><span>${d}/${prods.length} logrados ${S.expandedWaiter===w.id?'▴':'▾'}</span></div>`;
+    if(S.expandedWaiter === w.id){
+      prods.forEach(p => {
+        const g = goalForProduct(p.id, w.id);
+        const q = qtyForWorkerProduct(w.id, p.id);
+        html += `<div class="prow" style="padding-left:6px"><div class="pname"><span>${esc(p.name)}</span><b>${q} / ${g}</b></div>
+        <div class="bt"><div class="bf" style="width:${Math.min(100, pct(q, g))}%"></div></div>
+        <div class="gn"><span></span><span class="pctrl"><button class="qbtn" data-admindec="${w.id}:${p.id}">–</button><span style="min-width:32px;text-align:center;font-weight:600">${q}</span><button class="qbtn" data-admininc="${w.id}:${p.id}">+</button></span></div></div>`;
+      });
+      html += `<div style="padding:10px 4px"><button class="btn gho sm" data-editprofile="${w.id}" style="width:auto">Editar perfil de ${esc(w.name)}</button></div>`;
+    }
+  });
+  html += '</div>';
+  return html;
+}
+
+// 4. META GENERAL (TIENDA)
+function vGeneral(){
+  const isAdmin = S.session.role === 'ADMIN';
+  const prods = S.products.filter(p => p.active);
+  const kpis = (S.kpi && S.kpi.kpis) || { monthlySales: 0, totalTarget: 350000, targetCompliance: 0 };
+
+  let html = `<div class="pt">Meta general de la tienda</div><p class="ps">Consolidado en tiempo real desde Cloudflare D1</p>`;
+  html += `<div class="card"><div class="ch"><span class="l">Venta total acumulada del mes</span><span class="p">${money(kpis.monthlySales)}</span></div>
+  <div class="bt"><div class="bf" style="width:${Math.min(100, kpis.targetCompliance)}%"></div></div>
+  <div class="gn"><span>Meta del mes: <strong>${money(kpis.totalTarget)}</strong></span><span>Cumplimiento: <strong>${kpis.targetCompliance}%</strong></span></div></div>`;
+
+  html += `<div class="sec">Avance consolidado por producto</div><div class="card" style="padding:4px 12px">`;
+  prods.forEach(p => {
+    const goal = goalForProduct(p.id, null);
+    const totalSold = S.sales.filter(s => s.product_id === p.id).reduce((acc, s) => acc + (s.quantity || 0), 0);
+    html += `<div class="prow"><div class="pname"><span>${esc(p.name)}</span><b>${totalSold} / ${goal}</b></div>
+    <div class="bt"><div class="bf" style="width:${Math.min(100, pct(totalSold, goal))}%"></div></div>
+    ${isAdmin ? `<div style="margin-top:6px;display:flex;justify-content:flex-end"><button class="gho sm" data-editgoal="${p.id}" data-role="GENERAL">Editar meta tienda</button></div>` : ''}</div>`;
+  });
+  html += '</div>';
+  return html;
+}
+
+// 5. PROYECTADO
+function vProyectado(){
+  const isAdmin = S.session.role === 'ADMIN';
+  const kpis = (S.kpi && S.kpi.kpis) || { monthlySales: 0, totalTarget: 350000, expectedPace: 0, diffAgainstExpected: 0, projectedClosing: 0 };
+  const diff = kpis.diffAgainstExpected || 0;
+
+  let html = `<div class="pt">Proyectado del mes</div><p class="ps">Día ${S.currentDay} de ${S.monthDays}</p>`;
+  html += `<div class="card"><div class="ch"><span class="l">Meta mensual</span><span class="p">${money(kpis.totalTarget)}</span></div>
+  <div class="gn"><span>Esperado a hoy: <strong>${money(kpis.expectedPace)}</strong></span><span>Real acumulado: <strong>${money(kpis.monthlySales)}</strong></span></div>
+  <div style="margin-top:10px;font-family:Fraunces,serif;font-size:22px;font-weight:600;color:${diff>=0?'var(--gr)':'var(--rd)'}">${diff>=0?'+':''}${money(diff)}</div>
+  <div class="ps" style="margin:2px 0 0">${diff>=0?'Vamos por encima del ritmo proyectado':'Vamos por debajo del ritmo proyectado'}</div>
+  <div style="margin-top:8px;font-size:12px;color:var(--pd)">Cierre estimado al fin de mes: <strong style="color:var(--pp)">${money(kpis.projectedClosing)}</strong></div></div>`;
+
+  if(isAdmin){
+    html += `<button class="btn pri" id="edit-store-target" style="margin-bottom:14px">Modificar meta mensual de tienda</button>`;
+  }
+  return html;
+}
+
+// 6. TAREAS (task_assignees)
+function vTareas(){
+  const isAdmin = S.session.role === 'ADMIN';
+  let html = `<div class="pt">Tareas</div><p class="ps">${isAdmin ? 'Asigna tareas al equipo' : 'Marca tus tareas completadas con una observación'}</p>`;
+  if(isAdmin) html += `<button class="btn pri" id="add-task" style="margin-bottom:12px">+ Nueva tarea</button>`;
+  html += '<div class="card" style="padding:4px 12px">';
+  if(S.tasks.length === 0) html += '<div class="ps">Sin tareas asignadas por el momento.</div>';
+
+  const now = today();
+  S.tasks.forEach(t => {
+    const dl = new Date(t.deadline + 'T23:59:59');
+    const diffD = Math.ceil((dl - now) / 86400000);
+    const late = diffD < 0;
+    const myAssign = (t.assignees || []).find(a => a.user_id === S.session.id);
+    const done = myAssign && myAssign.completed;
+
+    html += `<div class="prow"><div class="row" style="border:none;padding:8px 0">`;
+    if(!isAdmin) html += `<div class="chk ${done ? 'd' : ''}" data-donetask="${t.id}">${done ? '✓' : ''}</div>`;
+    html += `<div style="flex:1;margin:0 10px"><div>${esc(t.name)}</div>
+    <span class="tag2 ${late ? 'late' : ''}">${late ? 'Vencida hace ' + Math.abs(diffD) + 'd' : 'Faltan ' + diffD + 'd'} · ${t.deadline}</span></div>`;
+    html += '</div>';
+
+    if(myAssign && myAssign.observations){
+      html += `<div class="ps" style="margin:0 0 6px 32px">Tu obs: "${esc(myAssign.observations)}"</div>`;
+    }
+
+    if(isAdmin){
+      const completedList = (t.assignees || []).filter(a => a.completed);
+      if(completedList.length === 0){
+        html += '<div class="ps" style="margin-left:4px">Nadie la ha marcado como hecha aún.</div>';
+      } else {
+        completedList.forEach(c => {
+          html += `<div class="ps" style="margin:0 0 4px 4px;color:var(--gr)">✓ ${esc(c.worker_name)}${c.observations ? ' — "' + esc(c.observations) + '"' : ''}</div>`;
+        });
+      }
+    }
+    html += '</div>';
+  });
+  html += '</div>';
+  return html;
+}
+
+// 7. CRONOGRAMAS Y EVENTOS
+function vCronogramas(){
+  const isAdmin = S.session.role === 'ADMIN';
+  let html = `<div class="pt">Cronogramas</div><p class="ps">Reuniones y capacitaciones sincronizadas en D1</p>`;
+  if(isAdmin) html += `<button class="btn pri" id="add-event" style="margin-bottom:12px">+ Nuevo evento</button>`;
+  html += '<div class="card" style="padding:4px 12px">';
+  if(S.events.length === 0) html += '<div class="ps">Sin eventos programados.</div>';
+
+  S.events.forEach(ev => {
+    html += `<div class="row" style="align-items:flex-start"><div style="flex:1"><div><b>${esc(ev.title)}</b></div>
+    <div class="ps" style="margin:2px 0">${esc(ev.description || '')}</div>
+    <span class="tag2">${ev.event_date} · ${ev.event_time}</span></div>
+    ${isAdmin ? `<button class="dan sm" data-delevent="${ev.id}">✕</button>` : ''}</div>`;
+  });
+  html += '</div>';
+  return html;
+}
+
+// 8. CONFIGURACIÓN
+function vConfig(){
+  const isAdmin = S.session.role === 'ADMIN';
+  let html = `<div class="pt">Configuración</div><p class="ps">${isAdmin ? 'Gestión de usuarios y sistema' : 'Tu perfil de colaborador'}</p>`;
+
+  if(!isAdmin){
+    const u = S.session;
+    return html + `
+    <div class="card"><div class="row"><span>Nombre</span><b>${esc(u.name)}</b></div>
+    <div class="row"><span>Código de empleado</span><b>${esc(u.code)}</b></div>
+    <div class="row"><span>Rol</span><b>${u.role}</b></div></div>
+    <button class="btn pri" id="edit-my-profile" style="margin-top:10px">Editar mi perfil</button>
+    <div style="margin-top:20px;text-align:center"><button class="btn gho sm" id="cfg-endpoint">⚙️ Configurar Endpoint API</button></div>`;
+  }
+
+  html += `<div class="sec">Colaboradores (Mozos y Anfitrionas)</div><div class="card" style="padding:4px 12px">`;
+  S.users.filter(u => u.role !== 'ADMIN').forEach(w => {
+    html += `<div class="row"><span>${esc(w.name)} <span class="tag2">${w.role} · ${esc(w.code)}</span></span>
+    <span style="display:flex;gap:6px"><button class="gho sm" data-editprofile="${w.id}">Editar</button></span></div>`;
+  });
+  html += `</div><button class="btn gho" id="add-user" style="margin-top:8px">+ Crear nuevo colaborador</button>`;
+
+  html += `<div class="sec">Administradores</div><div class="card" style="padding:4px 12px">`;
+  S.users.filter(u => u.role === 'ADMIN').forEach(a => {
+    html += `<div class="row"><span>${esc(a.name)} <span class="tag2">ADMIN · ${esc(a.code)}</span></span>
+    <button class="gho sm" data-editadmin="${a.id}">Editar</button></div>`;
+  });
+  html += `</div><button class="btn gho" id="add-admin-btn" style="margin-top:8px">+ Crear nuevo administrador</button>`;
+
+  html += `<div class="sec">Conexión con Cloudflare</div>
+  <div class="card"><div class="row"><span>API Endpoint</span><small style="color:var(--gl)">${esc(API_URL)}</small></div>
+  <button class="btn gho sm" id="cfg-endpoint" style="margin-top:10px">Cambiar URL del Worker</button></div>`;
+
+  return html;
+}
+
+// ===================================================================
+// SISTEMA DE MODALES
+// ===================================================================
+function renderM(){
+  const m = S.modal; if(!m) return '';
+  let title = '', f = '';
+  if(m.type === 'config-api'){
+    title = 'Configuración de API Cloudflare';
+    f = `<div class="field"><label class="ps">URL del Worker sazon-api</label><input id="mf-api" type="text" value="${esc(API_URL)}"></div>`;
+  } else if(m.type === 'add-prod'){
+    title = 'Nuevo producto (' + m.data.role + ')';
+    f = `<div class="field"><label class="ps">Nombre del producto</label><input id="mf-name" type="text"></div>
+    <div class="field"><label class="ps">Categoría</label><input id="mf-cat" type="text" placeholder="POLLOS, BEBIDAS..."></div>
+    <div class="field"><label class="ps">Precio (S/)</label><input id="mf-price" type="number" step="0.5" value="20"></div>`;
+  } else if(m.type === 'edit-goal'){
+    const prod = S.products.find(p => p.id === m.data.id);
+    const currGoal = goalForProduct(m.data.id, null);
+    title = 'Editar meta: ' + esc(prod ? prod.name : '');
+    f = `<div class="field"><label class="ps">Meta mensual de unidades</label><input id="mf-goal" type="number" value="${currGoal}"></div>`;
+  } else if(m.type === 'add-user'){
+    title = 'Nuevo usuario';
+    f = `<div class="field"><label class="ps">Nombre completo</label><input id="mf-name" type="text"></div>
+    <div class="field"><label class="ps">Código de empleado</label><input id="mf-code" type="text"></div>
+    <div class="field"><label class="ps">Rol</label><select id="mf-role"><option value="MOZO">Mozo</option><option value="ANFITRIONA">Anfitriona</option></select></div>`;
+  } else if(m.type === 'add-admin'){
+    title = 'Nuevo administrador';
+    f = `<div class="field"><label class="ps">Nombre</label><input id="mf-name" type="text"></div>
+    <div class="field"><label class="ps">Código</label><input id="mf-code" type="text"></div>`;
+  } else if(m.type === 'edit-profile'){
+    const u = S.users.find(x => x.id === m.data.id) || S.session;
+    title = 'Editar: ' + esc(u.name);
+    f = `<div class="field"><label class="ps">Nombre</label><input id="mf-name" type="text" value="${esc(u.name)}"></div>
+    <div class="field"><label class="ps">Código</label><input id="mf-code" type="text" value="${esc(u.code)}"></div>`;
+  } else if(m.type === 'add-task'){
+    title = 'Nueva tarea';
+    f = `<div class="field"><label class="ps">Nombre de la tarea</label><input id="mf-name" type="text"></div>
+    <div class="field"><label class="ps">Fecha límite</label><input id="mf-date" type="date"></div>`;
+  } else if(m.type === 'add-event'){
+    title = 'Nuevo evento o reunión';
+    f = `<div class="field"><label class="ps">Título</label><input id="mf-name" type="text"></div>
+    <div class="field"><label class="ps">Fecha</label><input id="mf-date" type="date"></div>
+    <div class="field"><label class="ps">Hora</label><input id="mf-time" type="time" value="10:00"></div>
+    <div class="field"><label class="ps">Descripción</label><input id="mf-desc" type="text"></div>`;
+  } else if(m.type === 'task-note'){
+    title = 'Completar tarea';
+    f = `<div class="field"><label class="ps">Observación (opcional)</label><input id="mf-note" type="text" placeholder="Ej: Realizado junto a Jorge"></div>`;
+  } else if(m.type === 'edit-store-target'){
+    title = 'Meta financiera del mes';
+    const curr = (S.kpi && S.kpi.kpis && S.kpi.kpis.totalTarget) || 350000;
+    f = `<div class="field"><label class="ps">Monto mensual proyectado (S/)</label><input id="mf-target" type="number" value="${curr}"></div>`;
+  }
+
+  return `<div class="mbd" id="mbd"><div class="mbox"><h3>${title}</h3>${f}
+  <button class="btn pri" id="m-save">Guardar</button>
+  <div style="height:8px"></div>
+  <button class="btn gho" id="m-cancel">Cancelar</button></div></div>`;
+}
+
+// ===================================================================
+// RENDERIZADO Y CONTROLADORES DE EVENTOS
+// ===================================================================
+const TABS = [
+  {id:'ventas',i:'🍗',l:'Ventas'},
+  {id:'general',i:'🏪',l:'Meta gral'},
+  {id:'proyectado',i:'📈',l:'Proyectado'},
+  {id:'tareas',i:'✅',l:'Tareas'},
+  {id:'cronos',i:'🗓️',l:'Cronos'},
+  {id:'config',i:'⚙️',l:'Config'}
+];
+
+function render(){
+  const root = document.getElementById('root'); let html = '';
+  if(!S.session){
+    html = vLogin(); root.innerHTML = html; wLogin(root); return;
+  }
+  const name = S.session.name;
+  html += `<div class="top"><div class="brand">Saz<span>ó</span>n</div>
+  <div style="display:flex;gap:8px;align-items:center"><span class="tag">${esc(name)}</span>
+  <button class="logout" id="lo" title="Cerrar sesión">↩</button></div></div>`;
+
+  html += '<div class="content">';
+  if(S.tab === 'ventas') html += S.session.role === 'ADMIN' ? vVentasAdmin() : vVentasUser();
+  else if(S.tab === 'general') html += vGeneral();
+  else if(S.tab === 'proyectado') html += vProyectado();
+  else if(S.tab === 'tareas') html += vTareas();
+  else if(S.tab === 'cronos') html += vCronogramas();
+  else if(S.tab === 'config') html += vConfig();
+  html += '</div>';
+
+  html += `<div class="nav">${TABS.map(t => `<button class="nb ${S.tab===t.id?'a':''}" data-tab="${t.id}"><span class="i">${t.i}</span>${t.l}</button>`).join('')}</div>`;
+  if(S.toast) html += `<div style="position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--gr);color:#fff;padding:10px 16px;border-radius:9px;font-size:13px;z-index:60">${esc(S.toast)}</div>`;
+  html += renderM();
+  root.innerHTML = html;
+  wire(root);
+}
+
+function wire(root){
+  const lo = root.querySelector('#lo');
+  if(lo) lo.addEventListener('click', () => { api.setToken(null); saveSession(null); render(); });
+
+  root.querySelectorAll('.nb').forEach(b => b.addEventListener('click', () => { S.tab = b.dataset.tab; render(); }));
+  root.querySelectorAll('.st').forEach(b => b.addEventListener('click', () => { S.sub = b.dataset.sub; render(); }));
+
+  const isAdmin = S.session && S.session.role === 'ADMIN';
+
+  // REGISTRO DE VENTAS (USUARIO)
+  if(!isAdmin && S.tab === 'ventas'){
+    root.querySelectorAll('[data-inc]').forEach(b => b.addEventListener('click', async () => {
+      b.disabled = true;
+      try {
+        await api.recordSale({ product_id: b.dataset.inc, quantity: 1 });
+        toast('+1 venta registrada');
+        await syncFromD1();
+      } catch(e){ toast('Error: ' + e.message); }
+      finally { b.disabled = false; }
+    }));
+    root.querySelectorAll('[data-dec]').forEach(b => b.addEventListener('click', async () => {
+      b.disabled = true;
+      try {
+        await api.recordSale({ product_id: b.dataset.dec, quantity: -1 });
+        toast('-1 venta ajustada');
+        await syncFromD1();
+      } catch(e){ toast('Error: ' + e.message); }
+      finally { b.disabled = false; }
+    }));
+  }
+
+  // VENTAS ADMIN
+  if(isAdmin && S.tab === 'ventas'){
+    root.querySelectorAll('[data-toggleuser]').forEach(b => b.addEventListener('click', () => {
+      S.expandedWaiter = S.expandedWaiter === b.dataset.toggleuser ? null : b.dataset.toggleuser;
+      render();
+    }));
+    root.querySelectorAll('[data-admininc]').forEach(b => b.addEventListener('click', async () => {
+      const [wid, pid] = b.dataset.admininc.split(':');
+      b.disabled = true;
+      try {
+        await api.recordSale({ worker_id: wid, product_id: pid, quantity: 1 });
+        toast('Venta registrada');
+        await syncFromD1();
+      } catch(e){ toast('Error: ' + e.message); }
+      finally { b.disabled = false; }
+    }));
+    root.querySelectorAll('[data-admindec]').forEach(b => b.addEventListener('click', async () => {
+      const [wid, pid] = b.dataset.admindec.split(':');
+      b.disabled = true;
+      try {
+        await api.recordSale({ worker_id: wid, product_id: pid, quantity: -1 });
+        toast('Venta ajustada');
+        await syncFromD1();
+      } catch(e){ toast('Error: ' + e.message); }
+      finally { b.disabled = false; }
+    }));
+    const apb = root.querySelector('#add-prod-btn');
+    if(apb) apb.addEventListener('click', () => openM('add-prod', { role: apb.dataset.role }));
+  }
+
+  // BOTONES GENERALES DE ACCIÓN
+  root.querySelectorAll('[data-editgoal]').forEach(b => b.addEventListener('click', () => openM('edit-goal', { id: b.dataset.editgoal })));
+  root.querySelectorAll('[data-editprofile]').forEach(b => b.addEventListener('click', () => openM('edit-profile', { id: b.dataset.editprofile })));
+  const emp = root.querySelector('#edit-my-profile');
+  if(emp) emp.addEventListener('click', () => openM('edit-profile', { id: S.session.id }));
+  const au = root.querySelector('#add-user');
+  if(au) au.addEventListener('click', () => openM('add-user'));
+  const aab = root.querySelector('#add-admin-btn');
+  if(aab) aab.addEventListener('click', () => openM('add-admin'));
+  const at = root.querySelector('#add-task');
+  if(at) at.addEventListener('click', () => openM('add-task'));
+  const ae = root.querySelector('#add-event');
+  if(ae) ae.addEventListener('click', () => openM('add-event'));
+  const est = root.querySelector('#edit-store-target');
+  if(est) est.addEventListener('click', () => openM('edit-store-target'));
+  const ce = root.querySelector('#cfg-endpoint');
+  if(ce) ce.addEventListener('click', () => openM('config-api'));
+
+  // TAREAS: MARCAR / DESMARCAR
+  root.querySelectorAll('[data-donetask]').forEach(b => b.addEventListener('click', () => {
+    const tid = b.dataset.donetask;
+    const task = S.tasks.find(t => t.id === tid);
+    const assign = (task.assignees || []).find(a => a.user_id === S.session.id);
+    if(assign && assign.completed){
+      api.toggleTask(tid, 0, '').then(() => { toast('Tarea desmarcada'); syncFromD1(); });
+    } else {
+      openM('task-note', { taskId: tid });
+    }
+  }));
+
+  // EVENTOS: ELIMINAR
+  root.querySelectorAll('[data-delevent]').forEach(b => b.addEventListener('click', async () => {
+    try {
+      await api.deleteEvent(b.dataset.delevent);
+      toast('Evento eliminado');
+      await syncFromD1();
+    } catch(e){ toast('Error: ' + e.message); }
+  }));
+
+  // GUARDAR MODAL
+  const mc = root.querySelector('#m-cancel'); if(mc) mc.addEventListener('click', closeM);
+  const mbd = root.querySelector('#mbd'); if(mbd) mbd.addEventListener('click', e => { if(e.target === mbd) closeM(); });
+  const ms = root.querySelector('#m-save');
+  if(ms) ms.addEventListener('click', async () => {
+    const m = S.modal; if(!m) return;
+    const v = id => { const el = root.querySelector('#' + id); return el ? el.value.trim() : ''; };
+    ms.disabled = true;
+    try {
+      if(m.type === 'config-api'){
+        const url = v('mf-api');
+        if(url){ localStorage.setItem(CONFIG_KEY, url); location.reload(); }
+      } else if(m.type === 'add-prod'){
+        const name = v('mf-name'), category = v('mf-cat') || 'GENERAL', price = parseFloat(v('mf-price')) || 0;
+        await api.createProduct({ name, category, price, target_role: m.data.role });
+        toast('Producto agregado a D1'); closeM(); await syncFromD1();
+      } else if(m.type === 'edit-goal'){
+        const g = parseFloat(v('mf-goal')) || 0;
+        await api.saveGoal({ type: 'PRODUCT_GOAL', product_id: m.data.id, target_quantity: g });
+        toast('Meta actualizada'); closeM(); await syncFromD1();
+      } else if(m.type === 'add-user'){
+        const name = v('mf-name'), code = v('mf-code'), role = v('mf-role');
+        await api.createUser({ name, code, role });
+        toast('Usuario creado en D1'); closeM(); await syncFromD1();
+      } else if(m.type === 'add-admin'){
+        const name = v('mf-name'), code = v('mf-code');
+        await api.createUser({ name, code, role: 'ADMIN' });
+        toast('Administrador creado'); closeM(); await syncFromD1();
+      } else if(m.type === 'edit-profile'){
+        const name = v('mf-name'), code = v('mf-code');
+        await api.updateUser(m.data.id, { name, code });
+        toast('Perfil actualizado'); closeM(); await syncFromD1();
+      } else if(m.type === 'add-task'){
+        const name = v('mf-name'), deadline = v('mf-date');
+        await api.createTask({ name, deadline });
+        toast('Tarea registrada'); closeM(); await syncFromD1();
+      } else if(m.type === 'add-event'){
+        const title = v('mf-name'), event_date = v('mf-date'), event_time = v('mf-time'), description = v('mf-desc');
+        await api.createEvent({ title, event_date, event_time, description });
+        toast('Evento programado'); closeM(); await syncFromD1();
+      } else if(m.type === 'task-note'){
+        const note = v('mf-note');
+        await api.toggleTask(m.data.taskId, 1, note);
+        toast('Tarea completada'); closeM(); await syncFromD1();
+      } else if(m.type === 'edit-store-target'){
+        const target = parseFloat(v('mf-target')) || 350000;
+        await api.saveGoal({ type: 'STORE_TARGET', target_amount: target });
+        toast('Meta de tienda actualizada'); closeM(); await syncFromD1();
+      }
+    } catch(err){
+      toast('Error: ' + err.message);
+    } finally {
+      ms.disabled = false;
+    }
+  });
+}
+
+// Iniciar aplicación sincronizando si ya hay sesión abierta
+render();
+if(S.session) syncFromD1();
+})();
+</script></body></html>

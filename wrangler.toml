@@ -1,0 +1,19 @@
+name = "sazon-api"
+main = "src/index.js"
+compatibility_date = "2024-09-23"
+
+# ===================================================================
+# BINDING EXCLUSIVO A CLOUDFLARE D1 (sazon-db)
+# ===================================================================
+[[d1_databases]]
+binding = "DB"
+database_name = "sazon-db"
+database_id = "2bb8896a-335f-4c9b-9233-dc16f24b92a3"
+
+[observability]
+enabled = true
+
+[[rules]]
+type = "Text"
+globs = ["**/*.html"]
+fallthrough = true
