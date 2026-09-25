@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sazón — Sistema de Ventas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--wd:#241C15;--wm:#362A1E;--wl:#4A3A29;--pp:#F4ECDD;--pd:#B7A488;--gd:#C98A3B;--gl:#E8B95B;--gr:#6B8F5A;--rd:#B5573F;--bl:#6B87A8}
+*{box-sizing:border-box}body{margin:0;background:var(--wd);color:var(--pp);font-family:Inter,sans-serif;min-height:100vh}
+h1,h3,.fr{font-family:Fraunces,serif}
+.app{max-width:480px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column}
+.top{padding:16px 18px;border-bottom:1px solid var(--wl);display:flex;justify-content:space-between;align-items:center}
+.brand{font-size:19px;font-weight:600}.brand span{color:var(--gl)}
+.tag{font-size:12px;color:var(--pd)}
+.logout{background:none;border:1px solid var(--wl);color:var(--pd);width:30px;height:30px;border-radius:8px;cursor:pointer}
+.content{flex:1;padding:16px 16px 90px;overflow-y:auto}
+.pt{font-size:21px;font-weight:600;margin:2px 0 3px}.ps{font-size:12px;color:var(--pd);margin:0 0 14px}
+.card{background:var(--wm);border:1px solid var(--wl);border-radius:14px;padding:16px;margin-bottom:12px}
+.ch{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
+.ch .l{font-size:12px;color:var(--pd)}.ch .p{font-family:Fraunces,serif;font-size:21px;font-weight:600;color:var(--gl)}
+.bt{height:8px;border-radius:5px;background:var(--wd);overflow:hidden;border:1px solid var(--wl)}
+.bf{height:100%;background:linear-gradient(90deg,var(--gd),var(--gl));border-radius:5px}
+.bf.b{background:linear-gradient(90deg,var(--bl),#8FA9C4)}.bf.r{background:var(--rd)}
+.gn{display:flex;justify-content:space-between;margin-top:7px;font-size:12px;color:var(--pd)}.gn strong{color:var(--pp)}
+.sec{font-size:14px;font-weight:600;margin:18px 0 8px}
+input[type=text],input[type=number],input[type=password]{width:100%;background:var(--wd);border:1px solid var(--wl);color:var(--pp);padding:11px 13px;border-radius:9px;font-size:15px;font-family:Inter}
+input:focus{border-color:var(--gd);outline:none}
+.btn{border:none;border-radius:9px;padding:12px 16px;font-size:13px;font-weight:600;cursor:pointer;width:100%}
+.pri{background:var(--gd);color:#241C15}.gho{background:transparent;color:var(--pd);border:1px solid var(--wl)}.dan{background:var(--rd);color:#fff}
+.sm{padding:8px 10px;font-size:12px;width:auto}
+.row{display:flex;justify-content:space-between;align-items:center;padding:10px 2px;border-bottom:1px solid var(--wl);font-size:13px}
+.row:last-child{border-bottom:none}
+.prow{padding:11px 2px;border-bottom:1px solid var(--wl)}.prow:last-child{border-bottom:none}
+.pname{display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px}.pname b{font-weight:600}
+.pctrl{display:flex;gap:6px;align-items:center}
+.pctrl input{width:70px;text-align:center;padding:8px}
+.qbtn{background:var(--wd);border:1px solid var(--wl);color:var(--pp);width:34px;height:34px;border-radius:8px;font-size:16px;cursor:pointer}
+.stats{display:flex;gap:8px;margin-bottom:14px}.sb{flex:1;background:var(--wm);border:1px solid var(--wl);border-radius:12px;padding:12px}
+.sb .n{font-family:Fraunces,serif;font-size:18px;font-weight:600;color:var(--gl)}.sb .l{font-size:10px;color:var(--pd);margin-top:2px}
+.sub{display:flex;gap:6px;margin-bottom:12px}.st{flex:1;text-align:center;padding:8px 4px;border-radius:8px;border:1px solid var(--wl);background:var(--wm);font-size:11px;color:var(--pd);cursor:pointer}
+.st.a{background:var(--gd);border-color:var(--gd);color:#241C15;font-weight:600}
+.nav{position:sticky;bottom:0;background:var(--wm);border-top:1px solid var(--wl);display:flex;padding:7px 6px calc(7px + env(safe-area-inset-bottom));gap:3px}
+.nb{flex:1;background:none;border:none;color:var(--pd);font-size:10px;padding:6px 1px;border-radius:9px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px}
+.nb.a{color:var(--gl);background:var(--wd)}.nb .i{font-size:16px}
+.day{display:inline-flex;flex-direction:column;align-items:center;gap:4px;padding:8px;border:1px solid var(--wl);border-radius:8px;margin-right:6px;min-width:56px;background:var(--wm)}
+.day .d{font-size:10px;color:var(--pd)}.day input{width:100%;padding:5px 3px;font-size:11px;text-align:center}
+.dayscroll{display:flex;overflow-x:auto;padding-bottom:6px;margin-bottom:14px}
+.chk{width:20px;height:20px;border-radius:6px;border:1.5px solid var(--wl);background:var(--wd);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:12px;flex-shrink:0}
+.chk.d{background:var(--gr);border-color:var(--gr);color:#fff}
+.tag2{font-size:10px;padding:2px 7px;border-radius:10px;background:var(--wd);color:var(--pd)}
+.tag2.late{background:var(--rd);color:#fff}
+.mbd{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:flex-end;justify-content:center;z-index:80}
+.mbox{background:var(--wm);border:1px solid var(--wl);border-radius:18px 18px 0 0;padding:20px 18px calc(20px + env(safe-area-inset-bottom));width:100%;max-width:480px;max-height:85vh;overflow-y:auto}
+.mbox h3{margin:0 0 14px;font-size:18px}
+.field{margin-bottom:12px}
+select{width:100%;background:var(--wd);border:1px solid var(--wl);color:var(--pp);padding:11px 13px;border-radius:9px;font-size:15px;font-family:Inter}
+::selection{background:var(--gd);color:#241C15}
+</style></head><body><div id="root" class="app"></div>
+<script>
+window.onerror=function(m,s,l,c,e){try{document.getElementById('root').insertAdjacentHTML('beforeend','<div style="position:fixed;bottom:80px;left:12px;right:12px;background:#B5573F;color:#fff;padding:10px 14px;border-radius:9px;font-size:12px;z-index:99">Error: '+m+' (línea '+l+')</div>')}catch(e){}};
+</script>
+<script>
+(function(){
+const KEY='sazon_v7';
+const MOZO_PRODS=['1/4 Pollo','Bife','Champiñones','Picaña','Lomo','Tequeños','Bondiola','Tragos','Bebidas','Happy Hour','Postres','Frozen'];
+function today(){return new Date()}
+function dim(){const d=today();return new Date(d.getFullYear(),d.getMonth()+1,0).getDate()}
+function def(){
+  const prods={}; MOZO_PRODS.forEach((n,i)=>prods['mp'+i]={name:n,goal: n==='1/4 Pollo'?200:40});
+  return {
+    admins:[{id:'ad1',name:'Administrador',code:'2580'}], monthDays: dim(), currentDay: today().getDate(),
+    mozoProducts: prods,
+    anfProducts: {},
+    generalGoals: {}, generalProgress: {}, generalTotalPollos: 0,
+    projected: {total:350000, dailyTarget:{}, dailyActual:{}},
+    tasks: [], events: [],
+    waiters: [
+      {id:'w1',name:'Gustavo Almonacid',code:'1001',role:'mozo',products:{},totalPollos:0},
+      {id:'w2',name:'Alessandra',code:'1002',role:'mozo',products:{},totalPollos:0},
+      {id:'w3',name:'Wilmer Gomez',code:'1003',role:'mozo',products:{},totalPollos:0},
+      {id:'w4',name:'Jorge Guevara',code:'1004',role:'mozo',products:{},totalPollos:0},
+      {id:'w5',name:'Maicol Cordova',code:'1005',role:'mozo',products:{},totalPollos:0},
+      {id:'w6',name:'Nicol',code:'1006',role:'mozo',products:{},totalPollos:0},
+      {id:'w7',name:'Sarela Pucho',code:'1007',role:'mozo',products:{},totalPollos:0},
+      {id:'w8',name:'Yovana Espinoza',code:'1008',role:'mozo',products:{},totalPollos:0},
+      {id:'w9',name:'Selene',code:'1009',role:'mozo',products:{},totalPollos:0},
+      {id:'w10',name:'Marcelo',code:'1010',role:'mozo',products:{},totalPollos:0}
+    ]
+  };
+}
+function load(){try{const r=localStorage.getItem(KEY);if(r)return JSON.parse(r)}catch(e){}return def()}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S.data))}catch(e){}}
+const S={data:load(),session:null,tab:'ventas',sub:null,toast:null};
+function mk(){return today().getFullYear()+'-'+(today().getMonth()+1)}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function openM(type,data){S.modal={type,data:data||{}};render()}
+function closeM(){S.modal=null;render()}
+function renderM(){
+  const m=S.modal; if(!m) return '';
+  let title='',f='';
+  if(m.type==='add-prod'){
+    title='Nuevo producto ('+(m.data.role==='mozo'?'mozos':'anfitrionas')+')';
+    f=`<div class="field"><label class="ps">Nombre</label><input id="mf-name" type="text"></div><div class="field"><label class="ps">Meta mensual</label><input id="mf-goal" type="number" value="20"></div>`;
+  } else if(m.type==='edit-goal'){
+    const cat=catalog(m.data.role);
+    title='Editar meta: '+esc(cat[m.data.id].name);
+    f=`<div class="field"><label class="ps">Meta mensual</label><input id="mf-goal" type="number" value="${cat[m.data.id].goal}"></div>`;
+  } else if(m.type==='add-user'){
+    title='Nuevo usuario';
+    f=`<div class="field"><label class="ps">Nombre</label><input id="mf-name" type="text"></div><div class="field"><label class="ps">Código de acceso</label><input id="mf-code" type="text"></div><div class="field"><label class="ps">Rol</label><select id="mf-role"><option value="mozo">Mozo</option><option value="anfitriona">Anfitriona</option></select></div>`;
+  } else if(m.type==='add-admin'){
+    title='Nuevo administrador';
+    f=`<div class="field"><label class="ps">Nombre</label><input id="mf-name" type="text"></div><div class="field"><label class="ps">Código de acceso</label><input id="mf-code" type="text"></div>`;
+  } else if(m.type==='edit-admin'){
+    const a=S.data.admins.find(x=>x.id===m.data.id);
+    title='Editar administrador: '+esc(a.name);
+    f=`<div class="field"><label class="ps">Nombre</label><input id="mf-name" type="text" value="${esc(a.name)}"></div><div class="field"><label class="ps">Código de acceso</label><input id="mf-code" type="text" value="${esc(a.code)}"></div>`;
+  } else if(m.type==='edit-profile'){
+    const w=S.data.waiters.find(x=>x.id===m.data.id);
+    title='Editar perfil: '+esc(w.name);
+    f=`<div class="field"><label class="ps">Nombre</label><input id="mf-name" type="text" value="${esc(w.name)}"></div><div class="field"><label class="ps">Código de acceso</label><input id="mf-code" type="text" value="${esc(w.code)}"></div>`+(S.session.role==='admin'?`<div class="field"><label class="ps">Rol</label><select id="mf-role"><option value="mozo" ${w.role==='mozo'?'selected':''}>Mozo</option><option value="anfitriona" ${w.role==='anfitriona'?'selected':''}>Anfitriona</option></select></div>`:'');
+  } else if(m.type==='add-task'){
+    title='Nueva tarea';
+    f=`<div class="field"><label class="ps">Nombre de la tarea</label><input id="mf-name" type="text"></div><div class="field"><label class="ps">Fecha límite</label><input id="mf-date" type="date"></div>`;
+  } else if(m.type==='add-event'){
+    title='Nuevo evento';
+    f=`<div class="field"><label class="ps">Título</label><input id="mf-name" type="text"></div><div class="field"><label class="ps">Fecha</label><input id="mf-date" type="date"></div><div class="field"><label class="ps">Hora</label><input id="mf-time" type="time" value="10:00"></div><div class="field"><label class="ps">Descripción (opcional)</label><input id="mf-desc" type="text"></div>`;
+  } else if(m.type==='task-note'){
+    title='Marcar tarea como hecha';
+    f=`<div class="field"><label class="ps">Observación (opcional) — quién lo hizo o cómo</label><input id="mf-note" type="text" placeholder="Ej: lo hice con Jorge"></div>`;
+  }
+  return `<div class="mbd" id="mbd"><div class="mbox"><h3>${title}</h3>${f}<button class="btn pri" id="m-save">Guardar</button><div style="height:8px"></div><button class="btn gho" id="m-cancel">Cancelar</button></div></div>`;
+}
+function money(n){return 'S/ '+(Math.round(n||0)).toLocaleString('es-PE')}
+function pct(a,b){return b>0?Math.round(a/b*100):0}
+function toast(m){S.toast=m;render();setTimeout(()=>{S.toast=null;render()},1800)}
+function catalog(role){return role==='mozo'?S.data.mozoProducts:S.data.anfProducts}
+function qty(w,pid){return (w.products&&w.products[pid])||0}
+function goalPace(goal){return Math.round(goal*(S.data.currentDay/S.data.monthDays))}
+
+function pcts(w){
+  const p=id=>qty(w,id);
+  const cat=S.data.mozoProducts; let cuartoId,bebId,tragId,hhId;
+  Object.keys(cat).forEach(id=>{ if(cat[id].name==='1/4 Pollo')cuartoId=id; if(cat[id].name==='Bebidas')bebId=id; if(cat[id].name==='Tragos')tragId=id; if(cat[id].name==='Happy Hour')hhId=id; });
+  const tp=w.totalPollos||0;
+  const cuartos = tp>0?((p(cuartoId)/4)/tp*100):0;
+  const bebidas = tp>0?(p(bebId)/tp*100):0;
+  const tragos = tp>0?(((p(hhId)/2)+p(tragId))/tp*100):0;
+  return {cuartos,bebidas,tragos};
+}
+
+// ===== LOGIN =====
+function vLogin(){return `
+<div class="top"><div class="brand">Saz<span>ó</span>n</div><div class="tag">Sistema de ventas</div></div>
+<div class="content" style="padding-top:60px">
+<h1 class="fr" style="font-size:32px;line-height:1.1;margin-bottom:8px">Ingresa tu código</h1>
+<p class="ps" style="margin-bottom:24px">Mozo, anfitriona o administrador</p>
+<input id="lc" type="password" placeholder="••••" style="margin-bottom:8px">
+<div id="le" style="color:var(--rd);font-size:12px;min-height:16px;margin-bottom:10px"></div>
+<button class="btn pri" id="lb">Ingresar</button>
+</div>`;}
+function wLogin(r){
+  const i=r.querySelector('#lc'),b=r.querySelector('#lb'),e=r.querySelector('#le');
+  function go(){
+    const c=i.value.trim(); if(!c){e.textContent='Ingresa un código.';return}
+    const adm=S.data.admins.find(a=>a.code===c); if(adm){S.session={role:'admin',adminId:adm.id};S.tab='ventas';render();return}
+    const w=S.data.waiters.find(w=>w.code===c);
+    if(w){S.session={role:w.role,waiterId:w.id};S.tab='ventas';render();return}
+    e.textContent='Código no reconocido.';
+  }
+  b.addEventListener('click',go); i.addEventListener('keydown',ev=>{if(ev.key==='Enter')go()});
+}
+
+function curW(){return S.data.waiters.find(w=>w.id===S.session.waiterId)}
+function curAdmin(){return S.data.admins.find(a=>a.id===S.session.adminId)}
+function codeTaken(code,excludeId){return S.data.admins.find(a=>a.code===code&&a.id!==excludeId) || S.data.waiters.find(w=>w.code===code&&w.id!==excludeId)}
+
+// ===== VENTAS =====
+function vVentasUser(){
+  const w=curW(); const cat=catalog(w.role); const ids=Object.keys(cat);
+  const done=ids.filter(id=>qty(w,id)>=cat[id].goal).length;
+  let html=`<div class="pt">Ventas — ${esc(w.name)}</div><p class="ps">Actualiza tu avance de productos rentables</p>`;
+  html+=`<div class="stats"><div class="sb"><div class="n">${done}/${ids.length}</div><div class="l">Metas logradas</div></div><div class="sb"><div class="n">${money(w.totalPollos||0).replace('S/ ','')}</div><div class="l">Total pollos (apoyo)</div></div></div>`;
+  html+=`<div class="card"><label class="ps" style="margin:0 0 6px;display:block">Total de pollos vendidos (apoyo)</label><input id="tp-input" type="number" value="${w.totalPollos||0}"></div>`;
+  html+=`<div class="sec">Tus productos</div><div class="card" style="padding:2px 12px">`;
+  ids.forEach(id=>{
+    const g=cat[id].goal, q=qty(w,id), pace=goalPace(g), p=pct(q,g);
+    html+=`<div class="prow"><div class="pname"><span>${esc(cat[id].name)}</span><b>${q} / ${g}</b></div>
+    <div class="bt"><div class="bf ${q>=pace?'':'r'}" style="width:${Math.min(100,p)}%"></div></div>
+    <div class="gn"><span>Ritmo esperado hoy: ${pace}</span>
+    <span class="pctrl"><button class="qbtn" data-dec="${id}">–</button><input class="pin" data-pid="${id}" type="number" value="${q}"><button class="qbtn" data-inc="${id}">+</button></span></div></div>`;
+  });
+  html+='</div>';
+  if(w.role==='mozo'){
+    const pc=pcts(w);
+    html+=`<div class="sec">Porcentajes (sobre total de pollos)</div>`;
+    [['Cuartos',pc.cuartos],['Bebidas',pc.bebidas],['Tragos',pc.tragos]].forEach(([n,v])=>{
+      html+=`<div class="card special"><div class="ch"><span class="l">${n}</span><span class="p">${v.toFixed(1)}%</span></div><div class="bt"><div class="bf b" style="width:${Math.min(100,v)}%"></div></div></div>`;
+    });
+  }
+  html+=`<div class="sec">Avance del equipo</div><div class="card" style="padding:4px 12px">`;
+  S.data.waiters.filter(x=>x.role===w.role).forEach(x=>{
+    const c2=catalog(x.role); const ids2=Object.keys(c2); const d2=ids2.filter(id=>qty(x,id)>=c2[id].goal).length;
+    html+=`<div class="row"><span>${esc(x.name)}${x.id===w.id?' (tú)':''}</span><span>${d2}/${ids2.length} logrados</span></div>`;
+  });
+  html+='</div>';
+  return html;
+}
+function vVentasAdmin(){
+  const sub=S.sub||'mozo';
+  let html=`<div class="pt">Ventas por mozo</div><div class="sub"><div class="st ${sub==='mozo'?'a':''}" data-sub="mozo">Mozos</div><div class="st ${sub!=='mozo'?'a':''}" data-sub="anf">Anfitrionas</div></div>`;
+  const role= sub==='mozo'?'mozo':'anfitriona';
+  const cat=catalog(role); const ids=Object.keys(cat);
+  html+=`<div class="sec">Productos y metas (${role==='mozo'?'mozos':'anfitrionas'})</div><div class="card" style="padding:4px 12px">`;
+  if(ids.length===0) html+='<div class="ps">Aún no hay productos.</div>';
+  ids.forEach(id=>html+=`<div class="row"><span>${esc(cat[id].name)}</span><span style="display:flex;gap:8px;align-items:center">Meta: ${cat[id].goal}<button class="gho sm" data-editgoal="${id}" data-role="${role}">Editar</button><button class="dan sm" data-delprod="${id}" data-role="${role}">✕</button></span></div>`);
+  html+=`</div><button class="btn gho" id="add-prod-btn" data-role="${role}" style="margin-top:8px">+ Agregar producto</button>`;
+  html+=`<div class="sec">Comparativo de ${role==='mozo'?'mozos':'anfitrionas'} (toca para ver y editar su avance)</div><div class="card" style="padding:4px 12px">`;
+  const ws=S.data.waiters.filter(w=>w.role===role);
+  if(ws.length===0) html+='<div class="ps">No hay usuarios en este rol.</div>';
+  ws.forEach(w=>{
+    const d=ids.filter(id=>qty(w,id)>=cat[id].goal).length;
+    html+=`<div class="row" data-toggleuser="${w.id}" style="cursor:pointer"><span>${esc(w.name)}</span><span>${d}/${ids.length} logrados ${S.expandedWaiter===w.id?'▴':'▾'}</span></div>`;
+    if(S.expandedWaiter===w.id){
+      ids.forEach(id=>{
+        const g=cat[id].goal, q=qty(w,id);
+        html+=`<div class="prow" style="padding-left:6px"><div class="pname"><span>${esc(cat[id].name)}</span><b>${q} / ${g}</b></div>
+        <div class="bt"><div class="bf" style="width:${Math.min(100,pct(q,g))}%"></div></div>
+        <div class="gn"><span></span><span class="pctrl"><button class="qbtn" data-admindec="${w.id}:${id}">–</button><input class="pin" data-adminpid="${w.id}:${id}" type="number" value="${q}"><button class="qbtn" data-admininc="${w.id}:${id}">+</button></span></div></div>`;
+      });
+      html+=`<div style="padding:10px 4px"><button class="btn gho sm" data-editprofile="${w.id}" style="width:auto">Editar perfil de ${esc(w.name)}</button></div>`;
+    }
+  });
+  html+='</div>';
+  return html;
+}
+
+// ===== CONFIGURACIÓN =====
+function vConfig(){
+  const isAdmin=S.session.role==='admin';
+  if(!isAdmin){
+    const w=curW();
+    return `<div class="pt">Configuración</div><p class="ps">Tu perfil</p>
+    <div class="card"><div class="row"><span>Nombre</span><b>${esc(w.name)}</b></div><div class="row"><span>Código</span><b>${esc(w.code)}</b></div><div class="row"><span>Rol</span><b>${w.role}</b></div></div>
+    <button class="btn pri" id="edit-my-profile" style="margin-top:10px">Editar mi perfil</button>`;
+  }
+  let html=`<div class="pt">Configuración</div><p class="ps">Días del mes, perfiles creados y por crear</p>`;
+  html+=`<div class="sec">Días del mes</div><div class="card"><div class="field" style="margin-bottom:10px"><label class="ps" style="display:block;margin-bottom:6px">Días que tiene el mes</label><input id="md-in" type="number" value="${S.data.monthDays}"></div>
+  <label class="ps" style="display:block;margin-bottom:6px">Día actual</label><input id="cd-in" type="number" value="${S.data.currentDay}">
+  <button class="btn pri" id="save-days" style="margin-top:12px">Guardar</button></div>`;
+  html+=`<div class="sec">Perfiles creados</div><div class="card" style="padding:4px 12px">`;
+  S.data.waiters.forEach(w=>{
+    html+=`<div class="row"><span>${esc(w.name)} <span class="tag2">${w.role} · ${esc(w.code)}</span></span><span style="display:flex;gap:6px"><button class="gho sm" data-editprofile="${w.id}">Editar</button><button class="dan sm" data-deluser="${w.id}">✕</button></span></div>`;
+  });
+  html+='</div><button class="btn gho" id="add-user" style="margin-top:8px">+ Crear nuevo perfil (mozo/anfitriona)</button>';
+  html+=`<div class="sec">Administradores</div><div class="card" style="padding:4px 12px">`;
+  S.data.admins.forEach(a=>{
+    html+=`<div class="row"><span>${esc(a.name)} <span class="tag2">admin · ${esc(a.code)}</span></span><span style="display:flex;gap:6px"><button class="gho sm" data-editadmin="${a.id}">Editar</button><button class="dan sm" data-deladmin="${a.id}">✕</button></span></div>`;
+  });
+  html+='</div><button class="btn gho" id="add-admin-btn" style="margin-top:8px">+ Crear nuevo administrador</button>';
+  return html;
+}
+
+// ===== META GENERAL =====
+function vGeneral(){
+  const isAdmin=S.session.role==='admin';
+  const cat=S.data.mozoProducts; const ids=Object.keys(cat);
+  let html=`<div class="pt">Meta general de la tienda</div><p class="ps">Avance propio de tienda — distinto del avance por mozo</p>`;
+  html+=`<div class="card"><label class="ps" style="display:block;margin-bottom:6px">Total de pollos vendidos por la tienda (apoyo)</label>${isAdmin?`<input id="gtp-in" type="number" value="${S.data.generalTotalPollos}">`:`<div class="pt" style="margin:0">${S.data.generalTotalPollos}</div>`}</div>`;
+  ids.forEach(id=>{
+    const goal=S.data.generalGoals[id]||(cat[id].goal*S.data.waiters.filter(w=>w.role==='mozo').length);
+    const mozoSum=S.data.waiters.filter(w=>w.role==='mozo').reduce((a,w)=>a+qty(w,id),0);
+    const sold=S.data.generalProgress[id]!=null?S.data.generalProgress[id]:mozoSum;
+    html+=`<div class="prow"><div class="pname"><span>${esc(cat[id].name)}</span><b>${sold} / ${goal}</b></div><div class="bt"><div class="bf" style="width:${Math.min(100,pct(sold,goal))}%"></div></div>
+    <div class="gn"><span>Suma de mozos: ${mozoSum}</span></div>
+    ${isAdmin?`<div style="display:flex;gap:8px;margin-top:6px"><input class="ggoal-in" data-gid="${id}" type="number" value="${goal}" placeholder="Meta"><input class="gprog-in" data-gpid="${id}" type="number" value="${sold}" placeholder="Avance"></div>`:''}</div>`;
+  });
+  if(isAdmin) html+=`<button class="btn pri" id="save-ggoals" style="margin-top:10px">Guardar metas y avance de tienda</button>`;
+  // general pcts
+  const p=id2=>{const g=S.data.generalProgress[id2]; return g!=null?g:S.data.waiters.filter(w=>w.role==='mozo').reduce((a,w)=>a+qty(w,id2),0)};
+  let cuartoId,bebId,tragId,hhId;
+  Object.keys(cat).forEach(id=>{ if(cat[id].name==='1/4 Pollo')cuartoId=id; if(cat[id].name==='Bebidas')bebId=id; if(cat[id].name==='Tragos')tragId=id; if(cat[id].name==='Happy Hour')hhId=id; });
+  const tp=S.data.generalTotalPollos||0;
+  const gc=tp>0?((p(cuartoId)/4)/tp*100):0, gb=tp>0?(p(bebId)/tp*100):0, gt=tp>0?(((p(hhId)/2)+p(tragId))/tp*100):0;
+  html+=`<div class="sec">Porcentajes generales de tienda</div>`;
+  [['Cuartos',gc],['Bebidas',gb],['Tragos',gt]].forEach(([n,v])=>{
+    html+=`<div class="card"><div class="ch"><span class="l">${n}</span><span class="p">${v.toFixed(1)}%</span></div><div class="bt"><div class="bf b" style="width:${Math.min(100,v)}%"></div></div></div>`;
+  });
+  return html;
+}
+
+// ===== PROYECTADO =====
+function vProyectado(){
+  const isAdmin=S.session.role==='admin';
+  const dd=S.data.projected.dailyTarget, da=S.data.projected.dailyActual;
+  const nd=S.data.monthDays;
+  let expected=0, actual=0;
+  for(let d=1;d<=nd;d++){ const t=dd[d]!=null?dd[d]:(S.data.projected.total/nd); if(d<=S.data.currentDay) expected+=t; actual+=(da[d]||0); }
+  const diff=actual-expected;
+  let html=`<div class="pt">Proyectado del mes</div><p class="ps">Avance real frente a lo proyectado, día ${S.data.currentDay} de ${nd}</p>`;
+  html+=`<div class="card"><div class="ch"><span class="l">Meta total del mes</span>${isAdmin?`<input id="proj-total" type="number" value="${S.data.projected.total}" style="width:120px;text-align:right">`:`<span class="p">${money(S.data.projected.total)}</span>`}</div>
+  <div class="gn"><span>Esperado a la fecha: <strong>${money(expected)}</strong></span><span>Acumulado real: <strong>${money(actual)}</strong></span></div>
+  <div style="margin-top:10px;font-family:Fraunces,serif;font-size:22px;font-weight:600;color:${diff>=0?'var(--gr)':'var(--rd)'}">${diff>=0?'+':''}${money(diff)}</div>
+  <div class="ps" style="margin:2px 0 0">${diff>=0?'Vamos por encima de lo proyectado':'Vamos por debajo de lo proyectado'}</div></div>`;
+  if(isAdmin) html+=`<button class="btn pri" id="save-proj-total" style="margin-bottom:14px">Guardar meta total</button>`;
+  html+=`<div class="sec">Venta proyectada y real por día</div><div class="card" style="padding:4px 12px">`;
+  for(let d=1;d<=nd;d++){
+    const t=dd[d]!=null?dd[d]:Math.round(S.data.projected.total/nd);
+    const a=da[d]||0; const dif=a-t;
+    html+=`<div class="row"><span style="width:52px">Día ${d}</span>`;
+    if(isAdmin){
+      html+=`<span class="pctrl" style="flex:1"><input data-daytarget="${d}" type="number" value="${t}" title="Meta" style="width:80px"><input data-dayactual="${d}" type="number" value="${a}" title="Real" style="width:80px"></span>`;
+    } else {
+      html+=`<span>Meta ${t}</span><span>Real ${a}</span>`;
+    }
+    html+=`<span style="width:56px;text-align:right;color:${dif>=0?'var(--gr)':'var(--rd)'}">${dif>=0?'+':''}${dif}</span></div>`;
+  }
+  html+='</div>';
+  if(isAdmin) html+=`<button class="btn gho" id="save-days-vals">Guardar valores diarios</button>`;
+  return html;
+}
+
+// ===== TAREAS =====
+function vTareas(){
+  const isAdmin=S.session.role==='admin';
+  let html=`<div class="pt">Tareas</div><p class="ps">${isAdmin?'Asigna tareas con fecha límite':'Marca lo que ya completaste, con una observación de quién lo hizo'}</p>`;
+  if(isAdmin) html+=`<button class="btn pri" id="add-task" style="margin-bottom:12px">+ Nueva tarea</button>`;
+  html+='<div class="card" style="padding:4px 12px">';
+  if(S.data.tasks.length===0) html+='<div class="ps">Sin tareas por ahora.</div>';
+  const now=today();
+  S.data.tasks.forEach(t=>{
+    const dl=new Date(t.deadline+'T23:59:59');
+    const diffD=Math.ceil((dl-now)/86400000);
+    const late=diffD<0;
+    const w=!isAdmin?curW():null;
+    const done= !isAdmin && t.doneBy && t.doneBy[w.id];
+    html+=`<div class="prow"><div class="row" style="border:none;padding:8px 0">`;
+    if(!isAdmin) html+=`<div class="chk ${done?'d':''}" data-donetask="${t.id}">${done?'✓':''}</div>`;
+    html+=`<div style="flex:1;margin:0 10px"><div>${esc(t.name)}</div><span class="tag2 ${late?'late':''}">${late?'Vencida hace '+Math.abs(diffD)+'d':'Faltan '+diffD+'d'} · ${t.deadline}</span></div>`;
+    if(isAdmin) html+=`<button class="dan sm" data-deltask="${t.id}">✕</button>`;
+    html+='</div>';
+    if(!isAdmin && done && done.note) html+=`<div class="ps" style="margin:0 0 8px 32px">Obs: ${esc(done.note)}</div>`;
+    if(isAdmin){
+      const entries=Object.entries(t.doneBy||{}).filter(([,v])=>v&&v.done);
+      if(entries.length===0){ html+='<div class="ps" style="margin-left:4px">Nadie la ha marcado como hecha aún.</div>'; }
+      else entries.forEach(([wid,v])=>{
+        const wn=S.data.waiters.find(x=>x.id===wid); if(!wn)return;
+        html+=`<div class="ps" style="margin:0 0 6px 4px">✓ ${esc(wn.name)}${v.note?' — "'+esc(v.note)+'"':''}</div>`;
+      });
+    }
+    html+='</div>';
+  });
+  html+='</div>';
+  return html;
+}
+
+// ===== CRONOGRAMAS =====
+function vCronogramas(){
+  const isAdmin=S.session.role==='admin';
+  let html=`<div class="pt">Cronogramas</div><p class="ps">Reuniones y capacitaciones programadas</p>`;
+  if(isAdmin) html+=`<button class="btn pri" id="add-event" style="margin-bottom:12px">+ Nuevo evento</button>`;
+  html+='<div class="card" style="padding:4px 12px">';
+  const evs=[...S.data.events].sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
+  if(evs.length===0) html+='<div class="ps">Sin eventos programados.</div>';
+  evs.forEach(ev=>{
+    html+=`<div class="row" style="align-items:flex-start"><div style="flex:1"><div><b>${esc(ev.title)}</b></div><div class="ps" style="margin:2px 0">${esc(ev.desc||'')}</div><span class="tag2">${ev.date} · ${ev.time}</span></div>${isAdmin?`<button class="dan sm" data-delevent="${ev.id}">✕</button>`:''}</div>`;
+  });
+  html+='</div>';
+  return html;
+}
+
+const TABS=[{id:'ventas',i:'🍗',l:'Ventas'},{id:'general',i:'🏪',l:'Meta gral'},{id:'proyectado',i:'📈',l:'Proyectado'},{id:'tareas',i:'✅',l:'Tareas'},{id:'cronos',i:'🗓️',l:'Cronos'},{id:'config',i:'⚙️',l:'Config'}];
+
+function render(){
+  const root=document.getElementById('root'); let html='';
+  if(!S.session){ html=vLogin(); root.innerHTML=html; wLogin(root); return; }
+  const isAdmin=S.session.role==='admin';
+  const name=isAdmin?curAdmin().name:curW().name;
+  html+=`<div class="top"><div class="brand">Saz<span>ó</span>n</div><div style="display:flex;gap:8px;align-items:center"><span class="tag">${esc(name)}</span><button class="logout" id="lo">↩</button></div></div>`;
+  html+='<div class="content">';
+  if(S.tab==='ventas') html+= isAdmin?vVentasAdmin():vVentasUser();
+  else if(S.tab==='general') html+=vGeneral();
+  else if(S.tab==='proyectado') html+=vProyectado();
+  else if(S.tab==='tareas') html+=vTareas();
+  else if(S.tab==='cronos') html+=vCronogramas();
+  else if(S.tab==='config') html+=vConfig();
+  html+='</div>';
+  html+=`<div class="nav">${TABS.map(t=>`<button class="nb ${S.tab===t.id?'a':''}" data-tab="${t.id}"><span class="i">${t.i}</span>${t.l}</button>`).join('')}</div>`;
+  if(S.toast) html+=`<div style="position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--gr);color:#fff;padding:10px 16px;border-radius:9px;font-size:13px;z-index:60">${esc(S.toast)}</div>`;
+  html+=renderM();
+  root.innerHTML=html;
+  wire(root);
+}
+
+function wire(root){
+  const lo=root.querySelector('#lo'); if(lo) lo.addEventListener('click',()=>{S.session=null;S.sub=null;render()});
+  root.querySelectorAll('.nb').forEach(b=>b.addEventListener('click',()=>{S.tab=b.dataset.tab;S.sub=null;render()}));
+  root.querySelectorAll('.st').forEach(b=>b.addEventListener('click',()=>{S.sub=b.dataset.sub;render()}));
+  const isAdmin=S.session.role==='admin';
+
+  // VENTAS USER
+  if(!isAdmin){
+    const tp=root.querySelector('#tp-input'); if(tp) tp.addEventListener('change',()=>{curW().totalPollos=parseFloat(tp.value)||0;save();render()});
+    root.querySelectorAll('[data-inc]').forEach(b=>b.addEventListener('click',()=>{const w=curW();w.products=w.products||{};w.products[b.dataset.inc]=(w.products[b.dataset.inc]||0)+1;save();render()}));
+    root.querySelectorAll('[data-dec]').forEach(b=>b.addEventListener('click',()=>{const w=curW();w.products=w.products||{};w.products[b.dataset.dec]=Math.max(0,(w.products[b.dataset.dec]||0)-1);save();render()}));
+    root.querySelectorAll('.pin').forEach(inp=>inp.addEventListener('change',()=>{const w=curW();w.products=w.products||{};w.products[inp.dataset.pid]=parseFloat(inp.value)||0;save();render()}));
+    const emp=root.querySelector('#edit-my-profile'); if(emp) emp.addEventListener('click',()=>{openM('edit-profile',{id:curW().id})});
+  }
+
+  // VENTAS ADMIN + CONFIG (comparten manejadores de usuarios/perfiles)
+  if(isAdmin && (S.tab==='ventas'||S.tab==='config')){
+    const sd=root.querySelector('#save-days'); if(sd) sd.addEventListener('click',()=>{S.data.monthDays=parseInt(root.querySelector('#md-in').value)||30;S.data.currentDay=parseInt(root.querySelector('#cd-in').value)||1;save();toast('Guardado.')});
+    root.querySelectorAll('[data-editgoal]').forEach(b=>b.addEventListener('click',()=>{openM('edit-goal',{role:b.dataset.role,id:b.dataset.editgoal})}));
+    root.querySelectorAll('[data-delprod]').forEach(b=>b.addEventListener('click',()=>{
+      const role=b.dataset.role==='mozo'?'mozo':'anfitriona'; const cat=catalog(role); delete cat[b.dataset.delprod]; save(); render();
+    }));
+    const apb=root.querySelector('#add-prod-btn'); if(apb) apb.addEventListener('click',()=>{openM('add-prod',{role:apb.dataset.role==='mozo'?'mozo':'anfitriona'})});
+    root.querySelectorAll('[data-toggleuser]').forEach(b=>b.addEventListener('click',()=>{S.expandedWaiter = S.expandedWaiter===b.dataset.toggleuser ? null : b.dataset.toggleuser; render();}));
+    root.querySelectorAll('[data-admininc]').forEach(b=>b.addEventListener('click',()=>{
+      const [wid,id]=b.dataset.admininc.split(':'); const w=S.data.waiters.find(x=>x.id===wid); w.products=w.products||{}; w.products[id]=(w.products[id]||0)+1; save(); render();
+    }));
+    root.querySelectorAll('[data-admindec]').forEach(b=>b.addEventListener('click',()=>{
+      const [wid,id]=b.dataset.admindec.split(':'); const w=S.data.waiters.find(x=>x.id===wid); w.products=w.products||{}; w.products[id]=Math.max(0,(w.products[id]||0)-1); save(); render();
+    }));
+    root.querySelectorAll('.pin[data-adminpid]').forEach(inp=>inp.addEventListener('change',()=>{
+      const [wid,id]=inp.dataset.adminpid.split(':'); const w=S.data.waiters.find(x=>x.id===wid); w.products=w.products||{}; w.products[id]=parseFloat(inp.value)||0; save(); render();
+    }));
+    root.querySelectorAll('[data-editprofile]').forEach(b=>b.addEventListener('click',()=>{openM('edit-profile',{id:b.dataset.editprofile})}));
+    root.querySelectorAll('[data-deluser]').forEach(b=>b.addEventListener('click',()=>{
+      if(S.data.waiters.length<=1){toast('Debe quedar al menos un usuario.');return}
+      S.data.waiters=S.data.waiters.filter(w=>w.id!==b.dataset.deluser); save(); render(); toast('Eliminado.');
+    }));
+    const au=root.querySelector('#add-user'); if(au) au.addEventListener('click',()=>{openM('add-user')});
+    root.querySelectorAll('[data-editadmin]').forEach(b=>b.addEventListener('click',()=>{openM('edit-admin',{id:b.dataset.editadmin})}));
+    root.querySelectorAll('[data-deladmin]').forEach(b=>b.addEventListener('click',()=>{
+      if(S.data.admins.length<=1){toast('Debe quedar al menos un administrador.');return}
+      S.data.admins=S.data.admins.filter(a=>a.id!==b.dataset.deladmin); save(); render(); toast('Administrador eliminado.');
+    }));
+    const aab=root.querySelector('#add-admin-btn'); if(aab) aab.addEventListener('click',()=>{openM('add-admin')});
+  }
+
+  // GENERAL
+  if(S.tab==='general' && isAdmin){
+    const gtp=root.querySelector('#gtp-in'); if(gtp) gtp.addEventListener('change',()=>{S.data.generalTotalPollos=parseFloat(gtp.value)||0;save();render()});
+    const sg=root.querySelector('#save-ggoals'); if(sg) sg.addEventListener('click',()=>{
+      root.querySelectorAll('.ggoal-in').forEach(inp=>{S.data.generalGoals[inp.dataset.gid]=parseFloat(inp.value)||0});
+      root.querySelectorAll('.gprog-in').forEach(inp=>{S.data.generalProgress[inp.dataset.gpid]=parseFloat(inp.value)||0});
+      save(); render(); toast('Metas y avance guardados.');
+    });
+  }
+
+  // PROYECTADO
+  if(S.tab==='proyectado' && isAdmin){
+    const pt=root.querySelector('#proj-total'); const spt=root.querySelector('#save-proj-total');
+    if(spt) spt.addEventListener('click',()=>{S.data.projected.total=parseFloat(pt.value)||0;save();render();toast('Guardado.')});
+    const sdv=root.querySelector('#save-days-vals'); if(sdv) sdv.addEventListener('click',()=>{
+      root.querySelectorAll('[data-daytarget]').forEach(inp=>{S.data.projected.dailyTarget[inp.dataset.daytarget]=parseFloat(inp.value)||0});
+      root.querySelectorAll('[data-dayactual]').forEach(inp=>{S.data.projected.dailyActual[inp.dataset.dayactual]=parseFloat(inp.value)||0});
+      save(); render(); toast('Valores diarios guardados.');
+    });
+  }
+
+  // TAREAS
+  if(S.tab==='tareas'){
+    if(isAdmin){
+      const at=root.querySelector('#add-task'); if(at) at.addEventListener('click',()=>{openM('add-task')});
+      root.querySelectorAll('[data-deltask]').forEach(b=>b.addEventListener('click',()=>{S.data.tasks=S.data.tasks.filter(t=>t.id!==b.dataset.deltask);save();render()}));
+    } else {
+      root.querySelectorAll('[data-donetask]').forEach(b=>b.addEventListener('click',()=>{
+        const t=S.data.tasks.find(t=>t.id===b.dataset.donetask); const w=curW(); t.doneBy=t.doneBy||{};
+        if(t.doneBy[w.id]&&t.doneBy[w.id].done){ t.doneBy[w.id]={done:false}; save(); render(); }
+        else { openM('task-note',{taskId:t.id}); }
+      }));
+    }
+  }
+
+  // CRONOGRAMAS
+  if(S.tab==='cronos' && isAdmin){
+    const ae=root.querySelector('#add-event'); if(ae) ae.addEventListener('click',()=>{openM('add-event')});
+    root.querySelectorAll('[data-delevent]').forEach(b=>b.addEventListener('click',()=>{S.data.events=S.data.events.filter(e=>e.id!==b.dataset.delevent);save();render()}));
+  }
+
+  // MODAL SAVE (reemplaza los prompt())
+  const mc=root.querySelector('#m-cancel'); if(mc) mc.addEventListener('click',closeM);
+  const mbd=root.querySelector('#mbd'); if(mbd) mbd.addEventListener('click',e=>{if(e.target===mbd)closeM()});
+  const ms=root.querySelector('#m-save'); if(ms) ms.addEventListener('click',()=>{
+    const m=S.modal; if(!m) return;
+    const v=id=>{const el=root.querySelector('#'+id); return el?el.value.trim():''};
+    if(m.type==='add-prod'){
+      const n=v('mf-name'); if(!n){toast('Ingresa un nombre.');return}
+      const g=parseFloat(v('mf-goal'))||0;
+      catalog(m.data.role)[(m.data.role==='mozo'?'mp':'a')+Date.now()]={name:n,goal:g};
+      save(); closeM(); toast('Producto agregado.');
+    } else if(m.type==='edit-goal'){
+      catalog(m.data.role)[m.data.id].goal=parseFloat(v('mf-goal'))||0;
+      save(); closeM(); toast('Meta actualizada.');
+    } else if(m.type==='add-user'){
+      const n=v('mf-name'), c=v('mf-code'), role=v('mf-role')||'mozo';
+      if(!n||!c){toast('Completa nombre y código.');return}
+      if(codeTaken(c)){toast('Ese código ya está en uso.');return}
+      S.data.waiters.push({id:'w'+Date.now(),name:n,code:c,role,products:{},totalPollos:0});
+      save(); closeM(); toast('Usuario agregado.');
+    } else if(m.type==='edit-profile'){
+      const w=S.data.waiters.find(x=>x.id===m.data.id); if(!w)return;
+      const n=v('mf-name'), c=v('mf-code'); const role=root.querySelector('#mf-role')?v('mf-role'):w.role;
+      if(!n||!c){toast('Completa nombre y código.');return}
+      if(c!==w.code && codeTaken(c)){toast('Ese código ya está en uso.');return}
+      w.name=n; w.code=c; w.role=role;
+      save(); closeM(); toast('Perfil actualizado.');
+    } else if(m.type==='add-admin'){
+      const n=v('mf-name'), c=v('mf-code');
+      if(!n||!c){toast('Completa nombre y código.');return}
+      if(codeTaken(c)){toast('Ese código ya está en uso.');return}
+      S.data.admins.push({id:'ad'+Date.now(),name:n,code:c});
+      save(); closeM(); toast('Administrador agregado.');
+    } else if(m.type==='edit-admin'){
+      const a=S.data.admins.find(x=>x.id===m.data.id); if(!a)return;
+      const n=v('mf-name'), c=v('mf-code');
+      if(!n||!c){toast('Completa nombre y código.');return}
+      if(c!==a.code && codeTaken(c)){toast('Ese código ya está en uso.');return}
+      a.name=n; a.code=c;
+      save(); closeM(); toast('Administrador actualizado.');
+    } else if(m.type==='add-task'){
+      const n=v('mf-name'), d=v('mf-date');
+      if(!n||!d){toast('Completa nombre y fecha.');return}
+      S.data.tasks.push({id:'tk'+Date.now(),name:n,deadline:d,doneBy:{}});
+      save(); closeM(); toast('Tarea agregada.');
+    } else if(m.type==='add-event'){
+      const n=v('mf-name'), d=v('mf-date'), t=v('mf-time'), de=v('mf-desc');
+      if(!n||!d){toast('Completa título y fecha.');return}
+      S.data.events.push({id:'ev'+Date.now(),title:n,date:d,time:t||'',desc:de||''});
+      save(); closeM(); toast('Evento agregado.');
+    } else if(m.type==='task-note'){
+      const note=v('mf-note'); const t=S.data.tasks.find(t=>t.id===m.data.taskId); const w=curW();
+      if(t){ t.doneBy=t.doneBy||{}; t.doneBy[w.id]={done:true,note,ts:Date.now()}; save(); }
+      closeM(); toast('Tarea marcada como hecha.');
+    }
+  });
+}
+render();
+})();
+</script></body></html>
