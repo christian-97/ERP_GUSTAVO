@@ -6,55 +6,610 @@
 <title>Sazón — Sistema de Ventas</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root{--wd:#241C15;--wm:#362A1E;--wl:#4A3A29;--pp:#F4ECDD;--pd:#B7A488;--gd:#C98A3B;--gl:#E8B95B;--gr:#6B8F5A;--rd:#B5573F;--bl:#6B87A8}
-*{box-sizing:border-box}body{margin:0;background:var(--wd);color:var(--pp);font-family:Inter,sans-serif;min-height:100vh}
-h1,h3,.fr{font-family:Fraunces,serif}
-.app{max-width:480px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column}
-.top{padding:16px 18px;border-bottom:1px solid var(--wl);display:flex;justify-content:space-between;align-items:center}
-.brand{font-size:19px;font-weight:600}.brand span{color:var(--gl)}
-.tag{font-size:12px;color:var(--pd)}
-.logout{background:none;border:1px solid var(--wl);color:var(--pd);width:30px;height:30px;border-radius:8px;cursor:pointer}
-.content{flex:1;padding:16px 16px 90px;overflow-y:auto}
-.pt{font-size:21px;font-weight:600;margin:2px 0 3px}.ps{font-size:12px;color:var(--pd);margin:0 0 14px}
-.card{background:var(--wm);border:1px solid var(--wl);border-radius:14px;padding:16px;margin-bottom:12px}
-.ch{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
-.ch .l{font-size:12px;color:var(--pd)}.ch .p{font-family:Fraunces,serif;font-size:21px;font-weight:600;color:var(--gl)}
-.bt{height:8px;border-radius:5px;background:var(--wd);overflow:hidden;border:1px solid var(--wl)}
-.bf{height:100%;background:linear-gradient(90deg,var(--gd),var(--gl));border-radius:5px;transition:width .3s ease}
-.bf.b{background:linear-gradient(90deg,var(--bl),#8FA9C4)}.bf.r{background:var(--rd)}
-.gn{display:flex;justify-content:space-between;margin-top:7px;font-size:12px;color:var(--pd)}.gn strong{color:var(--pp)}
-.sec{font-size:14px;font-weight:600;margin:18px 0 8px}
-input[type=text],input[type=number],input[type=password],input[type=date],input[type=time]{width:100%;background:var(--wd);border:1px solid var(--wl);color:var(--pp);padding:11px 13px;border-radius:9px;font-size:15px;font-family:Inter}
-input:focus{border-color:var(--gd);outline:none}
-.btn{border:none;border-radius:9px;padding:12px 16px;font-size:13px;font-weight:600;cursor:pointer;width:100%;transition:background .2s}
-.pri{background:var(--gd);color:#241C15}.gho{background:transparent;color:var(--pd);border:1px solid var(--wl)}.dan{background:var(--rd);color:#fff}
-.sm{padding:8px 10px;font-size:12px;width:auto}
-.row{display:flex;justify-content:space-between;align-items:center;padding:10px 2px;border-bottom:1px solid var(--wl);font-size:13px}
-.row:last-child{border-bottom:none}
-.prow{padding:11px 2px;border-bottom:1px solid var(--wl)}.prow:last-child{border-bottom:none}
-.pname{display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px}.pname b{font-weight:600}
-.pctrl{display:flex;gap:6px;align-items:center}
-.pctrl input{width:70px;text-align:center;padding:8px}
-.qbtn{background:var(--wd);border:1px solid var(--wl);color:var(--pp);width:34px;height:34px;border-radius:8px;font-size:16px;cursor:pointer}
-.stats{display:flex;gap:8px;margin-bottom:14px}.sb{flex:1;background:var(--wm);border:1px solid var(--wl);border-radius:12px;padding:12px}
-.sb .n{font-family:Fraunces,serif;font-size:18px;font-weight:600;color:var(--gl)}.sb .l{font-size:10px;color:var(--pd);margin-top:2px}
-.sub{display:flex;gap:6px;margin-bottom:12px}.st{flex:1;text-align:center;padding:8px 4px;border-radius:8px;border:1px solid var(--wl);background:var(--wm);font-size:11px;color:var(--pd);cursor:pointer}
-.st.a{background:var(--gd);border-color:var(--gd);color:#241C15;font-weight:600}
-.nav{position:sticky;bottom:0;background:var(--wm);border-top:1px solid var(--wl);display:flex;padding:7px 6px calc(7px + env(safe-area-inset-bottom));gap:3px;z-index:40}
-.nb{flex:1;background:none;border:none;color:var(--pd);font-size:10px;padding:6px 1px;border-radius:9px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px}
-.nb.a{color:var(--gl);background:var(--wd)}.nb .i{font-size:16px}
-.chk{width:20px;height:20px;border-radius:6px;border:1.5px solid var(--wl);background:var(--wd);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:12px;flex-shrink:0}
-.chk.d{background:var(--gr);border-color:var(--gr);color:#fff}
-.tag2{font-size:10px;padding:2px 7px;border-radius:10px;background:var(--wd);color:var(--pd)}
-.tag2.late{background:var(--rd);color:#fff}
-.mbd{position:fixed;inset:0;background:rgba(0,0,0,.65);display:flex;align-items:flex-end;justify-content:center;z-index:80}
-.mbox{background:var(--wm);border:1px solid var(--wl);border-radius:18px 18px 0 0;padding:20px 18px calc(20px + env(safe-area-inset-bottom));width:100%;max-width:480px;max-height:85vh;overflow-y:auto}
-.mbox h3{margin:0 0 14px;font-size:18px}
-.field{margin-bottom:12px}
-select{width:100%;background:var(--wd);border:1px solid var(--wl);color:var(--pp);padding:11px 13px;border-radius:9px;font-size:15px;font-family:Inter}
-::selection{background:var(--gd);color:#241C15}
-.spinner{display:inline-block;width:14px;height:14px;border:2px solid var(--pd);border-top-color:var(--gl);border-radius:50%;animation:spin 0.8s linear infinite;margin-right:6px}
-@keyframes spin{to{transform:rotate(360deg)}}
+:root {
+  --bg-page: #16110D;
+  --bg-surface: #221A14;
+  --bg-surface-elevated: #2C221A;
+  --bg-surface-sunken: #1A130E;
+  --border-subtle: #382A20;
+  --border-focus: #D97724;
+  
+  --text-main: #F7EFE4;
+  --text-secondary: #C4B19C;
+  --text-muted: #877462;
+  
+  --amber-pri: #D97724;
+  --amber-pri-hover: #E88530;
+  --amber-gold: #E2A038;
+  --green-ok: #5E8A49;
+  --green-ok-bg: #23341C;
+  --rust-red: #BF4C36;
+  --rust-red-bg: #381D17;
+  
+  --radius-xs: 6px;
+  --radius-sm: 9px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-full: 9999px;
+  
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-ui: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --shadow-sm: 0 2px 6px rgba(0,0,0,0.35);
+  --shadow-md: 0 6px 18px rgba(0,0,0,0.45);
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-page);
+  color: var(--text-main);
+  font-family: var(--font-ui);
+  font-size: 14px;
+  line-height: 1.45;
+  min-height: 100vh;
+}
+
+h1, h2, h3, .fr {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+
+/* Shell de la aplicación */
+.app {
+  max-width: 520px;
+  margin: 0 auto;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-page);
+  position: relative;
+}
+
+/* Header superior */
+.top {
+  padding: 14px 18px;
+  background-color: var(--bg-surface);
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.brand {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-main);
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+}
+.brand span {
+  color: var(--amber-gold);
+}
+.brand .brand-sub {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-left: 8px;
+}
+
+.tag {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: var(--bg-surface-sunken);
+  border: 1px solid var(--border-subtle);
+  padding: 5px 10px;
+  border-radius: var(--radius-full);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.tag::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--green-ok);
+}
+
+.logout {
+  background: var(--bg-surface-sunken);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-muted);
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.logout:active {
+  background: var(--border-subtle);
+  color: var(--text-main);
+}
+
+/* Contenedor de contenido */
+.content {
+  flex: 1;
+  padding: 18px 16px 105px;
+  overflow-y: auto;
+}
+
+/* Títulos de sección */
+.pt {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--text-main);
+  margin: 0 0 4px;
+  line-height: 1.25;
+}
+.ps {
+  font-size: 12.5px;
+  color: var(--text-muted);
+  margin: 0 0 16px;
+}
+.sec {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+  margin: 22px 0 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.sec::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border-subtle);
+}
+
+/* Tarjetas y superficies */
+.card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow-sm);
+}
+
+/* Indicadores y métricas */
+.stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.sb {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.sb .n {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--amber-gold);
+  line-height: 1.1;
+}
+.sb .l {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  margin-top: 4px;
+  font-weight: 500;
+}
+
+/* Barras de progreso */
+.bt {
+  height: 8px;
+  border-radius: var(--radius-full);
+  background-color: var(--bg-surface-sunken);
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.04);
+}
+.bf {
+  height: 100%;
+  background: linear-gradient(90deg, var(--amber-pri), var(--amber-gold));
+  border-radius: var(--radius-full);
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.bf.r {
+  background: var(--rust-red);
+}
+.bf.g {
+  background: var(--green-ok);
+}
+
+/* Filas de elementos */
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 11px 4px;
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: 13.5px;
+}
+.row:last-child {
+  border-bottom: none;
+}
+
+/* Filas operativas de productos para venta */
+.prow {
+  padding: 13px 4px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.prow:last-child {
+  border-bottom: none;
+}
+.pname {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+.pname b {
+  font-weight: 600;
+  color: var(--text-main);
+  font-size: 14.5px;
+}
+.gn {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.gn strong {
+  color: var(--text-main);
+}
+
+/* Controles táctiles de incremento / decremento (Ventas) */
+.pctrl {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+}
+.qbtn {
+  background-color: var(--bg-surface-sunken);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-main);
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  font-size: 20px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
+  transition: transform 0.08s ease, background 0.15s ease;
+}
+.qbtn:active {
+  transform: scale(0.92);
+  background-color: var(--amber-pri);
+  color: #1A120B;
+  border-color: var(--amber-pri);
+}
+[data-inc] {
+  background-color: #2F2116;
+  border-color: #523926;
+  color: var(--amber-gold);
+}
+[data-inc]:active {
+  background-color: var(--amber-pri);
+  color: #1A120B;
+}
+
+/* Formularios e inputs */
+.field {
+  margin-bottom: 14px;
+}
+.field label {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: 5px;
+}
+input[type=text], input[type=number], input[type=password], input[type=date], input[type=time], select {
+  width: 100%;
+  background: var(--bg-surface-sunken);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-main);
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 14.5px;
+  font-family: var(--font-ui);
+  transition: border-color 0.15s ease;
+}
+input:focus, select:focus {
+  border-color: var(--border-focus);
+  outline: none;
+  background-color: #1F1711;
+}
+
+/* Botones */
+.btn {
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 13px 18px;
+  font-size: 13.5px;
+  font-weight: 600;
+  font-family: var(--font-ui);
+  cursor: pointer;
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: background 0.15s ease, transform 0.08s ease;
+  touch-action: manipulation;
+}
+.btn:active {
+  transform: scale(0.98);
+}
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+.pri {
+  background-color: var(--amber-pri);
+  color: #16100B;
+}
+.pri:hover {
+  background-color: var(--amber-pri-hover);
+}
+.gho {
+  background-color: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-subtle);
+}
+.gho:hover {
+  background-color: var(--bg-surface-elevated);
+  color: var(--text-main);
+}
+.dan {
+  background-color: var(--rust-red-bg);
+  color: #F8B4A8;
+  border: 1px solid rgba(191, 76, 54, 0.4);
+}
+.dan:hover {
+  background-color: var(--rust-red);
+  color: #fff;
+}
+.sm {
+  padding: 7px 11px;
+  font-size: 12px;
+  width: auto;
+  border-radius: var(--radius-xs);
+}
+
+/* Segmented Control (Mozos / Anfitrionas) */
+.sub {
+  display: flex;
+  background-color: var(--bg-surface-sunken);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 3px;
+  gap: 4px;
+  margin-bottom: 16px;
+}
+.st {
+  flex: 1;
+  text-align: center;
+  padding: 8px 12px;
+  border-radius: var(--radius-xs);
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+.st.a {
+  background-color: var(--amber-pri);
+  color: #18110B;
+  font-weight: 600;
+  box-shadow: var(--shadow-sm);
+}
+
+/* Barra de navegación inferior */
+.nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  max-width: 520px;
+  margin: 0 auto;
+  background-color: var(--bg-surface);
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  padding: 6px 4px calc(6px + env(safe-area-inset-bottom));
+  gap: 2px;
+  z-index: 70;
+  box-shadow: 0 -4px 14px rgba(0,0,0,0.35);
+}
+.nb {
+  flex: 1;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 500;
+  font-family: var(--font-ui);
+  padding: 7px 1px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  transition: color 0.15s ease, background 0.15s ease;
+  user-select: none;
+}
+.nb.a {
+  color: var(--amber-gold);
+  background-color: var(--bg-surface-sunken);
+  font-weight: 600;
+}
+.nb .i {
+  font-size: 17px;
+  line-height: 1;
+}
+
+/* Badges y etiquetas */
+.tag2 {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 3px 8px;
+  border-radius: var(--radius-xs);
+  background-color: var(--bg-surface-sunken);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+}
+.tag2.late {
+  background-color: var(--rust-red-bg);
+  border-color: rgba(191, 76, 54, 0.4);
+  color: #F8B4A8;
+}
+
+/* Checkbox táctil para tareas */
+.chk {
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-xs);
+  border: 1.5px solid var(--border-subtle);
+  background-color: var(--bg-surface-sunken);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 700;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+}
+.chk.d {
+  background-color: var(--green-ok);
+  border-color: var(--green-ok);
+  color: #fff;
+}
+
+/* Sistema de Modales */
+.mbd {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 7, 5, 0.75);
+  backdrop-filter: blur(3px);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 100;
+  padding-bottom: 0;
+}
+.mbox {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  padding: 22px 20px calc(24px + env(safe-area-inset-bottom));
+  width: 100%;
+  max-width: 520px;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: 0 -8px 24px rgba(0,0,0,0.5);
+  animation: slideUp 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+.mbox h3 {
+  margin: 0 0 16px;
+  font-size: 19px;
+  color: var(--text-main);
+}
+
+/* Spinner y animaciones */
+.spinner {
+  display: inline-block;
+  width: 15px;
+  height: 15px;
+  border: 2px solid rgba(22, 16, 11, 0.3);
+  border-top-color: #16100B;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  margin-right: 6px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Mensaje Toast */
+.sazon-toast {
+  position: fixed;
+  bottom: 84px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--bg-surface-elevated);
+  color: var(--text-main);
+  border: 1px solid var(--border-subtle);
+  padding: 10px 18px;
+  border-radius: var(--radius-full);
+  font-size: 13px;
+  font-weight: 500;
+  z-index: 90;
+  box-shadow: var(--shadow-md);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+.sazon-toast.err {
+  background-color: var(--rust-red-bg);
+  border-color: rgba(191, 76, 54, 0.5);
+  color: #F8B4A8;
+}
+
+/* Estados vacíos amigables */
+.empty-box {
+  padding: 24px 16px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+.empty-box .empty-icon {
+  font-size: 26px;
+  margin-bottom: 6px;
+  opacity: 0.7;
+}
+
+/* Selección */
+::selection { background: var(--amber-pri); color: #16100B; }
 </style></head><body><div id="root" class="app"></div>
 <script>
 window.onerror=function(m,s,l,c,e){try{document.getElementById('root').insertAdjacentHTML('beforeend','<div style="position:fixed;bottom:80px;left:12px;right:12px;background:#B5573F;color:#fff;padding:10px 14px;border-radius:9px;font-size:12px;z-index:99">Error: '+m+' (línea '+l+')</div>')}catch(e){}};
@@ -247,13 +802,21 @@ function goalPace(goal){
 // 1. LOGIN
 function vLogin(){
   return `
-  <div class="top"><div class="brand">Saz<span>ó</span>n</div><div class="tag">Sistema de ventas</div></div>
-  <div class="content" style="padding-top:60px">
-    <h1 class="fr" style="font-size:32px;line-height:1.1;margin-bottom:8px">Ingresa tu código</h1>
-    <p class="ps" style="margin-bottom:24px">Mozo, anfitriona o administrador</p>
-    <div class="field"><input id="lc" type="password" placeholder="••••" style="margin-bottom:8px"></div>
-    <div id="le" style="color:var(--rd);font-size:12px;min-height:16px;margin-bottom:12px"></div>
-    <button class="btn pri" id="lb">Ingresar al sistema</button>
+  <div class="top">
+    <div class="brand">Saz<span>ó</span>n<span class="brand-sub">Restaurante</span></div>
+    <div class="tag">Acceso Operativo</div>
+  </div>
+  <div class="content" style="padding-top:40px;display:flex;flex-direction:column;justify-content:center">
+    <div class="card" style="padding:26px 20px">
+      <h1 class="fr" style="font-size:26px;line-height:1.2;margin-bottom:6px">Ingreso de Personal</h1>
+      <p class="ps" style="margin-bottom:20px">Ingresa tu código asignado (mozo, anfitriona o administración)</p>
+      <div class="field">
+        <label>Código de empleado</label>
+        <input id="lc" type="password" placeholder="••••" style="font-size:22px;letter-spacing:4px;text-align:center;padding:13px">
+      </div>
+      <div id="le" style="color:var(--rust-red);font-size:12.5px;min-height:18px;margin-bottom:14px;font-weight:500"></div>
+      <button class="btn pri" id="lb" style="padding:14px;font-size:14.5px">Ingresar al sistema</button>
+    </div>
   </div>`;
 }
 
@@ -284,27 +847,48 @@ function vVentasUser(){
   const done = prods.filter(p => qtyForWorkerProduct(w.id, p.id) >= goalForProduct(p.id, w.id)).length;
   const pollos = totalPollosForWorker(w.id);
 
-  let html = `<div class="pt">Ventas — ${esc(w.name)}</div><p class="ps">Actualiza tus ventas directamente a Cloudflare D1</p>`;
-  html += `<div class="stats"><div class="sb"><div class="n">${done}/${prods.length}</div><div class="l">Metas logradas</div></div><div class="sb"><div class="n">${pollos.toFixed(1)}</div><div class="l">Pollos enteros (apoyo)</div></div></div>`;
+  let html = `<div class="pt">Ventas — ${esc(w.name)}</div><p class="ps">Registro operativo de comandas y productos rentables</p>`;
+  html += `<div class="stats"><div class="sb"><div class="n">${done}/${prods.length}</div><div class="l">Metas cumplidas</div></div><div class="sb"><div class="n">${pollos.toFixed(1)}</div><div class="l">Pollos enteros (apoyo)</div></div></div>`;
 
-  html += `<div class="sec">Tus productos rentables</div><div class="card" style="padding:2px 12px">`;
-  prods.forEach(prod => {
-    const g = goalForProduct(prod.id, w.id);
-    const q = qtyForWorkerProduct(w.id, prod.id);
-    const pace = goalPace(g);
-    const p = pct(q, g);
-    html += `<div class="prow"><div class="pname"><span>${esc(prod.name)} <small style="color:var(--pd);font-weight:normal">(S/ ${prod.price})</small></span><b>${q} / ${g}</b></div>
-    <div class="bt"><div class="bf ${q >= pace ? '' : 'r'}" style="width:${Math.min(100, p)}%"></div></div>
-    <div class="gn"><span>Ritmo hoy: ${pace}</span>
-    <span class="pctrl"><button class="qbtn" data-dec="${prod.id}">–</button><span style="min-width:32px;text-align:center;font-weight:600">${q}</span><button class="qbtn" data-inc="${prod.id}">+</button></span></div></div>`;
-  });
+  html += `<div class="sec">Tus productos rentables</div><div class="card" style="padding:2px 14px">`;
+  if(prods.length === 0){
+    html += '<div class="empty-box"><div class="empty-icon">🍽️</div>No hay productos asignados a tu rol actualmente.</div>';
+  } else {
+    prods.forEach(prod => {
+      const g = goalForProduct(prod.id, w.id);
+      const q = qtyForWorkerProduct(w.id, prod.id);
+      const pace = goalPace(g);
+      const p = pct(q, g);
+      const isPace = q >= pace;
+      html += `<div class="prow">
+        <div class="pname">
+          <span><b>${esc(prod.name)}</b> <span class="tag2" style="margin-left:4px">S/ ${prod.price.toFixed(2)}</span></span>
+          <span style="font-weight:700;font-size:14.5px;color:var(--text-main)">${q} <span style="font-size:12px;font-weight:400;color:var(--text-muted)">/ ${g} u.</span></span>
+        </div>
+        <div class="bt"><div class="bf ${isPace ? '' : 'r'}" style="width:${Math.min(100, p)}%"></div></div>
+        <div class="gn">
+          <span>Ritmo hoy: <strong style="color:${isPace ? 'var(--green-ok)' : 'var(--rust-red)'}">${pace}</strong></span>
+          <span class="pctrl">
+            <button class="qbtn" data-dec="${prod.id}" title="Restar 1" aria-label="Restar">–</button>
+            <span style="min-width:34px;text-align:center;font-weight:700;font-size:16px">${q}</span>
+            <button class="qbtn" data-inc="${prod.id}" title="Sumar 1" aria-label="Sumar">+</button>
+          </span>
+        </div>
+      </div>`;
+    });
+  }
   html += '</div>';
 
-  html += `<div class="sec">Avance del equipo</div><div class="card" style="padding:4px 12px">`;
-  S.users.filter(x => x.role === w.role && x.active).forEach(x => {
-    const d2 = prods.filter(p => qtyForWorkerProduct(x.id, p.id) >= goalForProduct(p.id, x.id)).length;
-    html += `<div class="row"><span>${esc(x.name)}${x.id === w.id ? ' (tú)' : ''}</span><span>${d2}/${prods.length} logrados</span></div>`;
-  });
+  html += `<div class="sec">Avance del equipo de sala</div><div class="card" style="padding:4px 14px">`;
+  const team = S.users.filter(x => x.role === w.role && x.active);
+  if(team.length === 0){
+    html += '<div class="empty-box"><div class="empty-icon">👥</div>No hay colaboradores activos en este rol.</div>';
+  } else {
+    team.forEach(x => {
+      const d2 = prods.filter(p => qtyForWorkerProduct(x.id, p.id) >= goalForProduct(p.id, x.id)).length;
+      html += `<div class="row"><span>${esc(x.name)}${x.id === w.id ? ' <strong style="color:var(--amber-gold)">(tú)</strong>' : ''}</span><span class="tag2">${d2}/${prods.length} metas</span></div>`;
+    });
+  }
   html += '</div>';
   return html;
 }
@@ -314,35 +898,61 @@ function vVentasAdmin(){
   const sub = S.sub || 'mozo';
   const role = sub === 'mozo' ? 'MOZO' : 'ANFITRIONA';
   let html = `<div class="pt">Ventas por personal</div>
+  <div class="ps">Supervisión y ajuste de comandas en sala</div>
   <div class="sub"><div class="st ${sub==='mozo'?'a':''}" data-sub="mozo">Mozos</div><div class="st ${sub!=='mozo'?'a':''}" data-sub="anf">Anfitrionas</div></div>`;
 
   const prods = catalog(role);
-  html += `<div class="sec">Catálogo de productos (${role === 'MOZO' ? 'mozos' : 'anfitrionas'})</div><div class="card" style="padding:4px 12px">`;
-  if(prods.length === 0) html += '<div class="ps">Aún no hay productos en esta categoría.</div>';
-  prods.forEach(p => {
-    const g = goalForProduct(p.id, null);
-    html += `<div class="row"><span>${esc(p.name)} <span class="tag2">S/ ${p.price} · Meta: ${g}</span></span>
-    <span style="display:flex;gap:6px"><button class="gho sm" data-editgoal="${p.id}" data-role="${role}">Meta</button><button class="dan sm" data-delprod="${p.id}">✕</button></span></div>`;
-  });
-  html += `</div><button class="btn gho" id="add-prod-btn" data-role="${role}" style="margin-top:8px">+ Agregar producto</button>`;
+  html += `<div class="sec">Catálogo (${role === 'MOZO' ? 'mozos' : 'anfitrionas'})</div><div class="card" style="padding:4px 14px">`;
+  if(prods.length === 0) {
+    html += '<div class="empty-box"><div class="empty-icon">📋</div>No hay productos registrados en esta categoría.</div>';
+  } else {
+    prods.forEach(p => {
+      const g = goalForProduct(p.id, null);
+      html += `<div class="row">
+        <span><b>${esc(p.name)}</b> <span class="tag2" style="margin-left:4px">S/ ${p.price.toFixed(2)} · Meta: ${g}</span></span>
+        <span style="display:flex;gap:6px">
+          <button class="gho sm" data-editgoal="${p.id}" data-role="${role}">Meta</button>
+          <button class="dan sm" data-delprod="${p.id}">✕</button>
+        </span>
+      </div>`;
+    });
+  }
+  html += `</div><button class="btn gho" id="add-prod-btn" data-role="${role}" style="margin-top:6px">+ Agregar nuevo producto</button>`;
 
-  html += `<div class="sec">Comparativo y registro de ventas por colaborador</div><div class="card" style="padding:4px 12px">`;
+  html += `<div class="sec">Registro individual por colaborador</div><div class="card" style="padding:4px 14px">`;
   const ws = S.users.filter(u => u.role === role && u.active);
-  if(ws.length === 0) html += '<div class="ps">No hay colaboradores activos en este rol.</div>';
-  ws.forEach(w => {
-    const d = prods.filter(p => qtyForWorkerProduct(w.id, p.id) >= goalForProduct(p.id, w.id)).length;
-    html += `<div class="row" data-toggleuser="${w.id}" style="cursor:pointer"><span>${esc(w.name)}</span><span>${d}/${prods.length} logrados ${S.expandedWaiter===w.id?'▴':'▾'}</span></div>`;
-    if(S.expandedWaiter === w.id){
-      prods.forEach(p => {
-        const g = goalForProduct(p.id, w.id);
-        const q = qtyForWorkerProduct(w.id, p.id);
-        html += `<div class="prow" style="padding-left:6px"><div class="pname"><span>${esc(p.name)}</span><b>${q} / ${g}</b></div>
-        <div class="bt"><div class="bf" style="width:${Math.min(100, pct(q, g))}%"></div></div>
-        <div class="gn"><span></span><span class="pctrl"><button class="qbtn" data-admindec="${w.id}:${p.id}">–</button><span style="min-width:32px;text-align:center;font-weight:600">${q}</span><button class="qbtn" data-admininc="${w.id}:${p.id}">+</button></span></div></div>`;
-      });
-      html += `<div style="padding:10px 4px"><button class="btn gho sm" data-editprofile="${w.id}" style="width:auto">Editar perfil de ${esc(w.name)}</button></div>`;
-    }
-  });
+  if(ws.length === 0) {
+    html += '<div class="empty-box"><div class="empty-icon">👥</div>No hay colaboradores activos en este rol.</div>';
+  } else {
+    ws.forEach(w => {
+      const d = prods.filter(p => qtyForWorkerProduct(w.id, p.id) >= goalForProduct(p.id, w.id)).length;
+      html += `<div class="row" data-toggleuser="${w.id}" style="cursor:pointer;padding:12px 4px">
+        <span><b>${esc(w.name)}</b></span>
+        <span style="display:flex;align-items:center;gap:8px">
+          <span class="tag2">${d}/${prods.length} logrados</span>
+          <span style="color:var(--text-muted);font-size:12px">${S.expandedWaiter===w.id?'▴':'▾'}</span>
+        </span>
+      </div>`;
+      if(S.expandedWaiter === w.id){
+        prods.forEach(p => {
+          const g = goalForProduct(p.id, w.id);
+          const q = qtyForWorkerProduct(w.id, p.id);
+          html += `<div class="prow" style="padding-left:10px;background:var(--bg-surface-sunken);border-radius:var(--radius-sm);margin:4px 0;padding:10px 12px">
+            <div class="pname"><span>${esc(p.name)}</span><b>${q} / ${g}</b></div>
+            <div class="bt"><div class="bf" style="width:${Math.min(100, pct(q, g))}%"></div></div>
+            <div class="gn"><span></span>
+              <span class="pctrl">
+                <button class="qbtn" data-admindec="${w.id}:${p.id}">–</button>
+                <span style="min-width:32px;text-align:center;font-weight:700;font-size:15px">${q}</span>
+                <button class="qbtn" data-admininc="${w.id}:${p.id}">+</button>
+              </span>
+            </div>
+          </div>`;
+        });
+        html += `<div style="padding:10px 4px 4px"><button class="btn gho sm" data-editprofile="${w.id}" style="width:auto">Editar datos de ${esc(w.name)}</button></div>`;
+      }
+    });
+  }
   html += '</div>';
   return html;
 }
@@ -353,19 +963,33 @@ function vGeneral(){
   const prods = S.products.filter(p => p.active);
   const kpis = (S.kpi && S.kpi.kpis) || { monthlySales: 0, totalTarget: 350000, targetCompliance: 0 };
 
-  let html = `<div class="pt">Meta general de la tienda</div><p class="ps">Consolidado en tiempo real desde Cloudflare D1</p>`;
-  html += `<div class="card"><div class="ch"><span class="l">Venta total acumulada del mes</span><span class="p">${money(kpis.monthlySales)}</span></div>
-  <div class="bt"><div class="bf" style="width:${Math.min(100, kpis.targetCompliance)}%"></div></div>
-  <div class="gn"><span>Meta del mes: <strong>${money(kpis.totalTarget)}</strong></span><span>Cumplimiento: <strong>${kpis.targetCompliance}%</strong></span></div></div>`;
+  let html = `<div class="pt">Meta general de la tienda</div><p class="ps">Consolidado mensual del restaurante en tiempo real</p>`;
+  html += `<div class="card" style="padding:20px 18px">
+    <div class="ch" style="margin-bottom:12px">
+      <span class="l" style="font-size:13px;font-weight:500">Venta total acumulada del mes</span>
+      <span class="p" style="font-size:26px;color:var(--amber-gold)">${money(kpis.monthlySales)}</span>
+    </div>
+    <div class="bt" style="height:10px"><div class="bf" style="width:${Math.min(100, kpis.targetCompliance)}%"></div></div>
+    <div class="gn" style="margin-top:12px">
+      <span>Meta del mes: <strong>${money(kpis.totalTarget)}</strong></span>
+      <span>Cumplimiento: <strong style="color:var(--amber-gold);font-size:14px">${kpis.targetCompliance}%</strong></span>
+    </div>
+  </div>`;
 
-  html += `<div class="sec">Avance consolidado por producto</div><div class="card" style="padding:4px 12px">`;
-  prods.forEach(p => {
-    const goal = goalForProduct(p.id, null);
-    const totalSold = S.sales.filter(s => s.product_id === p.id).reduce((acc, s) => acc + (s.quantity || 0), 0);
-    html += `<div class="prow"><div class="pname"><span>${esc(p.name)}</span><b>${totalSold} / ${goal}</b></div>
-    <div class="bt"><div class="bf" style="width:${Math.min(100, pct(totalSold, goal))}%"></div></div>
-    ${isAdmin ? `<div style="margin-top:6px;display:flex;justify-content:flex-end"><button class="gho sm" data-editgoal="${p.id}" data-role="GENERAL">Editar meta tienda</button></div>` : ''}</div>`;
-  });
+  html += `<div class="sec">Avance consolidado por producto</div><div class="card" style="padding:4px 14px">`;
+  if(prods.length === 0){
+    html += '<div class="empty-box"><div class="empty-icon">🍽️</div>No hay productos registrados.</div>';
+  } else {
+    prods.forEach(p => {
+      const goal = goalForProduct(p.id, null);
+      const totalSold = S.sales.filter(s => s.product_id === p.id).reduce((acc, s) => acc + (s.quantity || 0), 0);
+      html += `<div class="prow">
+        <div class="pname"><span><b>${esc(p.name)}</b></span><b>${totalSold} / ${goal} u.</b></div>
+        <div class="bt"><div class="bf" style="width:${Math.min(100, pct(totalSold, goal))}%"></div></div>
+        ${isAdmin ? `<div style="margin-top:8px;display:flex;justify-content:flex-end"><button class="gho sm" data-editgoal="${p.id}" data-role="GENERAL">Editar meta tienda</button></div>` : ''}
+      </div>`;
+    });
+  }
   html += '</div>';
   return html;
 }
@@ -375,13 +999,31 @@ function vProyectado(){
   const isAdmin = S.session.role === 'ADMIN';
   const kpis = (S.kpi && S.kpi.kpis) || { monthlySales: 0, totalTarget: 350000, expectedPace: 0, diffAgainstExpected: 0, projectedClosing: 0 };
   const diff = kpis.diffAgainstExpected || 0;
+  const isPositive = diff >= 0;
 
-  let html = `<div class="pt">Proyectado del mes</div><p class="ps">Día ${S.currentDay} de ${S.monthDays}</p>`;
-  html += `<div class="card"><div class="ch"><span class="l">Meta mensual</span><span class="p">${money(kpis.totalTarget)}</span></div>
-  <div class="gn"><span>Esperado a hoy: <strong>${money(kpis.expectedPace)}</strong></span><span>Real acumulado: <strong>${money(kpis.monthlySales)}</strong></span></div>
-  <div style="margin-top:10px;font-family:Fraunces,serif;font-size:22px;font-weight:600;color:${diff>=0?'var(--gr)':'var(--rd)'}">${diff>=0?'+':''}${money(diff)}</div>
-  <div class="ps" style="margin:2px 0 0">${diff>=0?'Vamos por encima del ritmo proyectado':'Vamos por debajo del ritmo proyectado'}</div>
-  <div style="margin-top:8px;font-size:12px;color:var(--pd)">Cierre estimado al fin de mes: <strong style="color:var(--pp)">${money(kpis.projectedClosing)}</strong></div></div>`;
+  let html = `<div class="pt">Proyección financiera</div><p class="ps">Día ${S.currentDay} de ${S.monthDays} del mes en curso</p>`;
+  html += `<div class="card" style="padding:20px 18px">
+    <div class="ch" style="margin-bottom:12px">
+      <span class="l" style="font-size:13px">Meta mensual del restaurante</span>
+      <span class="p" style="font-size:24px">${money(kpis.totalTarget)}</span>
+    </div>
+    <div class="gn" style="margin-bottom:14px">
+      <span>Esperado a la fecha: <strong>${money(kpis.expectedPace)}</strong></span>
+      <span>Real acumulado: <strong>${money(kpis.monthlySales)}</strong></span>
+    </div>
+    <div style="padding:14px;background:var(--bg-surface-sunken);border-radius:var(--radius-sm);border:1px solid var(--border-subtle)">
+      <div style="font-size:12px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em">Diferencia respecto al ritmo esperado</div>
+      <div style="font-family:var(--font-display);font-size:24px;font-weight:700;color:${isPositive ? 'var(--green-ok)' : 'var(--rust-red)'};margin-top:2px">
+        ${isPositive ? '+' : ''}${money(diff)}
+      </div>
+      <div style="font-size:12px;color:${isPositive ? 'var(--green-ok)' : 'var(--rust-red)'};margin-top:2px">
+        ${isPositive ? '✓ Operación por encima del ritmo proyectado' : '⚠ Operación por debajo del ritmo proyectado'}
+      </div>
+    </div>
+    <div style="margin-top:14px;font-size:13px;color:var(--text-muted)">
+      Cierre estimado al fin de mes: <strong style="color:var(--text-main);font-size:15px">${money(kpis.projectedClosing)}</strong>
+    </div>
+  </div>`;
 
   if(isAdmin){
     html += `<button class="btn pri" id="edit-store-target" style="margin-bottom:14px">Modificar meta mensual de tienda</button>`;
@@ -392,41 +1034,45 @@ function vProyectado(){
 // 6. TAREAS (task_assignees)
 function vTareas(){
   const isAdmin = S.session.role === 'ADMIN';
-  let html = `<div class="pt">Tareas</div><p class="ps">${isAdmin ? 'Asigna tareas al equipo' : 'Marca tus tareas completadas con una observación'}</p>`;
-  if(isAdmin) html += `<button class="btn pri" id="add-task" style="margin-bottom:12px">+ Nueva tarea</button>`;
-  html += '<div class="card" style="padding:4px 12px">';
-  if(S.tasks.length === 0) html += '<div class="ps">Sin tareas asignadas por el momento.</div>';
+  let html = `<div class="pt">Tareas operativas</div><p class="ps">${isAdmin ? 'Asigna y supervisa las tareas del restaurante' : 'Toca la casilla para marcar tus tareas completadas'}</p>`;
+  if(isAdmin) html += `<button class="btn pri" id="add-task" style="margin-bottom:14px">+ Nueva tarea para el equipo</button>`;
+  html += '<div class="card" style="padding:4px 14px">';
+  if(S.tasks.length === 0){
+    html += '<div class="empty-box"><div class="empty-icon">✅</div>No hay tareas pendientes en este momento.</div>';
+  } else {
+    const now = today();
+    S.tasks.forEach(t => {
+      const dl = new Date(t.deadline + 'T23:59:59');
+      const diffD = Math.ceil((dl - now) / 86400000);
+      const late = diffD < 0;
+      const myAssign = (t.assignees || []).find(a => a.user_id === S.session.id);
+      const done = myAssign && myAssign.completed;
 
-  const now = today();
-  S.tasks.forEach(t => {
-    const dl = new Date(t.deadline + 'T23:59:59');
-    const diffD = Math.ceil((dl - now) / 86400000);
-    const late = diffD < 0;
-    const myAssign = (t.assignees || []).find(a => a.user_id === S.session.id);
-    const done = myAssign && myAssign.completed;
+      html += `<div class="prow"><div class="row" style="border:none;padding:8px 0;align-items:center">`;
+      if(!isAdmin) html += `<div class="chk ${done ? 'd' : ''}" data-donetask="${t.id}" title="Marcar tarea">${done ? '✓' : ''}</div>`;
+      html += `<div style="flex:1;margin:0 12px">
+        <div style="font-weight:600;font-size:14px">${esc(t.name)}</div>
+        <div style="margin-top:4px"><span class="tag2 ${late ? 'late' : ''}">${late ? 'Vencida hace ' + Math.abs(diffD) + 'd' : 'Plazo: ' + diffD + 'd'} · ${t.deadline}</span></div>
+      </div>`;
+      html += '</div>';
 
-    html += `<div class="prow"><div class="row" style="border:none;padding:8px 0">`;
-    if(!isAdmin) html += `<div class="chk ${done ? 'd' : ''}" data-donetask="${t.id}">${done ? '✓' : ''}</div>`;
-    html += `<div style="flex:1;margin:0 10px"><div>${esc(t.name)}</div>
-    <span class="tag2 ${late ? 'late' : ''}">${late ? 'Vencida hace ' + Math.abs(diffD) + 'd' : 'Faltan ' + diffD + 'd'} · ${t.deadline}</span></div>`;
-    html += '</div>';
-
-    if(myAssign && myAssign.observations){
-      html += `<div class="ps" style="margin:0 0 6px 32px">Tu obs: "${esc(myAssign.observations)}"</div>`;
-    }
-
-    if(isAdmin){
-      const completedList = (t.assignees || []).filter(a => a.completed);
-      if(completedList.length === 0){
-        html += '<div class="ps" style="margin-left:4px">Nadie la ha marcado como hecha aún.</div>';
-      } else {
-        completedList.forEach(c => {
-          html += `<div class="ps" style="margin:0 0 4px 4px;color:var(--gr)">✓ ${esc(c.worker_name)}${c.observations ? ' — "' + esc(c.observations) + '"' : ''}</div>`;
-        });
+      if(myAssign && myAssign.observations){
+        html += `<div class="ps" style="margin:2px 0 8px 38px;color:var(--text-secondary);font-style:italic">Nota: "${esc(myAssign.observations)}"</div>`;
       }
-    }
-    html += '</div>';
-  });
+
+      if(isAdmin){
+        const completedList = (t.assignees || []).filter(a => a.completed);
+        if(completedList.length === 0){
+          html += '<div class="ps" style="margin-left:4px;color:var(--text-muted)">Pendiente: Ningún mozo la ha completado aún.</div>';
+        } else {
+          completedList.forEach(c => {
+            html += `<div class="ps" style="margin:0 0 4px 4px;color:var(--green-ok);font-weight:500">✓ ${esc(c.worker_name)}${c.observations ? ' — "' + esc(c.observations) + '"' : ''}</div>`;
+          });
+        }
+      }
+      html += '</div>';
+    });
+  }
   html += '</div>';
   return html;
 }
@@ -434,17 +1080,23 @@ function vTareas(){
 // 7. CRONOGRAMAS Y EVENTOS
 function vCronogramas(){
   const isAdmin = S.session.role === 'ADMIN';
-  let html = `<div class="pt">Cronogramas</div><p class="ps">Reuniones y capacitaciones sincronizadas en D1</p>`;
-  if(isAdmin) html += `<button class="btn pri" id="add-event" style="margin-bottom:12px">+ Nuevo evento</button>`;
-  html += '<div class="card" style="padding:4px 12px">';
-  if(S.events.length === 0) html += '<div class="ps">Sin eventos programados.</div>';
-
-  S.events.forEach(ev => {
-    html += `<div class="row" style="align-items:flex-start"><div style="flex:1"><div><b>${esc(ev.title)}</b></div>
-    <div class="ps" style="margin:2px 0">${esc(ev.description || '')}</div>
-    <span class="tag2">${ev.event_date} · ${ev.event_time}</span></div>
-    ${isAdmin ? `<button class="dan sm" data-delevent="${ev.id}">✕</button>` : ''}</div>`;
-  });
+  let html = `<div class="pt">Cronogramas</div><p class="ps">Reuniones de turno, eventos y capacitaciones</p>`;
+  if(isAdmin) html += `<button class="btn pri" id="add-event" style="margin-bottom:14px">+ Programar nuevo evento</button>`;
+  html += '<div class="card" style="padding:4px 14px">';
+  if(S.events.length === 0){
+    html += '<div class="empty-box"><div class="empty-icon">🗓️</div>No hay eventos ni reuniones programadas.</div>';
+  } else {
+    S.events.forEach(ev => {
+      html += `<div class="row" style="align-items:flex-start;padding:12px 4px">
+        <div style="flex:1">
+          <div style="font-size:15px"><b>${esc(ev.title)}</b></div>
+          <div class="ps" style="margin:3px 0 6px">${esc(ev.description || 'Sin descripción adicional')}</div>
+          <span class="tag2">📅 ${ev.event_date} · ⏰ ${ev.event_time}</span>
+        </div>
+        ${isAdmin ? `<button class="dan sm" data-delevent="${ev.id}" title="Eliminar evento">✕</button>` : ''}
+      </div>`;
+    });
+  }
   html += '</div>';
   return html;
 }
@@ -452,35 +1104,54 @@ function vCronogramas(){
 // 8. CONFIGURACIÓN
 function vConfig(){
   const isAdmin = S.session.role === 'ADMIN';
-  let html = `<div class="pt">Configuración</div><p class="ps">${isAdmin ? 'Gestión de usuarios y sistema' : 'Tu perfil de colaborador'}</p>`;
+  let html = `<div class="pt">Configuración</div><p class="ps">${isAdmin ? 'Gestión administrativa de personal y sistema' : 'Perfil de usuario y conexión'}</p>`;
 
   if(!isAdmin){
     const u = S.session;
     return html + `
-    <div class="card"><div class="row"><span>Nombre</span><b>${esc(u.name)}</b></div>
-    <div class="row"><span>Código de empleado</span><b>${esc(u.code)}</b></div>
-    <div class="row"><span>Rol</span><b>${u.role}</b></div></div>
+    <div class="card" style="padding:6px 16px">
+      <div class="row"><span>Nombre</span><b>${esc(u.name)}</b></div>
+      <div class="row"><span>Código de acceso</span><b>${esc(u.code)}</b></div>
+      <div class="row"><span>Rol en restaurante</span><span class="tag2">${u.role}</span></div>
+    </div>
     <button class="btn pri" id="edit-my-profile" style="margin-top:10px">Editar mi perfil</button>
-    <div style="margin-top:20px;text-align:center"><button class="btn gho sm" id="cfg-endpoint">⚙️ Configurar Endpoint API</button></div>`;
+    <div style="margin-top:24px;text-align:center">
+      <button class="btn gho sm" id="cfg-endpoint">⚙️ Configurar Endpoint API</button>
+    </div>`;
   }
 
-  html += `<div class="sec">Colaboradores (Mozos y Anfitrionas)</div><div class="card" style="padding:4px 12px">`;
-  S.users.filter(u => u.role !== 'ADMIN').forEach(w => {
-    html += `<div class="row"><span>${esc(w.name)} <span class="tag2">${w.role} · ${esc(w.code)}</span></span>
-    <span style="display:flex;gap:6px"><button class="gho sm" data-editprofile="${w.id}">Editar</button></span></div>`;
-  });
-  html += `</div><button class="btn gho" id="add-user" style="margin-top:8px">+ Crear nuevo colaborador</button>`;
+  html += `<div class="sec">Personal de sala (Mozos y Anfitrionas)</div><div class="card" style="padding:4px 14px">`;
+  const nonAdmins = S.users.filter(u => u.role !== 'ADMIN');
+  if(nonAdmins.length === 0){
+    html += '<div class="empty-box"><div class="empty-icon">👥</div>No hay colaboradores registrados.</div>';
+  } else {
+    nonAdmins.forEach(w => {
+      html += `<div class="row">
+        <span><b>${esc(w.name)}</b> <span class="tag2" style="margin-left:6px">${w.role} · ${esc(w.code)}</span></span>
+        <button class="gho sm" data-editprofile="${w.id}">Editar</button>
+      </div>`;
+    });
+  }
+  html += `</div><button class="btn gho" id="add-user" style="margin-top:6px">+ Crear nuevo colaborador</button>`;
 
-  html += `<div class="sec">Administradores</div><div class="card" style="padding:4px 12px">`;
-  S.users.filter(u => u.role === 'ADMIN').forEach(a => {
-    html += `<div class="row"><span>${esc(a.name)} <span class="tag2">ADMIN · ${esc(a.code)}</span></span>
-    <button class="gho sm" data-editadmin="${a.id}">Editar</button></div>`;
+  html += `<div class="sec">Administradores del sistema</div><div class="card" style="padding:4px 14px">`;
+  const admins = S.users.filter(u => u.role === 'ADMIN');
+  admins.forEach(a => {
+    html += `<div class="row">
+      <span><b>${esc(a.name)}</b> <span class="tag2" style="margin-left:6px">ADMIN · ${esc(a.code)}</span></span>
+      <button class="gho sm" data-editadmin="${a.id}">Editar</button>
+    </div>`;
   });
-  html += `</div><button class="btn gho" id="add-admin-btn" style="margin-top:8px">+ Crear nuevo administrador</button>`;
+  html += `</div><button class="btn gho" id="add-admin-btn" style="margin-top:6px">+ Crear nuevo administrador</button>`;
 
-  html += `<div class="sec">Conexión con Cloudflare</div>
-  <div class="card"><div class="row"><span>API Endpoint</span><small style="color:var(--gl)">${esc(API_URL)}</small></div>
-  <button class="btn gho sm" id="cfg-endpoint" style="margin-top:10px">Cambiar URL del Worker</button></div>`;
+  html += `<div class="sec">Conexión con Cloudflare Worker</div>
+  <div class="card" style="padding:16px">
+    <div class="row" style="border:none;padding:0 0 10px">
+      <span>API Endpoint</span>
+      <small style="color:var(--amber-gold);font-family:monospace">${esc(API_URL)}</small>
+    </div>
+    <button class="btn gho sm" id="cfg-endpoint" style="margin-top:6px">Cambiar URL del Worker</button>
+  </div>`;
 
   return html;
 }
@@ -493,52 +1164,52 @@ function renderM(){
   let title = '', f = '';
   if(m.type === 'config-api'){
     title = 'Configuración de API Cloudflare';
-    f = `<div class="field"><label class="ps">URL del Worker sazon-api</label><input id="mf-api" type="text" value="${esc(API_URL)}"></div>`;
+    f = `<div class="field"><label>URL del Worker sazon-api</label><input id="mf-api" type="text" value="${esc(API_URL)}"></div>`;
   } else if(m.type === 'add-prod'){
     title = 'Nuevo producto (' + m.data.role + ')';
-    f = `<div class="field"><label class="ps">Nombre del producto</label><input id="mf-name" type="text"></div>
-    <div class="field"><label class="ps">Categoría</label><input id="mf-cat" type="text" placeholder="POLLOS, BEBIDAS..."></div>
-    <div class="field"><label class="ps">Precio (S/)</label><input id="mf-price" type="number" step="0.5" value="20"></div>`;
+    f = `<div class="field"><label>Nombre del producto</label><input id="mf-name" type="text" placeholder="Ej: 1/2 Pollo a la Brasa"></div>
+    <div class="field"><label>Categoría</label><input id="mf-cat" type="text" placeholder="POLLOS, BEBIDAS, PARRILLAS..."></div>
+    <div class="field"><label>Precio de venta (S/)</label><input id="mf-price" type="number" step="0.5" value="20"></div>`;
   } else if(m.type === 'edit-goal'){
     const prod = S.products.find(p => p.id === m.data.id);
     const currGoal = goalForProduct(m.data.id, null);
     title = 'Editar meta: ' + esc(prod ? prod.name : '');
-    f = `<div class="field"><label class="ps">Meta mensual de unidades</label><input id="mf-goal" type="number" value="${currGoal}"></div>`;
+    f = `<div class="field"><label>Meta mensual en unidades</label><input id="mf-goal" type="number" value="${currGoal}"></div>`;
   } else if(m.type === 'add-user'){
-    title = 'Nuevo usuario';
-    f = `<div class="field"><label class="ps">Nombre completo</label><input id="mf-name" type="text"></div>
-    <div class="field"><label class="ps">Código de empleado</label><input id="mf-code" type="text"></div>
-    <div class="field"><label class="ps">Rol</label><select id="mf-role"><option value="MOZO">Mozo</option><option value="ANFITRIONA">Anfitriona</option></select></div>`;
+    title = 'Nuevo usuario colaborador';
+    f = `<div class="field"><label>Nombre completo</label><input id="mf-name" type="text" placeholder="Ej: Juan Perez"></div>
+    <div class="field"><label>Código de empleado</label><input id="mf-code" type="text" placeholder="Ej: 1011"></div>
+    <div class="field"><label>Rol en restaurante</label><select id="mf-role"><option value="MOZO">Mozo</option><option value="ANFITRIONA">Anfitriona</option></select></div>`;
   } else if(m.type === 'add-admin'){
     title = 'Nuevo administrador';
-    f = `<div class="field"><label class="ps">Nombre</label><input id="mf-name" type="text"></div>
-    <div class="field"><label class="ps">Código</label><input id="mf-code" type="text"></div>`;
+    f = `<div class="field"><label>Nombre</label><input id="mf-name" type="text" placeholder="Ej: Administrador Turno"></div>
+    <div class="field"><label>Código de acceso</label><input id="mf-code" type="text" placeholder="Ej: 2581"></div>`;
   } else if(m.type === 'edit-profile'){
     const u = S.users.find(x => x.id === m.data.id) || S.session;
-    title = 'Editar: ' + esc(u.name);
-    f = `<div class="field"><label class="ps">Nombre</label><input id="mf-name" type="text" value="${esc(u.name)}"></div>
-    <div class="field"><label class="ps">Código</label><input id="mf-code" type="text" value="${esc(u.code)}"></div>`;
+    title = 'Editar datos: ' + esc(u.name);
+    f = `<div class="field"><label>Nombre</label><input id="mf-name" type="text" value="${esc(u.name)}"></div>
+    <div class="field"><label>Código de acceso</label><input id="mf-code" type="text" value="${esc(u.code)}"></div>`;
   } else if(m.type === 'add-task'){
-    title = 'Nueva tarea';
-    f = `<div class="field"><label class="ps">Nombre de la tarea</label><input id="mf-name" type="text"></div>
-    <div class="field"><label class="ps">Fecha límite</label><input id="mf-date" type="date"></div>`;
+    title = 'Nueva tarea operativa';
+    f = `<div class="field"><label>Descripción de la tarea</label><input id="mf-name" type="text" placeholder="Ej: Limpieza de estación 2"></div>
+    <div class="field"><label>Fecha límite</label><input id="mf-date" type="date"></div>`;
   } else if(m.type === 'add-event'){
     title = 'Nuevo evento o reunión';
-    f = `<div class="field"><label class="ps">Título</label><input id="mf-name" type="text"></div>
-    <div class="field"><label class="ps">Fecha</label><input id="mf-date" type="date"></div>
-    <div class="field"><label class="ps">Hora</label><input id="mf-time" type="time" value="10:00"></div>
-    <div class="field"><label class="ps">Descripción</label><input id="mf-desc" type="text"></div>`;
+    f = `<div class="field"><label>Título del evento</label><input id="mf-name" type="text" placeholder="Ej: Briefing de turno noche"></div>
+    <div class="field"><label>Fecha</label><input id="mf-date" type="date"></div>
+    <div class="field"><label>Hora</label><input id="mf-time" type="time" value="10:00"></div>
+    <div class="field"><label>Detalles</label><input id="mf-desc" type="text" placeholder="Observaciones o temas a tratar"></div>`;
   } else if(m.type === 'task-note'){
     title = 'Completar tarea';
-    f = `<div class="field"><label class="ps">Observación (opcional)</label><input id="mf-note" type="text" placeholder="Ej: Realizado junto a Jorge"></div>`;
+    f = `<div class="field"><label>Observación al completar (opcional)</label><input id="mf-note" type="text" placeholder="Ej: Realizado junto al equipo"></div>`;
   } else if(m.type === 'edit-store-target'){
     title = 'Meta financiera del mes';
     const curr = (S.kpi && S.kpi.kpis && S.kpi.kpis.totalTarget) || 350000;
-    f = `<div class="field"><label class="ps">Monto mensual proyectado (S/)</label><input id="mf-target" type="number" value="${curr}"></div>`;
+    f = `<div class="field"><label>Monto proyectado mensual (S/)</label><input id="mf-target" type="number" value="${curr}"></div>`;
   }
 
   return `<div class="mbd" id="mbd"><div class="mbox"><h3>${title}</h3>${f}
-  <button class="btn pri" id="m-save">Guardar</button>
+  <button class="btn pri" id="m-save" style="margin-top:6px">Guardar cambios</button>
   <div style="height:8px"></div>
   <button class="btn gho" id="m-cancel">Cancelar</button></div></div>`;
 }
@@ -561,9 +1232,13 @@ function render(){
     html = vLogin(); root.innerHTML = html; wLogin(root); return;
   }
   const name = S.session.name;
-  html += `<div class="top"><div class="brand">Saz<span>ó</span>n</div>
-  <div style="display:flex;gap:8px;align-items:center"><span class="tag">${esc(name)}</span>
-  <button class="logout" id="lo" title="Cerrar sesión">↩</button></div></div>`;
+  html += `<div class="top">
+    <div class="brand">Saz<span>ó</span>n<span class="brand-sub">${S.session.role === 'ADMIN' ? 'Admin' : 'Operativo'}</span></div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <span class="tag">${esc(name)}</span>
+      <button class="logout" id="lo" title="Cerrar sesión">↩</button>
+    </div>
+  </div>`;
 
   html += '<div class="content">';
   if(S.tab === 'ventas') html += S.session.role === 'ADMIN' ? vVentasAdmin() : vVentasUser();
@@ -575,7 +1250,10 @@ function render(){
   html += '</div>';
 
   html += `<div class="nav">${TABS.map(t => `<button class="nb ${S.tab===t.id?'a':''}" data-tab="${t.id}"><span class="i">${t.i}</span>${t.l}</button>`).join('')}</div>`;
-  if(S.toast) html += `<div style="position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--gr);color:#fff;padding:10px 16px;border-radius:9px;font-size:13px;z-index:60">${esc(S.toast)}</div>`;
+  if(S.toast) {
+    const isErr = S.toast.toLowerCase().startsWith('error') || S.toast.toLowerCase().startsWith('aviso');
+    html += `<div class="sazon-toast ${isErr ? 'err' : ''}">${esc(S.toast)}</div>`;
+  }
   html += renderM();
   root.innerHTML = html;
   wire(root);
