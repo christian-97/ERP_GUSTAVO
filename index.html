@@ -1,5 +1,8 @@
 <!DOCTYPE html>
 <html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>Sazón — Sistema de Ventas</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -62,6 +65,9 @@ window.onerror=function(m,s,l,c,e){try{document.getElementById('root').insertAdj
 // CONFIGURACIÓN PÚBLICA DEL CLIENTE (LOCAL / GITHUB PAGES)
 // ===================================================================
 const CONFIG_KEY = 'sazon_api_url';
+if (localStorage.getItem(CONFIG_KEY) && localStorage.getItem(CONFIG_KEY).includes('christian-97.workers.dev')) {
+  localStorage.removeItem(CONFIG_KEY);
+}
 const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 const DEFAULT_REMOTE_API = 'https://sazon-api.christhiangutierrezrosas.workers.dev';
 const API_URL = localStorage.getItem(CONFIG_KEY) || (isLocalhost ? window.location.origin : DEFAULT_REMOTE_API);
