@@ -1,6 +1,6 @@
 -- ========================================================
 -- SAZON - ESQUEMA DE BASE DE DATOS PARA CLOUDFLARE D1
--- Base de datos: sazon-db (2bb8896a-335f-4c9b-9233-dc16f24b92a3)
+-- Base de datos: sazon-db (2bb8986a-335f-4c9b-9233-dc16f24b92a3)
 -- ========================================================
 
 -- 1. USUARIOS
