@@ -662,6 +662,7 @@ const api = {
   async getProducts(all = false) { return this.request(`/api/products${all ? '?all=true' : ''}`); },
   async createProduct(p) { return this.request('/api/products', { method: 'POST', body: JSON.stringify(p) }); },
   async updateProduct(id, p) { return this.request(`/api/products/${id}`, { method: 'PUT', body: JSON.stringify(p) }); },
+  async deleteProduct(id) { return this.request(`/api/products/${id}`, { method: 'DELETE' }); },
   async getSales(params = {}) {
     const qs = new URLSearchParams(params).toString();
     return this.request(`/api/sales${qs ? '?' + qs : ''}`);
@@ -677,6 +678,8 @@ const api = {
   async createPromotion(p) { return this.request('/api/promotions', { method: 'POST', body: JSON.stringify(p) }); },
   async getTasks() { return this.request('/api/tasks'); },
   async createTask(t) { return this.request('/api/tasks', { method: 'POST', body: JSON.stringify(t) }); },
+  async updateTask(id, t) { return this.request(`/api/tasks/${id}`, { method: 'PUT', body: JSON.stringify(t) }); },
+  async deleteTask(id) { return this.request(`/api/tasks/${id}`, { method: 'DELETE' }); },
   async toggleTask(id, completed, observations) {
     return this.request(`/api/tasks/${id}`, {
       method: 'PUT',
@@ -773,9 +776,17 @@ function catalog(role){
 }
 
 function goalForProduct(productId, workerId){
-  const found = (S.goals.productGoals||[]).find(g => g.product_id === productId && (!workerId || g.worker_id === workerId));
+  let found;
+  if (workerId) {
+    // Look for a worker-specific goal first, then fall back to the store goal
+    found = (S.goals.productGoals||[]).find(g => g.product_id === productId && g.worker_id === workerId);
+    if (!found) found = (S.goals.productGoals||[]).find(g => g.product_id === productId && (g.worker_id === null || g.worker_id === undefined || g.worker_id === ''));
+  } else {
+    // Store-level goal: worker_id must be null/undefined
+    found = (S.goals.productGoals||[]).find(g => g.product_id === productId && (g.worker_id === null || g.worker_id === undefined || g.worker_id === ''));
+  }
   if (found) return found.target_quantity;
-  // Valores iniciales
+  // Default values
   const p = S.products.find(x => x.id === productId);
   return (p && p.name === '1/4 Pollo') ? 200 : 40;
 }
@@ -1054,6 +1065,7 @@ function vTareas(){
         <div style="font-weight:600;font-size:14px">${esc(t.name)}</div>
         <div style="margin-top:4px"><span class="tag2 ${late ? 'late' : ''}">${late ? 'Vencida hace ' + Math.abs(diffD) + 'd' : 'Plazo: ' + diffD + 'd'} · ${t.deadline}</span></div>
       </div>`;
+      if(isAdmin) html += `<button class="dan sm" data-deltask="${t.id}" title="Eliminar tarea">✕</button>`;
       html += '</div>';
 
       if(myAssign && myAssign.observations){
@@ -1321,8 +1333,9 @@ function wire(root){
   }
 
   // BOTONES GENERALES DE ACCIÓN
-  root.querySelectorAll('[data-editgoal]').forEach(b => b.addEventListener('click', () => openM('edit-goal', { id: b.dataset.editgoal })));
+  root.querySelectorAll('[data-editgoal]').forEach(b => b.addEventListener('click', () => openM('edit-goal', { id: b.dataset.editgoal, role: b.dataset.role || 'GENERAL' })));
   root.querySelectorAll('[data-editprofile]').forEach(b => b.addEventListener('click', () => openM('edit-profile', { id: b.dataset.editprofile })));
+  root.querySelectorAll('[data-editadmin]').forEach(b => b.addEventListener('click', () => openM('edit-profile', { id: b.dataset.editadmin })));
   const emp = root.querySelector('#edit-my-profile');
   if(emp) emp.addEventListener('click', () => openM('edit-profile', { id: S.session.id }));
   const au = root.querySelector('#add-user');
@@ -1337,6 +1350,34 @@ function wire(root){
   if(est) est.addEventListener('click', () => openM('edit-store-target'));
   const ce = root.querySelector('#cfg-endpoint');
   if(ce) ce.addEventListener('click', () => openM('config-api'));
+
+  // PRODUCTOS: ELIMINAR
+  root.querySelectorAll('[data-delprod]').forEach(b => b.addEventListener('click', async () => {
+    const prodId = b.dataset.delprod;
+    const prod = S.products.find(p => p.id === prodId);
+    if (!prod) return;
+    if (!confirm(`¿Desactivar el producto "${prod.name}"? Quedará oculto del catálogo.`)) return;
+    b.disabled = true;
+    try {
+      await api.deleteProduct(prodId);
+      toast('Producto desactivado');
+      await syncFromD1();
+    } catch(e){ toast('Error: ' + e.message); b.disabled = false; }
+  }));
+
+  // TAREAS: ELIMINAR (admin)
+  root.querySelectorAll('[data-deltask]').forEach(b => b.addEventListener('click', async () => {
+    const taskId = b.dataset.deltask;
+    const task = S.tasks.find(t => t.id === taskId);
+    if (!task) return;
+    if (!confirm(`¿Eliminar la tarea "${task.name}"?`)) return;
+    b.disabled = true;
+    try {
+      await api.deleteTask(taskId);
+      toast('Tarea eliminada');
+      await syncFromD1();
+    } catch(e){ toast('Error: ' + e.message); b.disabled = false; }
+  }));
 
   // TAREAS: MARCAR / DESMARCAR
   root.querySelectorAll('[data-donetask]').forEach(b => b.addEventListener('click', () => {

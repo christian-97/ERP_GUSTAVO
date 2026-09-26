@@ -342,6 +342,21 @@ export default {
       }
     }
 
+    if (path.startsWith('/api/products/') && method === 'DELETE') {
+      if (!isAdmin) return errorResponse('Permiso denegado.', 403, request);
+      const prodId = path.split('/')[3];
+      try {
+        const current = await db.prepare('SELECT id FROM products WHERE id = ?').bind(prodId).first();
+        if (!current) return errorResponse('Producto no encontrado.', 404, request);
+        // Soft-delete: mark as inactive instead of hard delete to preserve sales history
+        await db.prepare('UPDATE products SET active = 0 WHERE id = ?').bind(prodId).run();
+        await logAudit(db, auth.id, 'DELETE_PRODUCT', 'products', prodId, {});
+        return jsonResponse({ ok: true, id: prodId }, 200, request);
+      } catch (e) {
+        return errorResponse('Error eliminando producto: ' + e.message, 500, request);
+      }
+    }
+
     // ===============================================================
     // VENTAS
     // ===============================================================
@@ -493,30 +508,63 @@ export default {
         if (type === 'STORE_TARGET') {
           const day = b.day != null ? parseInt(b.day) : null;
           const targetAmount = parseFloat(b.target_amount) || 0;
-          const id = `st_${periodMonth}_${day != null ? day : 'month'}`;
 
-          await db.prepare(
-            `INSERT INTO store_targets (id, period_month, day, target_amount)
-             VALUES (?, ?, ?, ?)
-             ON CONFLICT(period_month, day) DO UPDATE SET target_amount = excluded.target_amount`
-          ).bind(id, periodMonth, day, targetAmount).run();
+          // Two-step upsert: UPDATE existing record first, INSERT only if no row was updated.
+          // This avoids UNIQUE constraint conflicts on both the PK (id) and the UNIQUE(period_month, day).
+          const existing = await db.prepare(
+            'SELECT id FROM store_targets WHERE period_month = ? AND (day IS ? OR (day IS NULL AND ? IS NULL))'
+          ).bind(periodMonth, day, day).first();
 
-          await logAudit(db, auth.id, 'SET_STORE_TARGET', 'store_targets', id, { periodMonth, day, targetAmount });
-          return jsonResponse({ ok: true, id, periodMonth, day, targetAmount }, 200, request);
+          let finalId;
+          if (existing) {
+            finalId = existing.id;
+            await db.prepare(
+              'UPDATE store_targets SET target_amount = ? WHERE id = ?'
+            ).bind(targetAmount, finalId).run();
+          } else {
+            finalId = `st_${periodMonth}_${day != null ? day : 'month'}`;
+            await db.prepare(
+              'INSERT INTO store_targets (id, period_month, day, target_amount) VALUES (?, ?, ?, ?)'
+            ).bind(finalId, periodMonth, day, targetAmount).run();
+          }
+
+          await logAudit(db, auth.id, 'SET_STORE_TARGET', 'store_targets', finalId, { periodMonth, day, targetAmount });
+          return jsonResponse({ ok: true, id: finalId, periodMonth, day, targetAmount }, 200, request);
+
         } else if (type === 'PRODUCT_GOAL') {
           const productId = b.product_id;
           const workerId = b.worker_id || null;
           const targetQuantity = parseFloat(b.target_quantity) || 0;
-          const id = `pg_${periodMonth}_${productId}_${workerId || 'store'}`;
 
-          await db.prepare(
-            `INSERT INTO product_goals (id, period_month, product_id, worker_id, target_quantity)
-             VALUES (?, ?, ?, ?, ?)
-             ON CONFLICT(period_month, product_id, worker_id) DO UPDATE SET target_quantity = excluded.target_quantity`
-          ).bind(id, periodMonth, productId, workerId, targetQuantity).run();
+          if (!productId) return errorResponse('product_id es requerido.', 400, request);
 
-          await logAudit(db, auth.id, 'SET_PRODUCT_GOAL', 'product_goals', id, { periodMonth, productId, workerId, targetQuantity });
-          return jsonResponse({ ok: true, id, periodMonth, productId, workerId, targetQuantity }, 200, request);
+          // Two-step upsert: UPDATE existing record first, INSERT only if no row was updated.
+          // This avoids the UNIQUE constraint conflict on the PK (id) when the existing record
+          // has a different id than the one we would generate.
+          const existingGoal = workerId
+            ? await db.prepare(
+                'SELECT id FROM product_goals WHERE period_month = ? AND product_id = ? AND worker_id = ?'
+              ).bind(periodMonth, productId, workerId).first()
+            : await db.prepare(
+                'SELECT id FROM product_goals WHERE period_month = ? AND product_id = ? AND worker_id IS NULL'
+              ).bind(periodMonth, productId).first();
+
+          let finalGoalId;
+          if (existingGoal) {
+            finalGoalId = existingGoal.id;
+            await db.prepare(
+              'UPDATE product_goals SET target_quantity = ? WHERE id = ?'
+            ).bind(targetQuantity, finalGoalId).run();
+          } else {
+            finalGoalId = `pg_${periodMonth}_${productId}_${workerId || 'store'}`;
+            await db.prepare(
+              'INSERT INTO product_goals (id, period_month, product_id, worker_id, target_quantity) VALUES (?, ?, ?, ?, ?)'
+            ).bind(finalGoalId, periodMonth, productId, workerId, targetQuantity).run();
+          }
+
+          await logAudit(db, auth.id, 'SET_PRODUCT_GOAL', 'product_goals', finalGoalId, { periodMonth, productId, workerId, targetQuantity });
+          return jsonResponse({ ok: true, id: finalGoalId, periodMonth, productId, workerId, targetQuantity }, 200, request);
+
         } else {
           return errorResponse('Tipo de meta desconocido.', 400, request);
         }
@@ -638,6 +686,21 @@ export default {
         return jsonResponse({ ok: true, task: { id: taskId, name, deadline, assignees: assigneeIds } }, 201, request);
       } catch (e) {
         return errorResponse('Error creando tarea: ' + e.message, 500, request);
+      }
+    }
+
+    if (path.startsWith('/api/tasks/') && method === 'DELETE') {
+      if (!isAdmin) return errorResponse('Permiso denegado.', 403, request);
+      const taskId = path.split('/')[3];
+      try {
+        const current = await db.prepare('SELECT id FROM tasks WHERE id = ?').bind(taskId).first();
+        if (!current) return errorResponse('Tarea no encontrada.', 404, request);
+        // task_assignees rows are deleted via ON DELETE CASCADE
+        await db.prepare('DELETE FROM tasks WHERE id = ?').bind(taskId).run();
+        await logAudit(db, auth.id, 'DELETE_TASK', 'tasks', taskId, {});
+        return jsonResponse({ ok: true, id: taskId }, 200, request);
+      } catch (e) {
+        return errorResponse('Error eliminando tarea: ' + e.message, 500, request);
       }
     }
 
