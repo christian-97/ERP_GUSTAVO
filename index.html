@@ -1746,7 +1746,6 @@ function vVentasAdmin() {
   } else {
     html += `<table class="dt"><thead><tr>
       <th>Producto</th>
-      <th>Precio</th>
       <th class="r">Meta u.</th>
       <th class="r">Acciones</th>
     </tr></thead><tbody>`;
@@ -1754,7 +1753,6 @@ function vVentasAdmin() {
       const g = goalForProduct(p.id, null);
       html += `<tr>
         <td class="fw600">${esc(p.name)}</td>
-        <td class="muted mono">S/ ${p.price.toFixed(2)}</td>
         <td class="r dt-num">${g}</td>
         <td class="r">
           <div class="flex-end" style="justify-content:flex-end">
