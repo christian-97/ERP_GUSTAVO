@@ -68,6 +68,18 @@ CREATE TABLE IF NOT EXISTS product_goals (
 
 CREATE INDEX IF NOT EXISTS idx_product_goals_period ON product_goals(period_month);
 
+-- 5b. METAS FINANCIERAS POR TRABAJADOR (MENSUAL)
+CREATE TABLE IF NOT EXISTS worker_targets (
+    id TEXT PRIMARY KEY,
+    period_month TEXT NOT NULL,
+    worker_id TEXT NOT NULL REFERENCES users(id),
+    target_amount REAL NOT NULL,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    UNIQUE(period_month, worker_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_worker_targets_period ON worker_targets(period_month);
+
 -- 6. PROMOCIONES
 CREATE TABLE IF NOT EXISTS promotions (
     id TEXT PRIMARY KEY,

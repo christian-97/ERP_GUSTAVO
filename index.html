@@ -1249,7 +1249,7 @@ select option { background: var(--bg-surface-2); }
 .db-wk-table { width: 100%; }
 .db-wk-hd {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1.8fr 1fr 1fr;
+  grid-template-columns: 2fr 1.3fr 1fr 1.6fr 1.1fr 1fr 1.3fr;
   padding: 9px 16px;
   background: var(--bg-surface-2);
   font-size: 10.5px;
@@ -1262,7 +1262,7 @@ select option { background: var(--bg-surface-2); }
 }
 .db-wk-row {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1.8fr 1fr 1fr;
+  grid-template-columns: 2fr 1.3fr 1fr 1.6fr 1.1fr 1fr 1.3fr;
   padding: 12px 16px;
   border-bottom: 1px solid var(--border);
   align-items: center;
@@ -1842,6 +1842,7 @@ const api = {
     return this.request(`/api/goals${qs ? '?' + qs : ''}`);
   },
   async saveGoal(g) { return this.request('/api/goals', { method: 'POST', body: JSON.stringify(g) }); },
+  async deleteGoal(id) { return this.request(`/api/goals/${id}`, { method: 'DELETE' }); },
   async getPromotions() { return this.request('/api/promotions'); },
   async createPromotion(p) { return this.request('/api/promotions', { method: 'POST', body: JSON.stringify(p) }); },
   async getTasks() { return this.request('/api/tasks'); },
@@ -1874,6 +1875,11 @@ function localDateStr(d = today()) {
   const day = String(d.getDate()).padStart(2, '0');
   return `${y}-${m}-${day}`;
 }
+function localMonthStr(d = today()) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  return `${y}-${m}`;
+}
 
 const S = {
   session: JSON.parse(localStorage.getItem('sazon_session') || 'null'),
@@ -1886,7 +1892,7 @@ const S = {
   users: [],
   products: [],
   sales: [],
-  goals: { storeTargets: [], productGoals: [] },
+  goals: { storeTargets: [], productGoals: [], workerTargets: [] },
   promotions: [],
   tasks: [],
   events: [],
@@ -1944,7 +1950,11 @@ async function syncFromD1() {
     S.users      = uRes.users      || [];
     S.products   = pRes.products   || [];
     S.sales      = sRes.sales      || [];
-    S.goals      = gRes;
+    S.goals      = {
+      storeTargets: (gRes && gRes.storeTargets) || [],
+      productGoals: (gRes && gRes.productGoals) || [],
+      workerTargets: (gRes && gRes.workerTargets) || []
+    };
     S.tasks      = tRes.tasks      || [];
     S.events     = eRes.events     || [];
     S.kpi        = kRes;
@@ -1963,6 +1973,26 @@ async function syncFromD1() {
 // ================================================================
 function catalog(role) {
   return S.products.filter(p => p.active && (p.target_role === 'ALL' || p.target_role === (role || 'MOZO').toUpperCase()));
+}
+
+function getStoreTarget(periodMonth) {
+  const m = periodMonth || localMonthStr();
+  const st = (S.goals.storeTargets || []).find(t => t.period_month === m && (t.day === null || t.day === undefined));
+  if (st) return parseFloat(st.target_amount) || 350000;
+  return (S.kpi && S.kpi.kpis && parseFloat(S.kpi.kpis.totalTarget)) || 350000;
+}
+
+function goalForWorker(workerId, periodMonth) {
+  const wid = String(workerId);
+  const m = periodMonth || localMonthStr();
+  const found = (S.goals.workerTargets || []).find(g => String(g.worker_id) === wid && (g.period_month === m || !g.period_month));
+  if (found) return { amount: parseFloat(found.target_amount) || 0, id: found.id, custom: true, period: found.period_month };
+
+  // Fallback: If not explicitly set, calculate equal share of store target
+  const storeMeta = getStoreTarget(m);
+  const allWorkers = S.users.filter(u => u.active && (u.role === 'MOZO' || u.role === 'ANFITRIONA'));
+  const fallback = allWorkers.length > 0 ? Math.round(storeMeta / allWorkers.length) : 0;
+  return { amount: fallback, id: null, custom: false, period: m };
 }
 
 function goalForProduct(productId, workerId) {
@@ -2229,18 +2259,19 @@ function vVentasAdmin() {
 function vGeneral() {
   const isAdmin = S.session.role === 'ADMIN';
   const prods   = S.products.filter(p => p.active);
-  const kpis    = (S.kpi && S.kpi.kpis) || { monthlySales: 0, totalTarget: 350000, targetCompliance: 0 };
-  const comp    = parseFloat(kpis.targetCompliance) || 0;
+  const totalTarget = getStoreTarget();
+  const monthlySales = S.sales.reduce((acc, s) => acc + (s.total != null ? s.total : (s.quantity || 0) * (s.unit_price || 0)), 0);
+  const comp    = totalTarget > 0 ? Math.round((monthlySales / totalTarget) * 100) : 0;
 
   let html = `
   <div class="stats-row">
     <div class="stat-box">
       <div class="stat-lbl">Venta acumulada</div>
-      <div class="stat-val c-gold">${money(kpis.monthlySales)}</div>
+      <div class="stat-val c-gold">${money(monthlySales)}</div>
     </div>
     <div class="stat-box">
       <div class="stat-lbl">Meta mensual</div>
-      <div class="stat-val">${money(kpis.totalTarget)}</div>
+      <div class="stat-val">${money(totalTarget)}</div>
     </div>
     <div class="stat-box">
       <div class="stat-lbl">Cumplimiento</div>
@@ -2300,10 +2331,13 @@ function vGeneral() {
 // ================================================================
 function vProyectado() {
   const isAdmin = S.session.role === 'ADMIN';
-  const kpis    = (S.kpi && S.kpi.kpis) || { monthlySales: 0, totalTarget: 350000, expectedPace: 0, diffAgainstExpected: 0, projectedClosing: 0, targetCompliance: 0 };
-  const diff    = kpis.diffAgainstExpected || 0;
-  const isPos   = diff >= 0;
-  const comp    = parseFloat(kpis.targetCompliance) || 0;
+  const totalTarget = getStoreTarget();
+  const monthlySales = S.sales.reduce((acc, s) => acc + (s.total != null ? s.total : (s.quantity || 0) * (s.unit_price || 0)), 0);
+  const expectedPace = Math.round((totalTarget / S.monthDays) * S.currentDay);
+  const diffAgainstExpected = monthlySales - expectedPace;
+  const isPos = diffAgainstExpected >= 0;
+  const projectedClosing = S.currentDay > 0 ? Math.round((monthlySales / S.currentDay) * S.monthDays) : 0;
+  const comp = totalTarget > 0 ? Math.round((monthlySales / totalTarget) * 100) : 0;
 
   let html = `
   <div class="stats-row">
@@ -2322,23 +2356,23 @@ function vProyectado() {
   html += `
     <div class="proj-row">
       <span class="proj-lbl">Meta mensual</span>
-      <span class="proj-val gold">${money(kpis.totalTarget)}</span>
+      <span class="proj-val gold">${money(totalTarget)}</span>
     </div>
     <div class="proj-row">
       <span class="proj-lbl">Venta real acumulada</span>
-      <span class="proj-val">${money(kpis.monthlySales)}</span>
+      <span class="proj-val">${money(monthlySales)}</span>
     </div>
     <div class="proj-row">
       <span class="proj-lbl">Esperado a la fecha (ritmo)</span>
-      <span class="proj-val">${money(kpis.expectedPace)}</span>
+      <span class="proj-val">${money(expectedPace)}</span>
     </div>
     <div class="proj-row">
       <span class="proj-lbl">Diferencia vs. ritmo esperado</span>
-      <span class="proj-val ${isPos ? 'pos' : 'neg'}">${isPos ? '+' : ''}${money(diff)}</span>
+      <span class="proj-val ${isPos ? 'pos' : 'neg'}">${isPos ? '+' : ''}${money(diffAgainstExpected)}</span>
     </div>
     <div class="proj-row" style="background:var(--bg-surface-2)">
       <span class="proj-lbl fw600" style="color:var(--text-1)">Cierre proyectado al fin de mes</span>
-      <span class="proj-val gold" style="font-size:17px">${money(kpis.projectedClosing)}</span>
+      <span class="proj-val gold" style="font-size:17px">${money(projectedClosing)}</span>
     </div>`;
   html += `</div>`;
 
@@ -2615,6 +2649,34 @@ function renderM() {
     const curr = (S.kpi && S.kpi.kpis && S.kpi.kpis.totalTarget) || 350000;
     title = 'Meta financiera mensual';
     f = `<div class="field"><label>Monto proyectado (S/)</label><input id="mf-target" type="number" value="${curr}"></div>`;
+  } else if (m.type === 'edit-worker-goal') {
+    const isNew = !m.data.workerId;
+    const activeWorkers = S.users.filter(u => u.active && (u.role === 'MOZO' || u.role === 'ANFITRIONA'));
+    const w = m.data.workerId ? S.users.find(u => String(u.id) === String(m.data.workerId)) : null;
+    const currPeriod = m.data.period || localMonthStr();
+    const currMeta = m.data.targetAmount != null ? m.data.targetAmount : (w ? goalForWorker(w.id, currPeriod).amount : 10000);
+
+    title = isNew ? 'Asignar Meta de Ventas a Mozo' : ('Meta de Ventas — ' + esc(w ? w.name : 'Colaborador'));
+    f = `
+    <div class="field">
+      <label>Colaborador / Mozo</label>
+      ${isNew ? `
+        <select id="mf-worker">
+          ${activeWorkers.map(u => `<option value="${u.id}">${esc(u.name)} (${u.role})</option>`).join('')}
+        </select>
+      ` : `
+        <input type="text" value="${esc(w ? w.name : '')}" disabled style="opacity:0.85;cursor:not-allowed">
+        <input type="hidden" id="mf-worker" value="${esc(m.data.workerId)}">
+      `}
+    </div>
+    <div class="field">
+      <label>Período (Mes)</label>
+      <input id="mf-period" type="month" value="${esc(currPeriod)}">
+    </div>
+    <div class="field">
+      <label>Monto Objetivo de Venta (S/)</label>
+      <input id="mf-target" type="number" step="100" min="1" value="${currMeta}">
+    </div>`;
   }
 
   return `
@@ -2633,42 +2695,51 @@ function renderM() {
 // VIEW: DASHBOARD DE METAS (ADMIN)
 // ================================================================
 function vDashboard() {
-  // ── State for filters (stored on S.dash) ──
   if (!S.dash) S.dash = { period: 'mes', from: '', to: '', worker: 'all', shift: 'all', status: 'all' };
   const df = S.dash;
+  const activeMonth = localMonthStr();
 
-  // ── Real data from S ──
-  const kpis      = (S.kpi && S.kpi.kpis) || {};
-  const totalMeta = parseFloat(kpis.totalTarget)   || 350000;
-  const totalVta  = parseFloat(kpis.monthlySales)  || 0;
-  const comp      = parseFloat(kpis.targetCompliance) || 0;
-  const falta     = Math.max(0, totalMeta - totalVta);
-  const proj      = parseFloat(kpis.projectedClosing) || 0;
-  const projAbove = proj >= totalMeta;
-
-  // ── Workers with their sales ──
+  // Workers
   const mozos = S.users.filter(u => u.role === 'MOZO' && u.active);
   const anfs  = S.users.filter(u => u.role === 'ANFITRIONA' && u.active);
   const allWk = [...mozos, ...anfs];
 
-  // Compute per-worker sales total (monetary)
-  function workerSales(wId) {
+  // Helper to compute sales for a worker respecting filters
+  function workerSalesFiltered(wId) {
     const widStr = String(wId);
     return S.sales
-      .filter(s => String(s.worker_id) === widStr)
+      .filter(s => {
+        if (String(s.worker_id) !== widStr) return false;
+        if (df.from && s.sale_date < df.from) return false;
+        if (df.to && s.sale_date > df.to) return false;
+        if (df.period === 'hoy') {
+          return s.sale_date === localDateStr();
+        }
+        return true;
+      })
       .reduce((acc, s) => {
         const prod = S.products.find(p => String(p.id) === String(s.product_id));
-        return acc + (s.quantity || 0) * (prod ? prod.price : 0);
+        const price = s.unit_price != null ? s.unit_price : (prod ? prod.price : 0);
+        return acc + (s.total != null ? s.total : (s.quantity || 0) * price);
       }, 0);
   }
 
-  // Per-worker goal (share of store target equally, or 0 if no workers)
-  const workerMeta = allWk.length > 0 ? Math.round(totalMeta / allWk.length) : 0;
-
+  // Real worker data using single source of truth for goals
   const wkData = allWk.map(w => {
-    const vta = workerSales(w.id);
-    const c   = workerMeta > 0 ? Math.round(vta / workerMeta * 100) : 0;
-    return { ...w, vta, cumpl: c, falta: Math.max(0, workerMeta - vta) };
+    const gInfo = goalForWorker(w.id, activeMonth);
+    const meta  = gInfo.amount;
+    const vta   = workerSalesFiltered(w.id);
+    const cumpl = meta > 0 ? Math.round((vta / meta) * 100) : 0;
+    const falta = Math.max(0, meta - vta);
+    return {
+      ...w,
+      meta,
+      goalId: gInfo.id,
+      isCustom: gInfo.custom,
+      vta,
+      cumpl,
+      falta
+    };
   });
 
   // Sort by cumplimiento desc
@@ -2681,6 +2752,27 @@ function vDashboard() {
   else if (df.status === 'camino') filtered = filtered.filter(w => w.cumpl >= 60 && w.cumpl < 100);
   else if (df.status === 'bajo')   filtered = filtered.filter(w => w.cumpl < 60);
 
+  // Dynamic KPIs based on filtered context
+  let totalMeta, totalVta;
+  if (df.worker !== 'all') {
+    const targetWk = wkData.find(w => String(w.id) === String(df.worker));
+    totalMeta = targetWk ? targetWk.meta : 0;
+    totalVta  = targetWk ? targetWk.vta : 0;
+  } else {
+    const hasCustomGoals = wkData.some(w => w.isCustom);
+    if (hasCustomGoals) {
+      totalMeta = wkData.reduce((sum, w) => sum + w.meta, 0);
+    } else {
+      totalMeta = getStoreTarget(activeMonth);
+    }
+    totalVta = wkData.reduce((sum, w) => sum + w.vta, 0);
+  }
+
+  const comp      = totalMeta > 0 ? Math.round((totalVta / totalMeta) * 100) : 0;
+  const falta     = Math.max(0, totalMeta - totalVta);
+  const proj      = S.currentDay > 0 ? Math.round((totalVta / S.currentDay) * S.monthDays) : 0;
+  const projAbove = proj >= totalMeta;
+
   const topWorker  = wkData[0];
   const avgPerWk   = allWk.length > 0 ? Math.round(totalVta / allWk.length) : 0;
   const avgPerDay  = S.currentDay > 0 ? Math.round(totalVta / S.currentDay) : 0;
@@ -2690,8 +2782,8 @@ function vDashboard() {
 
   // Alerts
   const alerts = [];
-  wkData.filter(w => w.cumpl < 60).forEach(w => alerts.push(`<b>${esc(w.name)}</b> está al <b>${w.cumpl}%</b> de su meta.`));
-  if (falta > 0) alerts.push(`Faltan <b>${money(falta)}</b> para alcanzar la meta del equipo.`);
+  wkData.filter(w => w.cumpl < 60).forEach(w => alerts.push(`<b>${esc(w.name)}</b> está al <b>${w.cumpl}%</b> de su meta asignada (${money(w.meta)}).`));
+  if (falta > 0) alerts.push(`Faltan <b>${money(falta)}</b> para alcanzar la meta total.`);
   if (!projAbove) alerts.push(`La proyección de cierre <b>${money(proj)}</b> está por debajo de la meta <b>${money(totalMeta)}</b>.`);
 
   // Mock evolution data (last 7 days pattern based on real total)
@@ -2699,7 +2791,7 @@ function vDashboard() {
   const mockEvo = [0.11,0.13,0.12,0.14,0.18,0.17,0.15];
   const evoMax  = totalVta * 0.18 || 50000;
 
-  // ── Status color helper ──
+  // Status color helper
   function statusBadge(c) {
     if (c >= 100) return '<span class="badge grn">Cumplida</span>';
     if (c >= 60)  return '<span class="badge acc">En camino</span>';
@@ -2737,7 +2829,7 @@ function vDashboard() {
       <div class="db-fg">
         <label class="db-fl">Mozo</label>
         <select id="dbf-worker" class="db-fsel">
-          <option value="all" ${df.worker==='all'?'selected':''}>Todos</option>
+          <option value="all" ${df.worker==='all'?'selected':''}>Todos los colaboradores</option>
           ${allWk.map(w => `<option value="${w.id}" ${df.worker===w.id?'selected':''}>${esc(w.name)}</option>`).join('')}
         </select>
       </div>
@@ -2772,23 +2864,23 @@ function vDashboard() {
     <div class="db-kpi">
       <div class="db-kpi-icon">🎯</div>
       <div class="db-kpi-val">${money(totalMeta)}</div>
-      <div class="db-kpi-lbl">Meta total</div>
+      <div class="db-kpi-lbl">${df.worker !== 'all' ? 'Meta asignada' : 'Meta total'}</div>
     </div>
     <div class="db-kpi">
       <div class="db-kpi-icon">💰</div>
       <div class="db-kpi-val" style="color:var(--accent)">${money(totalVta)}</div>
-      <div class="db-kpi-lbl">Venta actual</div>
+      <div class="db-kpi-lbl">${df.worker !== 'all' ? 'Venta del colaborador' : 'Venta total'}</div>
     </div>
     <div class="db-kpi">
       <div class="db-kpi-icon">${comp >= 80 ? '🟢' : comp >= 50 ? '🟡' : '🔴'}</div>
       <div class="db-kpi-val" style="color:${comp>=80?'var(--green)':comp>=50?'var(--gold)':'var(--red)'}">${comp}%</div>
-      <div class="db-kpi-lbl">Avance</div>
+      <div class="db-kpi-lbl">Cumplimiento</div>
       <div class="db-kpi-prog"><div style="width:${Math.min(100,comp)}%;background:${comp>=80?'var(--green)':comp>=50?'var(--gold)':'var(--red)'}"></div></div>
     </div>
     <div class="db-kpi">
       <div class="db-kpi-icon">📉</div>
       <div class="db-kpi-val" style="color:var(--red)">${money(falta)}</div>
-      <div class="db-kpi-lbl">Falta para la meta</div>
+      <div class="db-kpi-lbl">Monto restante</div>
     </div>
     <div class="db-kpi">
       <div class="db-kpi-icon">⭐</div>
@@ -2799,7 +2891,7 @@ function vDashboard() {
 
   // ── AVANCE GENERAL ──
   html += `
-  <div class="sec-hd"><div class="sec-label">Avance general de la meta</div></div>
+  <div class="sec-hd"><div class="sec-label">Avance hacia la meta</div></div>
   <div class="card card-body" style="margin-bottom:18px">
     <div class="db-main-prog-row">
       <div class="db-main-prog-info">
@@ -2824,7 +2916,10 @@ function vDashboard() {
 
   // ── AVANCE POR MOZO ──
   html += `
-  <div class="sec-hd"><div class="sec-label">Avance por mozo</div></div>
+  <div class="flex-between" style="margin-bottom:10px">
+    <div class="sec-hd" style="margin:0"><div class="sec-label">Avance por mozo</div></div>
+    <button class="btn pri sm" id="btn-add-worker-goal">+ Asignar meta a mozo</button>
+  </div>
   <div class="card" style="padding:0;margin-bottom:18px">`;
 
   if (filtered.length === 0) {
@@ -2832,7 +2927,7 @@ function vDashboard() {
   } else {
     html += `<div class="db-wk-table">
       <div class="db-wk-hd">
-        <div>Colaborador</div><div>Meta</div><div>Venta</div><div>Cumpl.</div><div>Falta</div><div>Estado</div>
+        <div>Colaborador</div><div>Meta</div><div>Venta</div><div>Cumpl.</div><div>Falta</div><div>Estado</div><div style="text-align:right">Acciones</div>
       </div>`;
     filtered.forEach(w => {
       const bc = barColor(w.cumpl);
@@ -2845,7 +2940,10 @@ function vDashboard() {
             <div style="font-size:11px;color:var(--text-3)">${w.role}</div>
           </div>
         </div>
-        <div class="db-wk-cell">${money(workerMeta)}</div>
+        <div class="db-wk-cell">
+          <span style="font-weight:600">${money(w.meta)}</span>
+          ${w.isCustom ? '<span class="badge acc" style="margin-left:4px;font-size:9.5px;padding:1px 5px">asignada</span>' : '<span class="badge" style="margin-left:4px;font-size:9.5px;padding:1px 5px;opacity:0.6">base</span>'}
+        </div>
         <div class="db-wk-cell" style="color:var(--accent);font-weight:600">${money(w.vta)}</div>
         <div class="db-wk-cell">
           <div style="display:flex;align-items:center;gap:8px">
@@ -2855,6 +2953,12 @@ function vDashboard() {
         </div>
         <div class="db-wk-cell" style="color:var(--red)">${money(w.falta)}</div>
         <div class="db-wk-cell">${statusBadge(w.cumpl)}</div>
+        <div class="db-wk-cell" style="text-align:right">
+          <div class="flex-end" style="justify-content:flex-end;gap:5px">
+            <button class="btn gho sm" data-editworkergoal="${w.id}" data-meta="${w.meta}" title="Editar meta de ${esc(w.name)}">Editar</button>
+            ${w.isCustom && w.goalId ? `<button class="btn dan sm" data-delworkergoal="${w.goalId}" data-workername="${esc(w.name)}" title="Eliminar meta asignada">✕</button>` : ''}
+          </div>
+        </div>
       </div>`;
     });
     html += `</div>`;
@@ -3007,6 +3111,32 @@ function wireDashboard(root) {
     S.dash = { period: 'mes', from: '', to: '', worker: 'all', shift: 'all', status: 'all' };
     render();
   });
+
+  const btnAdd = root.querySelector('#btn-add-worker-goal');
+  if (btnAdd) btnAdd.addEventListener('click', () => {
+    openM('edit-worker-goal', { period: localMonthStr() });
+  });
+
+  root.querySelectorAll('[data-editworkergoal]').forEach(b => b.addEventListener('click', () => {
+    const wid = b.dataset.editworkergoal;
+    const meta = parseFloat(b.dataset.meta) || 0;
+    openM('edit-worker-goal', { workerId: wid, targetAmount: meta, period: localMonthStr() });
+  }));
+
+  root.querySelectorAll('[data-delworkergoal]').forEach(b => b.addEventListener('click', async () => {
+    const gid = b.dataset.delworkergoal;
+    const wname = b.dataset.workername || 'el colaborador';
+    if (!confirm(`¿Eliminar la meta asignada para ${wname}?`)) return;
+    b.disabled = true;
+    try {
+      await api.deleteGoal(gid);
+      toast(`Meta eliminada para ${wname}`);
+      await syncFromD1();
+    } catch (e) {
+      toast('Error: ' + e.message);
+      b.disabled = false;
+    }
+  }));
 }
 
 // ================================================================
@@ -3438,6 +3568,25 @@ function wire(root) {
         const target = parseFloat(v('mf-target')) || 350000;
         await api.saveGoal({ type: 'STORE_TARGET', target_amount: target });
         toast('Meta de tienda actualizada'); closeM(); await syncFromD1();
+
+      } else if (m.type === 'edit-worker-goal') {
+        const workerId = v('mf-worker');
+        const periodMonth = v('mf-period') || localMonthStr();
+        const targetAmount = parseFloat(v('mf-target')) || 0;
+        if (!workerId) throw new Error('Selecciona un colaborador.');
+        if (targetAmount <= 0) throw new Error('Ingresa un monto objetivo mayor a 0.');
+
+        await api.saveGoal({
+          type: 'WORKER_TARGET',
+          worker_id: workerId,
+          period_month: periodMonth,
+          target_amount: targetAmount
+        });
+
+        const targetUser = S.users.find(u => String(u.id) === String(workerId));
+        toast(`Meta de ${money(targetAmount)} guardada para ${targetUser ? targetUser.name : 'el colaborador'}`);
+        closeM();
+        await syncFromD1();
       }
     } catch (err) {
       toast('Error: ' + err.message);

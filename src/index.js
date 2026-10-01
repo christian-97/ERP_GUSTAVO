@@ -465,16 +465,40 @@ export default {
     }
 
     // ===============================================================
-    // METAS (STORE TARGETS Y PRODUCT GOALS)
+    // METAS (STORE TARGETS, WORKER TARGETS Y PRODUCT GOALS)
     // ===============================================================
     if (path === '/api/goals' && method === 'GET') {
       const now = new Date();
       const currentMonth = url.searchParams.get('month') || `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
       const workerId = url.searchParams.get('worker_id') || (!isAdmin ? auth.id : null);
 
+      await db.prepare(`
+        CREATE TABLE IF NOT EXISTS worker_targets (
+          id TEXT PRIMARY KEY,
+          period_month TEXT NOT NULL,
+          worker_id TEXT NOT NULL REFERENCES users(id),
+          target_amount REAL NOT NULL,
+          created_at TEXT NOT NULL DEFAULT (datetime('now')),
+          UNIQUE(period_month, worker_id)
+        )
+      `).run();
+
       const storeTargets = await db.prepare(
         'SELECT * FROM store_targets WHERE period_month = ? ORDER BY day ASC'
       ).bind(currentMonth).all();
+
+      let workerTargetsQuery = `
+        SELECT wt.*, u.name as worker_name, u.role as worker_role
+        FROM worker_targets wt
+        JOIN users u ON wt.worker_id = u.id
+        WHERE wt.period_month = ?
+      `;
+      const wtParams = [currentMonth];
+      if (workerId) {
+        workerTargetsQuery += ' AND wt.worker_id = ?';
+        wtParams.push(workerId);
+      }
+      const workerTargets = await db.prepare(workerTargetsQuery).bind(...wtParams).all();
 
       let productGoalsQuery = `
         SELECT pg.*, p.name as product_name, p.category as product_category
@@ -494,8 +518,9 @@ export default {
       return jsonResponse({
         ok: true,
         month: currentMonth,
-        storeTargets: storeTargets.results,
-        productGoals: productGoals.results
+        storeTargets: storeTargets.results || [],
+        productGoals: productGoals.results || [],
+        workerTargets: workerTargets.results || []
       }, 200, request);
     }
 
@@ -503,15 +528,13 @@ export default {
       if (!isAdmin) return errorResponse('Permiso denegado. Solo administrador.', 403, request);
       try {
         const b = await request.json();
-        const type = b.type; // 'STORE_TARGET' o 'PRODUCT_GOAL'
+        const type = b.type; // 'STORE_TARGET', 'WORKER_TARGET' o 'PRODUCT_GOAL'
         const periodMonth = b.period_month || `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
 
         if (type === 'STORE_TARGET') {
           const day = b.day != null ? parseInt(b.day) : null;
           const targetAmount = parseFloat(b.target_amount) || 0;
 
-          // Two-step upsert: UPDATE existing record first, INSERT only if no row was updated.
-          // This avoids UNIQUE constraint conflicts on both the PK (id) and the UNIQUE(period_month, day).
           const existing = await db.prepare(
             'SELECT id FROM store_targets WHERE period_month = ? AND (day IS ? OR (day IS NULL AND ? IS NULL))'
           ).bind(periodMonth, day, day).first();
@@ -532,6 +555,42 @@ export default {
           await logAudit(db, auth.id, 'SET_STORE_TARGET', 'store_targets', finalId, { periodMonth, day, targetAmount });
           return jsonResponse({ ok: true, id: finalId, periodMonth, day, targetAmount }, 200, request);
 
+        } else if (type === 'WORKER_TARGET') {
+          const workerId = b.worker_id;
+          const targetAmount = parseFloat(b.target_amount) || 0;
+          if (!workerId) return errorResponse('worker_id es requerido.', 400, request);
+
+          await db.prepare(`
+            CREATE TABLE IF NOT EXISTS worker_targets (
+              id TEXT PRIMARY KEY,
+              period_month TEXT NOT NULL,
+              worker_id TEXT NOT NULL REFERENCES users(id),
+              target_amount REAL NOT NULL,
+              created_at TEXT NOT NULL DEFAULT (datetime('now')),
+              UNIQUE(period_month, worker_id)
+            )
+          `).run();
+
+          const existing = await db.prepare(
+            'SELECT id FROM worker_targets WHERE period_month = ? AND worker_id = ?'
+          ).bind(periodMonth, workerId).first();
+
+          let finalId;
+          if (existing) {
+            finalId = existing.id;
+            await db.prepare(
+              'UPDATE worker_targets SET target_amount = ? WHERE id = ?'
+            ).bind(targetAmount, finalId).run();
+          } else {
+            finalId = `wt_${periodMonth}_${workerId}`;
+            await db.prepare(
+              'INSERT INTO worker_targets (id, period_month, worker_id, target_amount) VALUES (?, ?, ?, ?)'
+            ).bind(finalId, periodMonth, workerId, targetAmount).run();
+          }
+
+          await logAudit(db, auth.id, 'SET_WORKER_TARGET', 'worker_targets', finalId, { periodMonth, workerId, targetAmount });
+          return jsonResponse({ ok: true, id: finalId, periodMonth, workerId, targetAmount }, 200, request);
+
         } else if (type === 'PRODUCT_GOAL') {
           const productId = b.product_id;
           const workerId = b.worker_id || null;
@@ -539,9 +598,6 @@ export default {
 
           if (!productId) return errorResponse('product_id es requerido.', 400, request);
 
-          // Two-step upsert: UPDATE existing record first, INSERT only if no row was updated.
-          // This avoids the UNIQUE constraint conflict on the PK (id) when the existing record
-          // has a different id than the one we would generate.
           const existingGoal = workerId
             ? await db.prepare(
                 'SELECT id FROM product_goals WHERE period_month = ? AND product_id = ? AND worker_id = ?'
@@ -571,6 +627,35 @@ export default {
         }
       } catch (e) {
         return errorResponse('Error guardando meta: ' + e.message, 500, request);
+      }
+    }
+
+    if (path.startsWith('/api/goals/') && method === 'DELETE') {
+      if (!isAdmin) return errorResponse('Permiso denegado. Solo administrador.', 403, request);
+      const goalId = path.split('/')[3];
+      try {
+        await db.prepare(`
+          CREATE TABLE IF NOT EXISTS worker_targets (
+            id TEXT PRIMARY KEY,
+            period_month TEXT NOT NULL,
+            worker_id TEXT NOT NULL REFERENCES users(id),
+            target_amount REAL NOT NULL,
+            created_at TEXT NOT NULL DEFAULT (datetime('now')),
+            UNIQUE(period_month, worker_id)
+          )
+        `).run();
+
+        let res = await db.prepare('DELETE FROM worker_targets WHERE id = ?').bind(goalId).run();
+        if (!res.meta || res.meta.changes === 0) {
+          res = await db.prepare('DELETE FROM product_goals WHERE id = ?').bind(goalId).run();
+        }
+        if (!res.meta || res.meta.changes === 0) {
+          res = await db.prepare('DELETE FROM store_targets WHERE id = ?').bind(goalId).run();
+        }
+        await logAudit(db, auth.id, 'DELETE_GOAL', 'goals', goalId, {});
+        return jsonResponse({ ok: true, id: goalId }, 200, request);
+      } catch (e) {
+        return errorResponse('Error eliminando meta: ' + e.message, 500, request);
       }
     }
 
