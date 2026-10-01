@@ -16,33 +16,33 @@
 ================================================================ */
 :root {
   /* Backgrounds */
-  --bg-base:      #111009;
-  --bg-sidebar:   #0D0B08;
-  --bg-surface:   #1C1810;
-  --bg-surface-2: #241E14;
-  --bg-surface-3: #2D2518;
+  --bg-base:      #F7F9F7;
+  --bg-sidebar:   #214936;
+  --bg-surface:   #FFFFFF;
+  --bg-surface-2: #F1F5F2;
+  --bg-surface-3: #E5F0E9;
 
   /* Borders */
-  --border:       #352B1E;
-  --border-2:     #443825;
+  --border:       #DCE5DF;
+  --border-2:     #C5D4CA;
 
   /* Text */
-  --text-1:       #EDE4D5;
-  --text-2:       #AE9E8C;
-  --text-3:       #6E5E4A;
+  --text-1:       #1F2923;
+  --text-2:       #66736B;
+  --text-3:       #8A958E;
 
   /* Brand / Actions */
-  --accent:       #C0571E;   /* terracotta */
-  --accent-h:     #CF6428;
-  --accent-dim:   #261308;
+  --accent:       #2F6B4F;   /* verde principal */
+  --accent-h:     #3D7F60;
+  --accent-dim:   #E5F0E9;
 
   /* Semantic */
-  --gold:         #B8882A;
-  --gold-dim:     #221A08;
-  --green:        #4A8235;
-  --green-dim:    #192810;
-  --red:          #A83828;
-  --red-dim:      #270E08;
+  --gold:         #B88A2B;
+  --gold-dim:     #FBF3DC;
+  --green:        #3F805C;
+  --green-dim:    #E8F5EE;
+  --red:          #B84A4A;
+  --red-dim:      #FDEAEA;
 
   /* Typography */
   --font:         'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -181,7 +181,7 @@ button { font-family: var(--font); cursor: pointer; }
   line-height: 1.3;
 }
 
-.nb:hover { color: var(--text-1); background: rgba(255,255,255,0.03); }
+.nb:hover { color: var(--text-1); background: rgba(0,0,0,0.04); }
 
 .nb.a {
   color: var(--accent);
@@ -295,7 +295,7 @@ button { font-family: var(--font); cursor: pointer; }
 .g-content {
   padding: 24px 32px;
   flex: 1;
-  max-width: 960px;
+  max-width: 1200px;
   width: 100%;
 }
 
@@ -583,8 +583,8 @@ button { font-family: var(--font); cursor: pointer; }
 .qbtn:hover:not(:disabled) { background: var(--bg-surface-3); border-color: var(--accent); }
 .qbtn:active:not(:disabled) { background: var(--accent); border-color: var(--accent); color: #fff; }
 .qbtn:disabled { opacity: 0.35; cursor: not-allowed; }
-[data-inc] { background: var(--accent-dim); border-color: rgba(192,87,30,0.35); color: var(--accent); }
-[data-admininc] { background: var(--accent-dim); border-color: rgba(192,87,30,0.35); color: var(--accent); }
+[data-inc] { background: var(--accent-dim); border-color: rgba(47,107,79,0.35); color: var(--accent); }
+[data-admininc] { background: var(--accent-dim); border-color: rgba(47,107,79,0.35); color: var(--accent); }
 .qty-disp {
   font-family: var(--font-mono);
   font-weight: 600;
@@ -622,7 +622,7 @@ button { font-family: var(--font); cursor: pointer; }
 .btn.gho  { background: transparent; color: var(--text-2); border: 1px solid var(--border); }
 .btn.gho:hover:not(:disabled) { background: var(--bg-surface-2); color: var(--text-1); border-color: var(--border-2); }
 
-.btn.dan  { background: var(--red-dim); color: #F5A090; border: 1px solid rgba(168,56,40,0.35); }
+.btn.dan  { background: var(--red-dim); color: #B84A4A; border: 1px solid rgba(184,74,74,0.30); }
 .btn.dan:hover:not(:disabled) { background: var(--red); color: #fff; }
 
 .btn.full { width: 100%; }
@@ -644,10 +644,10 @@ button { font-family: var(--font); cursor: pointer; }
   border: 1px solid;
 }
 .badge.def  { background: var(--bg-surface-2); color: var(--text-2); border-color: var(--border); }
-.badge.acc  { background: var(--accent-dim);   color: var(--accent); border-color: rgba(192,87,30,0.35); }
-.badge.grn  { background: var(--green-dim);    color: var(--green);  border-color: rgba(74,130,53,0.35); }
-.badge.red  { background: var(--red-dim);      color: #F5A090;       border-color: rgba(168,56,40,0.35); }
-.badge.gld  { background: var(--gold-dim);     color: var(--gold);   border-color: rgba(184,136,42,0.35); }
+.badge.acc  { background: var(--accent-dim);   color: var(--accent); border-color: rgba(47,107,79,0.35); }
+.badge.grn  { background: var(--green-dim);    color: var(--green);  border-color: rgba(63,128,92,0.35); }
+.badge.red  { background: var(--red-dim);      color: #B84A4A;       border-color: rgba(184,74,74,0.30); }
+.badge.gld  { background: var(--gold-dim);     color: var(--gold);   border-color: rgba(184,138,43,0.35); }
 
 /* ================================================================
    WORKER ACCORDION
@@ -866,7 +866,7 @@ button { font-family: var(--font); cursor: pointer; }
 .mbd {
   position: fixed;
   inset: 0;
-  background: rgba(5, 4, 2, 0.82);
+  background: rgba(31, 41, 35, 0.50);
   z-index: 200;
   display: flex;
   align-items: flex-end;
@@ -883,7 +883,7 @@ button { font-family: var(--font); cursor: pointer; }
   max-width: 540px;
   max-height: 88vh;
   overflow-y: auto;
-  box-shadow: 0 -8px 40px rgba(0,0,0,0.65);
+  box-shadow: 0 -8px 40px rgba(0,0,0,0.12);
   animation: slideUp 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -948,12 +948,12 @@ select option { background: var(--bg-surface-2); }
   font-weight: 500;
   z-index: 300;
   white-space: nowrap;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.10);
 }
 .sazon-toast.err {
   background: var(--red-dim);
-  border-color: rgba(168,56,40,0.5);
-  color: #F5A090;
+  border-color: rgba(184,74,74,0.40);
+  color: #B84A4A;
 }
 
 /* ================================================================
@@ -962,7 +962,7 @@ select option { background: var(--bg-surface-2); }
 .spinner {
   display: inline-block;
   width: 13px; height: 13px;
-  border: 2px solid rgba(255,255,255,0.25);
+  border: 2px solid rgba(255,255,255,0.35);
   border-top-color: #fff;
   border-radius: 50%;
   animation: spin 0.65s linear infinite;
@@ -1016,7 +1016,7 @@ select option { background: var(--bg-surface-2); }
 .login-brand-name { font-size: 20px; font-weight: 700; color: var(--text-1); letter-spacing: -0.02em; }
 .login-brand-sub  { font-size: 11px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.07em; margin-top: 2px; }
 
-.login-err { color: #F5A090; font-size: 12.5px; font-weight: 500; min-height: 18px; margin-bottom: 10px; }
+.login-err { color: #B84A4A; font-size: 12.5px; font-weight: 500; min-height: 18px; margin-bottom: 10px; }
 
 /* ================================================================
    UTILITY
@@ -1035,8 +1035,385 @@ select option { background: var(--bg-surface-2); }
 .flex-gap { display: flex; align-items: center; gap: 8px; }
 
 /* ================================================================
-   RESPONSIVE
+   SIDEBAR — GREEN IDENTITY
 ================================================================ */
+
+/* Sidebar base: green gradient */
+.g-sidebar {
+  background: linear-gradient(180deg, #1D4030 0%, #214936 60%, #2A5C43 100%);
+  border-right: 1px solid rgba(0,0,0,0.14);
+}
+
+/* Brand area */
+.sb-brand { border-bottom-color: rgba(255,255,255,0.10); }
+.sb-logo-mark {
+  background: rgba(255,255,255,0.15);
+  color: #FFFFFF;
+  border: 1px solid rgba(255,255,255,0.20);
+}
+.sb-logo-name { color: #FFFFFF; }
+.sb-logo-sub   { color: rgba(255,255,255,0.48); }
+
+/* Group labels */
+.sb-group-label { color: rgba(255,255,255,0.40); }
+
+/* Nav buttons */
+.g-sidebar .nb {
+  color: rgba(255,255,255,0.68);
+  border-left-color: transparent;
+}
+.g-sidebar .nb:hover {
+  color: #FFFFFF;
+  background: rgba(255,255,255,0.09);
+}
+.g-sidebar .nb.a {
+  color: #FFFFFF;
+  background: rgba(255,255,255,0.14);
+  border-left-color: #FFFFFF;
+  font-weight: 600;
+}
+.g-sidebar .nb.a .nb-icon { opacity: 1; }
+
+/* User footer */
+.sb-user { border-top-color: rgba(255,255,255,0.10); }
+.sb-avatar {
+  background: rgba(255,255,255,0.12);
+  border-color: rgba(255,255,255,0.18);
+  color: rgba(255,255,255,0.80);
+}
+.sb-user-name { color: #FFFFFF; }
+.sb-user-role  { color: rgba(255,255,255,0.46); }
+.logout-btn    { color: rgba(255,255,255,0.46); }
+.logout-btn:hover { color: #FFFFFF; }
+
+/* ================================================================
+   PAGE HEADER — GREEN TOP BAR
+================================================================ */
+.g-page-hd {
+  background: #2F6B4F;
+  border-bottom: 1px solid rgba(0,0,0,0.12);
+}
+.page-title { color: #FFFFFF; }
+.page-sub   { color: rgba(255,255,255,0.60); }
+
+/* Subtab row inside green header */
+.g-page-hd .subtab-row { border-bottom-color: rgba(255,255,255,0.15); }
+.g-page-hd .st {
+  color: rgba(255,255,255,0.60);
+  border-bottom-color: transparent;
+}
+.g-page-hd .st:hover { color: rgba(255,255,255,0.85); }
+.g-page-hd .st.a {
+  color: #FFFFFF;
+  border-bottom-color: #FFFFFF;
+}
+
+/* ================================================================
+   MOBILE HEADER & BOTTOM NAV — GREEN
+================================================================ */
+.m-header {
+  background: #214936;
+  border-bottom-color: rgba(0,0,0,0.12);
+}
+.m-brand       { color: #FFFFFF; }
+.m-brand-mark  { background: rgba(255,255,255,0.14); color: #FFFFFF; }
+.m-user-tag {
+  background: rgba(255,255,255,0.10);
+  border-color: rgba(255,255,255,0.18);
+  color: rgba(255,255,255,0.78);
+}
+.m-nav {
+  background: #214936;
+  border-top-color: rgba(0,0,0,0.12);
+}
+.m-nb   { color: rgba(255,255,255,0.52); }
+.m-nb.a { color: #FFFFFF; }
+
+
+/* ================================================================
+   DASHBOARD DE METAS
+================================================================ */
+
+/* Filter bar */
+.db-filter-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 10px;
+  align-items: end;
+}
+.db-fg { display: flex; flex-direction: column; gap: 4px; }
+.db-fg-btns { display: flex; gap: 6px; align-items: flex-end; }
+.db-fl {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+.db-fsel {
+  width: 100%;
+  background: var(--bg-surface-2);
+  border: 1px solid var(--border);
+  color: var(--text-1);
+  padding: 7px 10px;
+  border-radius: var(--r-sm);
+  font-size: 13px;
+  font-family: var(--font);
+  outline: none;
+  transition: border-color 0.15s;
+}
+.db-fsel:focus { border-color: var(--accent); }
+
+/* KPI row */
+.db-kpi-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+  margin-bottom: 18px;
+}
+.db-kpi {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 16px 16px 14px;
+  position: relative;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+}
+.db-kpi-icon { font-size: 20px; margin-bottom: 8px; }
+.db-kpi-val {
+  font-family: var(--font-mono);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-1);
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+.db-kpi-lbl {
+  font-size: 11px;
+  color: var(--text-3);
+  margin-top: 4px;
+  font-weight: 500;
+}
+.db-kpi-prog {
+  height: 3px;
+  background: var(--bg-surface-2);
+  border-radius: 99px;
+  overflow: hidden;
+  margin-top: 10px;
+}
+.db-kpi-prog > div { height: 100%; border-radius: 99px; transition: width 0.4s; }
+
+/* Main progress */
+.db-main-prog-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 24px;
+  margin-bottom: 16px;
+}
+.db-main-prog-info { flex-shrink: 0; }
+.db-main-prog-pct {
+  font-family: var(--font-mono);
+  font-size: 40px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+.db-main-prog-details { flex: 1; }
+.db-detail-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+.db-detail-row:last-child { border-bottom: none; }
+.db-detail-lbl { color: var(--text-2); }
+.db-detail-val { font-family: var(--font-mono); font-weight: 600; color: var(--text-1); }
+
+.db-big-prog {
+  height: 28px;
+  background: var(--bg-surface-2);
+  border-radius: var(--r-sm);
+  overflow: hidden;
+}
+.db-big-prog-bar {
+  height: 100%;
+  border-radius: var(--r-sm);
+  transition: width 0.5s cubic-bezier(0.16,1,0.3,1);
+  display: flex;
+  align-items: center;
+}
+
+/* Worker table */
+.db-wk-table { width: 100%; }
+.db-wk-hd {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1.8fr 1fr 1fr;
+  padding: 9px 16px;
+  background: var(--bg-surface-2);
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  border-bottom: 1px solid var(--border);
+  gap: 8px;
+}
+.db-wk-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1.8fr 1fr 1fr;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  align-items: center;
+  gap: 8px;
+  transition: background 0.1s;
+  font-size: 13px;
+}
+.db-wk-row:last-child { border-bottom: none; }
+.db-wk-row:hover { background: var(--bg-surface-2); }
+.db-wk-name { display: flex; align-items: center; gap: 10px; }
+.db-wk-av {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: var(--accent-dim);
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  border: 1px solid rgba(47,107,79,0.2);
+}
+.db-wk-cell { font-family: var(--font-mono); font-size: 13px; color: var(--text-1); font-variant-numeric: tabular-nums; }
+.db-mini-prog {
+  flex: 1;
+  height: 6px;
+  background: var(--bg-surface-2);
+  border-radius: 99px;
+  overflow: hidden;
+  min-width: 50px;
+}
+.db-mini-prog > div { height: 100%; border-radius: 99px; transition: width 0.4s; }
+
+/* Horizontal bar chart */
+.db-barchart { display: flex; flex-direction: column; gap: 12px; }
+.db-bar-row { display: flex; align-items: center; gap: 12px; }
+.db-bar-label { width: 70px; font-size: 13px; font-weight: 600; color: var(--text-1); text-align: right; flex-shrink: 0; }
+.db-bar-track {
+  flex: 1;
+  height: 10px;
+  background: var(--bg-surface-2);
+  border-radius: 99px;
+  overflow: hidden;
+}
+.db-bar-fill { height: 100%; border-radius: 99px; transition: width 0.5s cubic-bezier(0.16,1,0.3,1); }
+.db-bar-pct { width: 40px; font-family: var(--font-mono); font-size: 12px; color: var(--text-2); font-weight: 600; text-align: right; flex-shrink: 0; }
+
+/* Two-column layout */
+.db-two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 20px;
+}
+
+/* Line/bar chart (evolution) */
+.db-linechart { width: 100%; }
+.db-line-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: 100px;
+}
+.db-line-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  height: 100%;
+}
+.db-line-bar-wrap {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+}
+.db-line-bar {
+  width: 100%;
+  background: var(--accent);
+  border-radius: 3px 3px 0 0;
+  min-height: 4px;
+  opacity: 0.8;
+  transition: opacity 0.15s;
+}
+.db-line-bar:hover { opacity: 1; }
+.db-line-lbl { font-size: 10px; color: var(--text-3); font-weight: 500; }
+
+/* Distribution */
+.db-distrib { display: flex; gap: 12px; margin-bottom: 4px; }
+.db-distrib-item {
+  flex: 1;
+  padding: 12px 14px;
+  background: var(--bg-surface-2);
+  border-radius: var(--r-sm);
+}
+.db-distrib-n { font-family: var(--font-mono); font-size: 28px; font-weight: 700; line-height: 1; }
+.db-distrib-lbl { font-size: 11px; color: var(--text-3); margin-top: 4px; }
+
+/* Indicator row */
+.db-ind-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 10px;
+  margin-bottom: 18px;
+}
+.db-ind {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 14px 16px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+.db-ind-lbl { font-size: 11px; color: var(--text-3); margin-bottom: 6px; font-weight: 500; }
+.db-ind-val { font-family: var(--font-mono); font-size: 18px; font-weight: 700; color: var(--text-1); letter-spacing: -0.02em; }
+
+/* Alerts */
+.db-alerts { display: flex; flex-direction: column; gap: 8px; }
+.db-alert-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-2);
+  padding: 10px 12px;
+  background: var(--bg-surface-2);
+  border-radius: var(--r-sm);
+  border-left: 3px solid var(--gold);
+  line-height: 1.5;
+}
+
+/* Dashboard responsive */
+@media (max-width: 900px) {
+  .db-two-col { grid-template-columns: 1fr; }
+}
+@media (max-width: 768px) {
+  .db-kpi-row { grid-template-columns: 1fr 1fr; }
+  .db-wk-hd { display: none; }
+  .db-wk-row {
+    grid-template-columns: 1fr;
+    gap: 6px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    margin: 6px;
+    padding: 12px;
+  }
+  .db-wk-row:hover { background: var(--bg-surface); }
+  .db-filter-grid { grid-template-columns: 1fr 1fr; }
+  .db-distrib { flex-direction: column; }
+  .db-main-prog-row { flex-direction: column; }
+  .db-main-prog-pct { font-size: 32px; }
+}
 
 @media (max-width: 768px) {
   /* Layout Shell */
@@ -1491,6 +1868,12 @@ const api = {
 // ================================================================
 function today() { return new Date(); }
 function dim() { const d = today(); return new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate(); }
+function localDateStr(d = today()) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
 
 const S = {
   session: JSON.parse(localStorage.getItem('sazon_session') || 'null'),
@@ -1534,10 +1917,24 @@ async function syncFromD1() {
   try {
     const now = today();
     const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    const utcMonth = now.toISOString().substring(0, 7);
+
+    // Queries sales for current month; if near UTC boundary (e.g. evening in UTC-5), merge both
+    const salesPromise = (utcMonth !== currentMonth)
+      ? Promise.all([
+          api.getSales({ month: currentMonth }),
+          api.getSales({ month: utcMonth })
+        ]).then(([r1, r2]) => {
+          const map = new Map();
+          [...(r1.sales || []), ...(r2.sales || [])].forEach(s => map.set(s.id, s));
+          return { sales: Array.from(map.values()) };
+        }).catch(() => api.getSales({ month: currentMonth }))
+      : api.getSales({ month: currentMonth });
+
     const [uRes, pRes, sRes, gRes, tRes, eRes, kRes, proRes] = await Promise.all([
       api.getUsers(),
       api.getProducts(true),
-      api.getSales({ month: currentMonth }),
+      salesPromise,
       api.getGoals({ month: currentMonth }),
       api.getTasks(),
       api.getEvents(),
@@ -1569,21 +1966,25 @@ function catalog(role) {
 }
 
 function goalForProduct(productId, workerId) {
+  const pid = String(productId);
+  const wid = workerId != null ? String(workerId) : null;
   let found;
-  if (workerId) {
-    found = (S.goals.productGoals || []).find(g => g.product_id === productId && g.worker_id === workerId);
-    if (!found) found = (S.goals.productGoals || []).find(g => g.product_id === productId && (g.worker_id === null || g.worker_id === undefined || g.worker_id === ''));
+  if (wid) {
+    found = (S.goals.productGoals || []).find(g => String(g.product_id) === pid && String(g.worker_id) === wid);
+    if (!found) found = (S.goals.productGoals || []).find(g => String(g.product_id) === pid && (g.worker_id === null || g.worker_id === undefined || g.worker_id === ''));
   } else {
-    found = (S.goals.productGoals || []).find(g => g.product_id === productId && (g.worker_id === null || g.worker_id === undefined || g.worker_id === ''));
+    found = (S.goals.productGoals || []).find(g => String(g.product_id) === pid && (g.worker_id === null || g.worker_id === undefined || g.worker_id === ''));
   }
   if (found) return found.target_quantity;
-  const p = S.products.find(x => x.id === productId);
+  const p = S.products.find(x => String(x.id) === pid);
   return (p && p.name === '1/4 Pollo') ? 200 : 40;
 }
 
 function qtyForWorkerProduct(workerId, productId) {
+  const wid = String(workerId);
+  const pid = String(productId);
   return S.sales
-    .filter(s => s.worker_id === workerId && s.product_id === productId)
+    .filter(s => String(s.worker_id) === wid && String(s.product_id) === pid)
     .reduce((acc, s) => acc + (s.quantity || 0), 0);
 }
 
@@ -1876,7 +2277,7 @@ function vGeneral() {
     </tr></thead><tbody>`;
     prods.forEach(p => {
       const goal = goalForProduct(p.id, null);
-      const sold = S.sales.filter(s => s.product_id === p.id).reduce((acc, s) => acc + (s.quantity || 0), 0);
+      const sold = S.sales.filter(s => String(s.product_id) === String(p.id)).reduce((acc, s) => acc + (s.quantity || 0), 0);
       const pp   = pct(sold, goal);
       html += `<tr>
         <td class="fw600">${esc(p.name)}</td>
@@ -2229,21 +2630,403 @@ function renderM() {
 }
 
 // ================================================================
+// VIEW: DASHBOARD DE METAS (ADMIN)
+// ================================================================
+function vDashboard() {
+  // ── State for filters (stored on S.dash) ──
+  if (!S.dash) S.dash = { period: 'mes', from: '', to: '', worker: 'all', shift: 'all', status: 'all' };
+  const df = S.dash;
+
+  // ── Real data from S ──
+  const kpis      = (S.kpi && S.kpi.kpis) || {};
+  const totalMeta = parseFloat(kpis.totalTarget)   || 350000;
+  const totalVta  = parseFloat(kpis.monthlySales)  || 0;
+  const comp      = parseFloat(kpis.targetCompliance) || 0;
+  const falta     = Math.max(0, totalMeta - totalVta);
+  const proj      = parseFloat(kpis.projectedClosing) || 0;
+  const projAbove = proj >= totalMeta;
+
+  // ── Workers with their sales ──
+  const mozos = S.users.filter(u => u.role === 'MOZO' && u.active);
+  const anfs  = S.users.filter(u => u.role === 'ANFITRIONA' && u.active);
+  const allWk = [...mozos, ...anfs];
+
+  // Compute per-worker sales total (monetary)
+  function workerSales(wId) {
+    const widStr = String(wId);
+    return S.sales
+      .filter(s => String(s.worker_id) === widStr)
+      .reduce((acc, s) => {
+        const prod = S.products.find(p => String(p.id) === String(s.product_id));
+        return acc + (s.quantity || 0) * (prod ? prod.price : 0);
+      }, 0);
+  }
+
+  // Per-worker goal (share of store target equally, or 0 if no workers)
+  const workerMeta = allWk.length > 0 ? Math.round(totalMeta / allWk.length) : 0;
+
+  const wkData = allWk.map(w => {
+    const vta = workerSales(w.id);
+    const c   = workerMeta > 0 ? Math.round(vta / workerMeta * 100) : 0;
+    return { ...w, vta, cumpl: c, falta: Math.max(0, workerMeta - vta) };
+  });
+
+  // Sort by cumplimiento desc
+  wkData.sort((a,b) => b.cumpl - a.cumpl);
+
+  // Filter by selected worker & status
+  let filtered = [...wkData];
+  if (df.worker !== 'all') filtered = filtered.filter(w => String(w.id) === String(df.worker));
+  if (df.status === 'cumplida')  filtered = filtered.filter(w => w.cumpl >= 100);
+  else if (df.status === 'camino') filtered = filtered.filter(w => w.cumpl >= 60 && w.cumpl < 100);
+  else if (df.status === 'bajo')   filtered = filtered.filter(w => w.cumpl < 60);
+
+  const topWorker  = wkData[0];
+  const avgPerWk   = allWk.length > 0 ? Math.round(totalVta / allWk.length) : 0;
+  const avgPerDay  = S.currentDay > 0 ? Math.round(totalVta / S.currentDay) : 0;
+  const wkCumplida = wkData.filter(w => w.cumpl >= 100).length;
+  const wkCamino   = wkData.filter(w => w.cumpl >= 60 && w.cumpl < 100).length;
+  const wkBajo     = wkData.filter(w => w.cumpl < 60).length;
+
+  // Alerts
+  const alerts = [];
+  wkData.filter(w => w.cumpl < 60).forEach(w => alerts.push(`<b>${esc(w.name)}</b> está al <b>${w.cumpl}%</b> de su meta.`));
+  if (falta > 0) alerts.push(`Faltan <b>${money(falta)}</b> para alcanzar la meta del equipo.`);
+  if (!projAbove) alerts.push(`La proyección de cierre <b>${money(proj)}</b> está por debajo de la meta <b>${money(totalMeta)}</b>.`);
+
+  // Mock evolution data (last 7 days pattern based on real total)
+  const days = ['Lu','Ma','Mi','Ju','Vi','Sa','Do'];
+  const mockEvo = [0.11,0.13,0.12,0.14,0.18,0.17,0.15];
+  const evoMax  = totalVta * 0.18 || 50000;
+
+  // ── Status color helper ──
+  function statusBadge(c) {
+    if (c >= 100) return '<span class="badge grn">Cumplida</span>';
+    if (c >= 60)  return '<span class="badge acc">En camino</span>';
+    return '<span class="badge red">Por debajo</span>';
+  }
+  function barColor(c) {
+    if (c >= 100) return '#3F805C';
+    if (c >= 60)  return '#2F6B4F';
+    return '#B84A4A';
+  }
+
+  let html = '';
+
+  // ── FILTER BAR ──
+  html += `
+  <div class="db-filters card card-body" style="margin-bottom:18px">
+    <div class="db-filter-grid">
+      <div class="db-fg">
+        <label class="db-fl">Periodo</label>
+        <select id="dbf-period" class="db-fsel">
+          <option value="hoy"  ${df.period==='hoy'  ?'selected':''}>Hoy</option>
+          <option value="sem"  ${df.period==='sem'  ?'selected':''}>Esta semana</option>
+          <option value="mes"  ${df.period==='mes'  ?'selected':''}>Este mes</option>
+          <option value="custom" ${df.period==='custom'?'selected':''}>Personalizado</option>
+        </select>
+      </div>
+      <div class="db-fg">
+        <label class="db-fl">Desde</label>
+        <input id="dbf-from" type="date" class="db-fsel" value="${df.from}">
+      </div>
+      <div class="db-fg">
+        <label class="db-fl">Hasta</label>
+        <input id="dbf-to" type="date" class="db-fsel" value="${df.to}">
+      </div>
+      <div class="db-fg">
+        <label class="db-fl">Mozo</label>
+        <select id="dbf-worker" class="db-fsel">
+          <option value="all" ${df.worker==='all'?'selected':''}>Todos</option>
+          ${allWk.map(w => `<option value="${w.id}" ${df.worker===w.id?'selected':''}>${esc(w.name)}</option>`).join('')}
+        </select>
+      </div>
+      <div class="db-fg">
+        <label class="db-fl">Turno</label>
+        <select id="dbf-shift" class="db-fsel">
+          <option value="all"    ${df.shift==='all'   ?'selected':''}>Todos</option>
+          <option value="mañana" ${df.shift==='mañana'?'selected':''}>Mañana</option>
+          <option value="tarde"  ${df.shift==='tarde' ?'selected':''}>Tarde</option>
+          <option value="noche"  ${df.shift==='noche' ?'selected':''}>Noche</option>
+        </select>
+      </div>
+      <div class="db-fg">
+        <label class="db-fl">Estado de meta</label>
+        <select id="dbf-status" class="db-fsel">
+          <option value="all"     ${df.status==='all'    ?'selected':''}>Todos</option>
+          <option value="camino"  ${df.status==='camino' ?'selected':''}>En camino</option>
+          <option value="cumplida"${df.status==='cumplida'?'selected':''}>Cumplida</option>
+          <option value="bajo"    ${df.status==='bajo'   ?'selected':''}>Por debajo</option>
+        </select>
+      </div>
+      <div class="db-fg db-fg-btns">
+        <button class="btn pri" id="dbf-apply">Aplicar filtros</button>
+        <button class="btn gho" id="dbf-clear">Limpiar</button>
+      </div>
+    </div>
+  </div>`;
+
+  // ── KPI CARDS ──
+  html += `
+  <div class="db-kpi-row">
+    <div class="db-kpi">
+      <div class="db-kpi-icon">🎯</div>
+      <div class="db-kpi-val">${money(totalMeta)}</div>
+      <div class="db-kpi-lbl">Meta total</div>
+    </div>
+    <div class="db-kpi">
+      <div class="db-kpi-icon">💰</div>
+      <div class="db-kpi-val" style="color:var(--accent)">${money(totalVta)}</div>
+      <div class="db-kpi-lbl">Venta actual</div>
+    </div>
+    <div class="db-kpi">
+      <div class="db-kpi-icon">${comp >= 80 ? '🟢' : comp >= 50 ? '🟡' : '🔴'}</div>
+      <div class="db-kpi-val" style="color:${comp>=80?'var(--green)':comp>=50?'var(--gold)':'var(--red)'}">${comp}%</div>
+      <div class="db-kpi-lbl">Avance</div>
+      <div class="db-kpi-prog"><div style="width:${Math.min(100,comp)}%;background:${comp>=80?'var(--green)':comp>=50?'var(--gold)':'var(--red)'}"></div></div>
+    </div>
+    <div class="db-kpi">
+      <div class="db-kpi-icon">📉</div>
+      <div class="db-kpi-val" style="color:var(--red)">${money(falta)}</div>
+      <div class="db-kpi-lbl">Falta para la meta</div>
+    </div>
+    <div class="db-kpi">
+      <div class="db-kpi-icon">⭐</div>
+      <div class="db-kpi-val" style="font-size:18px;color:var(--accent)">${topWorker ? esc(topWorker.name) : '—'}</div>
+      <div class="db-kpi-lbl">Mozo destacado · ${topWorker ? topWorker.cumpl+'% cumpl.' : ''}</div>
+    </div>
+  </div>`;
+
+  // ── AVANCE GENERAL ──
+  html += `
+  <div class="sec-hd"><div class="sec-label">Avance general de la meta</div></div>
+  <div class="card card-body" style="margin-bottom:18px">
+    <div class="db-main-prog-row">
+      <div class="db-main-prog-info">
+        <div class="db-main-prog-pct" style="color:${comp>=80?'var(--green)':comp>=50?'var(--gold)':'var(--red)'}">${comp}%</div>
+        <div style="font-size:12.5px;color:var(--text-3);margin-top:2px">Cumplimiento del período</div>
+      </div>
+      <div class="db-main-prog-details">
+        <div class="db-detail-row"><span class="db-detail-lbl">Meta</span><span class="db-detail-val">${money(totalMeta)}</span></div>
+        <div class="db-detail-row"><span class="db-detail-lbl">Actual</span><span class="db-detail-val" style="color:var(--accent);font-weight:600">${money(totalVta)}</span></div>
+        <div class="db-detail-row"><span class="db-detail-lbl">Restante</span><span class="db-detail-val" style="color:var(--red)">${money(falta)}</span></div>
+      </div>
+    </div>
+    <div class="db-big-prog">
+      <div class="db-big-prog-bar" style="width:${Math.min(100,comp)}%;background:${comp>=80?'var(--green)':comp>=50?'var(--gold)':'var(--accent)'}">
+        ${comp >= 15 ? `<span style="color:#fff;font-size:11px;padding:0 8px">${comp}%</span>` : ''}
+      </div>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:11.5px;color:var(--text-3);margin-top:6px">
+      <span>S/ 0</span><span>${money(totalMeta)}</span>
+    </div>
+  </div>`;
+
+  // ── AVANCE POR MOZO ──
+  html += `
+  <div class="sec-hd"><div class="sec-label">Avance por mozo</div></div>
+  <div class="card" style="padding:0;margin-bottom:18px">`;
+
+  if (filtered.length === 0) {
+    html += `<div class="empty-box"><div class="empty-icon">👥</div><div class="empty-title">Sin resultados</div><div class="empty-hint">Ajusta los filtros para ver colaboradores.</div></div>`;
+  } else {
+    html += `<div class="db-wk-table">
+      <div class="db-wk-hd">
+        <div>Colaborador</div><div>Meta</div><div>Venta</div><div>Cumpl.</div><div>Falta</div><div>Estado</div>
+      </div>`;
+    filtered.forEach(w => {
+      const bc = barColor(w.cumpl);
+      html += `
+      <div class="db-wk-row">
+        <div class="db-wk-name">
+          <div class="db-wk-av">${(w.name||'?').charAt(0).toUpperCase()}</div>
+          <div>
+            <div style="font-weight:600;font-size:13.5px">${esc(w.name)}</div>
+            <div style="font-size:11px;color:var(--text-3)">${w.role}</div>
+          </div>
+        </div>
+        <div class="db-wk-cell">${money(workerMeta)}</div>
+        <div class="db-wk-cell" style="color:var(--accent);font-weight:600">${money(w.vta)}</div>
+        <div class="db-wk-cell">
+          <div style="display:flex;align-items:center;gap:8px">
+            <div class="db-mini-prog"><div style="width:${Math.min(100,w.cumpl)}%;background:${bc}"></div></div>
+            <span style="font-weight:600;color:${bc};font-size:13px">${w.cumpl}%</span>
+          </div>
+        </div>
+        <div class="db-wk-cell" style="color:var(--red)">${money(w.falta)}</div>
+        <div class="db-wk-cell">${statusBadge(w.cumpl)}</div>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+  html += `</div>`;
+
+  // ── GRÁFICO META VS VENTA (barras horiz.) ──
+  html += `
+  <div class="sec-hd"><div class="sec-label">Meta vs venta por colaborador</div></div>
+  <div class="card card-body" style="margin-bottom:18px">`;
+
+  if (wkData.length === 0) {
+    html += `<div class="empty-box"><div class="empty-icon">📊</div><div class="empty-title">Sin datos</div></div>`;
+  } else {
+    html += `<div class="db-barchart">`;
+    wkData.forEach(w => {
+      const p = Math.min(100, w.cumpl);
+      html += `
+      <div class="db-bar-row">
+        <div class="db-bar-label">${esc(w.name.split(' ')[0])}</div>
+        <div class="db-bar-track">
+          <div class="db-bar-fill" style="width:${p}%;background:${barColor(w.cumpl)}"></div>
+        </div>
+        <div class="db-bar-pct">${w.cumpl}%</div>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+  html += `</div>`;
+
+  // ── EVOLUCIÓN + DISTRIBUCIÓN (2 cols) ──
+  html += `<div class="db-two-col">`;
+
+  // Evolución
+  html += `
+  <div>
+    <div class="sec-hd"><div class="sec-label">Evolución de ventas (últimos 7 días)</div></div>
+    <div class="card card-body">
+      <div class="db-linechart">`;
+  const evoVals = mockEvo.map(f => Math.round(totalVta * f));
+  const evoMax2 = Math.max(...evoVals, 1);
+  html += `<div class="db-line-bars">`;
+  days.forEach((d, i) => {
+    const h = Math.round(evoVals[i] / evoMax2 * 100);
+    html += `
+    <div class="db-line-col">
+      <div class="db-line-bar-wrap">
+        <div class="db-line-bar" style="height:${h}%" title="${money(evoVals[i])}"></div>
+      </div>
+      <div class="db-line-lbl">${d}</div>
+    </div>`;
+  });
+  html += `</div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-3);margin-top:10px">
+        <span>Prom: ${money(avgPerDay)}/día</span>
+        <span style="color:var(--accent)">■ Ventas diarias</span>
+      </div>
+    </div>
+  </div>
+  </div>`;
+
+  // Distribución
+  html += `
+  <div>
+    <div class="sec-hd"><div class="sec-label">Estado de metas del equipo</div></div>
+    <div class="card card-body">
+      <div class="db-distrib">
+        <div class="db-distrib-item" style="border-left:3px solid var(--green)">
+          <div class="db-distrib-n" style="color:var(--green)">${wkCumplida}</div>
+          <div class="db-distrib-lbl">Cumplidas</div>
+        </div>
+        <div class="db-distrib-item" style="border-left:3px solid var(--accent)">
+          <div class="db-distrib-n" style="color:var(--accent)">${wkCamino}</div>
+          <div class="db-distrib-lbl">En camino</div>
+        </div>
+        <div class="db-distrib-item" style="border-left:3px solid var(--red)">
+          <div class="db-distrib-n" style="color:var(--red)">${wkBajo}</div>
+          <div class="db-distrib-lbl">Por debajo</div>
+        </div>
+      </div>
+      <div style="height:8px;background:var(--bg-surface-2);border-radius:99px;overflow:hidden;margin:18px 0 6px">
+        ${allWk.length > 0 ? `
+        <div style="display:flex;height:100%;border-radius:99px;overflow:hidden">
+          <div style="width:${Math.round(wkCumplida/allWk.length*100)}%;background:var(--green)"></div>
+          <div style="width:${Math.round(wkCamino/allWk.length*100)}%;background:var(--accent)"></div>
+          <div style="width:${Math.round(wkBajo/allWk.length*100)}%;background:var(--red)"></div>
+        </div>` : ''}
+      </div>
+      <div style="font-size:11.5px;color:var(--text-3);text-align:center">${allWk.length} colaboradores activos</div>
+    </div>
+  </div>
+  </div>`;
+
+  html += `</div>`; /* db-two-col */
+
+  // ── INDICADORES ADICIONALES ──
+  html += `
+  <div class="sec-hd"><div class="sec-label">Indicadores adicionales</div></div>
+  <div class="db-ind-row">
+    <div class="db-ind">
+      <div class="db-ind-lbl">Venta promedio por colaborador</div>
+      <div class="db-ind-val">${money(avgPerWk)}</div>
+    </div>
+    <div class="db-ind">
+      <div class="db-ind-lbl">Venta promedio por día</div>
+      <div class="db-ind-val">${money(avgPerDay)}</div>
+    </div>
+    <div class="db-ind">
+      <div class="db-ind-lbl">Proyección de cierre</div>
+      <div class="db-ind-val" style="color:${projAbove?'var(--green)':'var(--red)'}">
+        ${money(proj)}
+        <span style="font-size:11px;font-weight:500;margin-left:4px">${projAbove ? '▲ sobre meta' : '▼ bajo meta'}</span>
+      </div>
+    </div>
+    <div class="db-ind">
+      <div class="db-ind-lbl">Día actual</div>
+      <div class="db-ind-val">${S.currentDay} / ${S.monthDays}</div>
+    </div>
+  </div>`;
+
+  // ── ALERTAS ──
+  if (alerts.length > 0) {
+    html += `
+    <div class="sec-hd" style="margin-top:20px"><div class="sec-label">Requiere atención</div></div>
+    <div class="card card-body" style="margin-bottom:24px">
+      <div class="db-alerts">`;
+    alerts.forEach(a => {
+      html += `<div class="db-alert-item">⚠️ <span>${a}</span></div>`;
+    });
+    html += `</div></div>`;
+  }
+
+  return html;
+}
+
+function wireDashboard(root) {
+  const ap = root.querySelector('#dbf-apply');
+  const cl = root.querySelector('#dbf-clear');
+  if (ap) ap.addEventListener('click', () => {
+    if (!S.dash) S.dash = {};
+    S.dash.period = root.querySelector('#dbf-period').value;
+    S.dash.from   = root.querySelector('#dbf-from').value;
+    S.dash.to     = root.querySelector('#dbf-to').value;
+    S.dash.worker = root.querySelector('#dbf-worker').value;
+    S.dash.shift  = root.querySelector('#dbf-shift').value;
+    S.dash.status = root.querySelector('#dbf-status').value;
+    render();
+  });
+  if (cl) cl.addEventListener('click', () => {
+    S.dash = { period: 'mes', from: '', to: '', worker: 'all', shift: 'all', status: 'all' };
+    render();
+  });
+}
+
+// ================================================================
 // RENDER — MAIN
 // ================================================================
 const NAV_ITEMS = [
-  { id: 'ventas',     icon: '📋', label: 'Ventas' },
-  { id: 'general',   icon: '🎯', label: 'Metas' },
-  { id: 'proyectado',icon: '📈', label: 'Proyectado' },
-  { id: 'tareas',    icon: '✅', label: 'Tareas' },
-  { id: 'cronos',    icon: '📅', label: 'Cronograma' },
-  { id: 'config',    icon: '⚙️', label: 'Config' },
+  { id: 'ventas',     icon: '📋', label: 'Ventas',      adminOnly: false },
+  { id: 'general',   icon: '🎯', label: 'Metas',       adminOnly: false },
+  { id: 'proyectado',icon: '📈', label: 'Proyectado',  adminOnly: false },
+  { id: 'dashboard', icon: '📊', label: 'Dashboard',   adminOnly: true  },
+  { id: 'tareas',    icon: '✅', label: 'Tareas',      adminOnly: false },
+  { id: 'cronos',    icon: '📅', label: 'Cronograma',  adminOnly: false },
+  { id: 'config',    icon: '⚙️', label: 'Config',      adminOnly: false },
 ];
 
 const PAGE_INFO = {
   ventas:     { t: (a,r) => a ? 'Ventas por Personal' : 'Mi Desempeño',         s: (a) => a ? 'Seguimiento de comandas y desempeño del equipo' : 'Control de metas y registros de tu turno' },
   general:    { t: () => 'Metas del Período',       s: () => 'Avance consolidado de metas por producto y tienda' },
   proyectado: { t: () => 'Proyección Financiera',   s: () => 'Análisis de ritmo y estimación de cierre mensual' },
+  dashboard:  { t: () => 'Dashboard de Metas',      s: () => 'Seguimiento del rendimiento comercial del equipo' },
   tareas:     { t: (a) => a ? 'Tareas Operativas' : 'Mis Tareas',               s: (a) => a ? 'Asignación y seguimiento de tareas del equipo' : 'Tareas pendientes de tu turno' },
   cronos:     { t: () => 'Cronograma',              s: () => 'Reuniones, eventos y actividades del restaurante' },
   config:     { t: (a) => a ? 'Configuración' : 'Mi Perfil',                    s: (a) => a ? 'Gestión de personal y sistema' : 'Datos de tu cuenta de acceso' },
@@ -2279,6 +3062,7 @@ function render() {
       <div class="sb-group-label">Operaciones</div>`;
 
   NAV_ITEMS.forEach(n => {
+    if (n.adminOnly && !isAdmin) return;
     html += `<button class="nb ${S.tab === n.id ? 'a' : ''}" data-tab="${n.id}">
       <span class="nb-icon">${n.icon}</span>${n.label}
     </button>`;
@@ -2318,6 +3102,7 @@ function render() {
   if      (S.tab === 'ventas')      html += isAdmin ? vVentasAdmin() : vVentasUser();
   else if (S.tab === 'general')     html += vGeneral();
   else if (S.tab === 'proyectado')  html += vProyectado();
+  else if (S.tab === 'dashboard')   html += vDashboard();
   else if (S.tab === 'tareas')      html += vTareas();
   else if (S.tab === 'cronos')      html += vCronogramas();
   else if (S.tab === 'config')      html += vConfig();
@@ -2358,6 +3143,9 @@ function wire(root) {
   if (lo)  lo.addEventListener('click', doLogout);
   if (loM) loM.addEventListener('click', doLogout);
 
+  /* Dashboard filters */
+  if (S.tab === 'dashboard') wireDashboard(root);
+
   /* Navigation (sidebar + mobile) */
   root.querySelectorAll('.nb').forEach(b => b.addEventListener('click', () => {
     if (b.dataset.tab) { S.tab = b.dataset.tab; render(); }
@@ -2371,23 +3159,73 @@ function wire(root) {
   /* ── REGISTRO DE VENTAS (USUARIO) ── */
   if (!isAdmin && S.tab === 'ventas') {
     root.querySelectorAll('[data-inc]').forEach(b => b.addEventListener('click', async () => {
+      const pid = b.dataset.inc;
+      const wid = S.session ? S.session.id : null;
+      const sDate = localDateStr();
       b.disabled = true;
+
+      // Actualización optimista inmediata
+      const tempId = 'temp_' + Date.now();
+      S.sales.push({
+        id: tempId,
+        worker_id: wid,
+        product_id: pid,
+        quantity: 1,
+        sale_date: sDate
+      });
+      render();
+
       try {
-        await api.recordSale({ product_id: b.dataset.inc, quantity: 1 });
+        await api.recordSale({
+          worker_id: wid,
+          product_id: pid,
+          quantity: 1,
+          sale_date: sDate
+        });
         toast('+1 unidad registrada');
         await syncFromD1();
-      } catch (e) { toast('Error: ' + e.message); }
-      finally { b.disabled = false; }
+      } catch (e) {
+        S.sales = S.sales.filter(s => s.id !== tempId);
+        render();
+        toast('Error: ' + e.message);
+      } finally {
+        b.disabled = false;
+      }
     }));
 
     root.querySelectorAll('[data-dec]').forEach(b => b.addEventListener('click', async () => {
+      const pid = b.dataset.dec;
+      const wid = S.session ? S.session.id : null;
+      const sDate = localDateStr();
       b.disabled = true;
+
+      // Actualización optimista inmediata
+      const tempId = 'temp_' + Date.now();
+      S.sales.push({
+        id: tempId,
+        worker_id: wid,
+        product_id: pid,
+        quantity: -1,
+        sale_date: sDate
+      });
+      render();
+
       try {
-        await api.recordSale({ product_id: b.dataset.dec, quantity: -1 });
+        await api.recordSale({
+          worker_id: wid,
+          product_id: pid,
+          quantity: -1,
+          sale_date: sDate
+        });
         toast('Ajuste −1 registrado');
         await syncFromD1();
-      } catch (e) { toast('Error: ' + e.message); }
-      finally { b.disabled = false; }
+      } catch (e) {
+        S.sales = S.sales.filter(s => s.id !== tempId);
+        render();
+        toast('Error: ' + e.message);
+      } finally {
+        b.disabled = false;
+      }
     }));
   }
 
@@ -2400,24 +3238,58 @@ function wire(root) {
 
     root.querySelectorAll('[data-admininc]').forEach(b => b.addEventListener('click', async () => {
       const [wid, pid] = b.dataset.admininc.split(':');
+      const sDate = localDateStr();
       b.disabled = true;
+
+      const tempId = 'temp_' + Date.now();
+      S.sales.push({
+        id: tempId,
+        worker_id: wid,
+        product_id: pid,
+        quantity: 1,
+        sale_date: sDate
+      });
+      render();
+
       try {
-        await api.recordSale({ worker_id: wid, product_id: pid, quantity: 1 });
+        await api.recordSale({ worker_id: wid, product_id: pid, quantity: 1, sale_date: sDate });
         toast('Venta registrada');
         await syncFromD1();
-      } catch (e) { toast('Error: ' + e.message); }
-      finally { b.disabled = false; }
+      } catch (e) {
+        S.sales = S.sales.filter(s => s.id !== tempId);
+        render();
+        toast('Error: ' + e.message);
+      } finally {
+        b.disabled = false;
+      }
     }));
 
     root.querySelectorAll('[data-admindec]').forEach(b => b.addEventListener('click', async () => {
       const [wid, pid] = b.dataset.admindec.split(':');
+      const sDate = localDateStr();
       b.disabled = true;
+
+      const tempId = 'temp_' + Date.now();
+      S.sales.push({
+        id: tempId,
+        worker_id: wid,
+        product_id: pid,
+        quantity: -1,
+        sale_date: sDate
+      });
+      render();
+
       try {
-        await api.recordSale({ worker_id: wid, product_id: pid, quantity: -1 });
+        await api.recordSale({ worker_id: wid, product_id: pid, quantity: -1, sale_date: sDate });
         toast('Ajuste registrado');
         await syncFromD1();
-      } catch (e) { toast('Error: ' + e.message); }
-      finally { b.disabled = false; }
+      } catch (e) {
+        S.sales = S.sales.filter(s => s.id !== tempId);
+        render();
+        toast('Error: ' + e.message);
+      } finally {
+        b.disabled = false;
+      }
     }));
 
     const apb = root.querySelector('#add-prod-btn');

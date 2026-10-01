@@ -408,7 +408,8 @@ export default {
         const workerId = (isAdmin && b.worker_id) ? b.worker_id : auth.id;
         const createdById = auth.id;
         const quantity = parseFloat(b.quantity) || 1;
-        const saleDate = (b.sale_date || new Date().toISOString().split('T')[0]).trim();
+        const peruDefaultDate = new Date(Date.now() - 5 * 3600000).toISOString().split('T')[0];
+        const saleDate = (b.sale_date || peruDefaultDate).trim();
         const notes = (b.notes || '').trim();
 
         if (!productId) return errorResponse('ID de producto requerido.', 400, request);
