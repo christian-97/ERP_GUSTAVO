@@ -131,8 +131,66 @@ export default {
     const method = request.method;
 
     // ===============================================================
-    // 2. SERVIR EL FRONTEND ESTÁTICO (index.html) PARA RUTAS NO-API
+    // 2. SERVIR ASSETS ESTÁTICOS Y FRONTEND (index.html)
     // ===============================================================
+    if (path.toLowerCase().endsWith('/icon.svg') || path.toLowerCase().endsWith('/favicon.ico')) {
+      const iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="64" height="64" role="img" aria-label="AdminRest">
+  <rect x="0" y="0" width="128" height="128" rx="34" fill="#1F5B3D" />
+  <rect x="32" y="72" width="15" height="30" rx="4" fill="#FFFFFF" />
+  <rect x="56" y="52" width="15" height="50" rx="4" fill="#FFFFFF" />
+  <rect x="80" y="30" width="15" height="72" rx="4" fill="#D5A678" />
+</svg>`;
+      return new Response(iconSvg, {
+        status: 200,
+        headers: {
+          'Content-Type': 'image/svg+xml; charset=utf-8',
+          'Cache-Control': 'public, max-age=86400'
+        }
+      });
+    }
+
+    if (path.toLowerCase().endsWith('/login.svg')) {
+      const loginSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 150" width="100%" height="auto" role="img" aria-label="AdminRest - Sistema de gestión Operativa">
+  <rect x="16" y="78" width="18" height="40" rx="5" fill="#1F5B3D" />
+  <rect x="44" y="52" width="18" height="66" rx="5" fill="#1F5B3D" />
+  <rect x="72" y="24" width="18" height="94" rx="5" fill="#D5A678" />
+  <text x="110" y="94" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="78" font-weight="700" letter-spacing="-2">
+    <tspan fill="#1F5B3D">Admin</tspan><tspan fill="#7C5332">Rest</tspan>
+  </text>
+  <text x="112" y="128" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="19" font-weight="500" fill="#6B7280" letter-spacing="0.3">
+    Sistema de gestión Operativa
+  </text>
+</svg>`;
+      return new Response(loginSvg, {
+        status: 200,
+        headers: {
+          'Content-Type': 'image/svg+xml; charset=utf-8',
+          'Cache-Control': 'public, max-age=86400'
+        }
+      });
+    }
+
+    if (path.toLowerCase().endsWith('/nav_logo.svg') || path.toLowerCase().endsWith('/nav-logo.svg')) {
+      const navSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 150" width="100%" height="auto" role="img" aria-label="AdminRest - Sistema de gestión Operativa">
+  <rect x="16" y="78" width="18" height="40" rx="5" fill="#FFFFFF" />
+  <rect x="44" y="52" width="18" height="66" rx="5" fill="#FFFFFF" />
+  <rect x="72" y="24" width="18" height="94" rx="5" fill="#D5A678" />
+  <text x="110" y="94" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="78" font-weight="700" letter-spacing="-2">
+    <tspan fill="#FFFFFF">Admin</tspan><tspan fill="#D5A678">Rest</tspan>
+  </text>
+  <text x="112" y="128" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="19" font-weight="500" fill="rgba(255,255,255,0.72)" letter-spacing="0.3">
+    Sistema de gestión Operativa
+  </text>
+</svg>`;
+      return new Response(navSvg, {
+        status: 200,
+        headers: {
+          'Content-Type': 'image/svg+xml; charset=utf-8',
+          'Cache-Control': 'public, max-age=86400'
+        }
+      });
+    }
+
     if (!path.startsWith('/api/')) {
       if (method === 'GET') {
         return new Response(HTML, {

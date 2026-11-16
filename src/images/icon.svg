@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="64" height="64" role="img" aria-label="AdminRest">
+  <!-- Fondo redondeado verde bosque -->
+  <rect x="0" y="0" width="128" height="128" rx="34" fill="#1F5B3D" />
+
+  <!-- Tres barras verticales -->
+  <rect x="32" y="72" width="15" height="30" rx="4" fill="#FFFFFF" />
+  <rect x="56" y="52" width="15" height="50" rx="4" fill="#FFFFFF" />
+  <rect x="80" y="30" width="15" height="72" rx="4" fill="#D5A678" />
+</svg>

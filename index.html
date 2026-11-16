@@ -7,6 +7,7 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <title>AdminRest — Gestión Operativa</title>
+<link rel="icon" type="image/svg+xml" href="src/images/icon.svg">
 <meta name="description" content="Sistema interno de gestión operativa · AdminRest">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
@@ -86,6 +87,13 @@ button { font-family: var(--font); cursor: pointer; }
   display: flex;
   width: 100%;
   min-height: 100vh;
+  opacity: 0;
+  animation: gShellFadeIn 0.3s ease forwards;
+}
+
+@keyframes gShellFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
 /* ================================================================
@@ -106,9 +114,45 @@ button { font-family: var(--font); cursor: pointer; }
 
 /* Brand / Logo area */
 .sb-brand {
-  padding: 22px 18px 18px;
-  border-bottom: 1px solid var(--border);
+  padding: 18px 16px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.10);
   flex-shrink: 0;
+}
+
+.sb-brand-logo-card {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+  box-shadow: none;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.sb-brand-logo {
+  height: 46px;
+  width: auto;
+  max-width: 100%;
+  display: block;
+}
+
+.m-brand-logo-card {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.m-brand-logo {
+  height: 32px;
+  width: auto;
+  max-width: 170px;
+  display: block;
 }
 
 .sb-logo-row {
@@ -191,11 +235,18 @@ button { font-family: var(--font); cursor: pointer; }
 }
 
 .nb-icon {
-  font-size: 15px;
-  width: 18px;
-  text-align: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
   flex-shrink: 0;
-  opacity: 0.8;
+  opacity: 0.85;
+}
+.nb-icon svg {
+  width: 19px;
+  height: 19px;
+  display: block;
 }
 .nb.a .nb-icon { opacity: 1; }
 
@@ -269,12 +320,20 @@ button { font-family: var(--font); cursor: pointer; }
 
 /* Sticky page header (desktop) */
 .g-page-hd {
-  padding: 20px 32px 0;
+  padding: 16px 32px 0;
   border-bottom: 1px solid var(--border);
   background: var(--bg-base);
   position: sticky;
   top: 0;
   z-index: 50;
+}
+
+.g-page-hd-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 12px;
 }
 
 .page-title {
@@ -381,7 +440,19 @@ button { font-family: var(--font); cursor: pointer; }
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
-.m-nb .mn-i { font-size: 18px; line-height: 1; }
+.m-nb .mn-i {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  line-height: 1;
+}
+.m-nb .mn-i svg {
+  width: 19px;
+  height: 19px;
+  display: block;
+}
 .m-nb.a { color: var(--accent); }
 
 /* ================================================================
@@ -583,8 +654,111 @@ button { font-family: var(--font); cursor: pointer; }
 .qbtn:hover:not(:disabled) { background: var(--bg-surface-3); border-color: var(--accent); }
 .qbtn:active:not(:disabled) { background: var(--accent); border-color: var(--accent); color: #fff; }
 .qbtn:disabled { opacity: 0.35; cursor: not-allowed; }
-[data-inc] { background: var(--accent-dim); border-color: rgba(47,107,79,0.35); color: var(--accent); }
-[data-admininc] { background: var(--accent-dim); border-color: rgba(47,107,79,0.35); color: var(--accent); }
+/* Sales Row Controls & Numeric Inputs */
+.sales-header-card {
+  margin-bottom: 14px;
+  padding: 12px 16px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+}
+.sale-row-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.sale-input-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.sale-qty-input {
+  width: 58px;
+  height: 32px;
+  text-align: right;
+  padding: 4px 8px;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 600;
+  border: 1px solid var(--border-2);
+  background: var(--bg-base);
+  color: var(--text-1);
+  border-radius: var(--r-xs);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.sale-qty-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-dim);
+}
+.sale-qty-input::-webkit-outer-spin-button,
+.sale-qty-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.sale-qty-input[type=number] {
+  -moz-appearance: textfield;
+}
+.btn-send-sale {
+  height: 32px;
+  padding: 0 11px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: var(--r-xs);
+  min-width: 54px;
+  transition: all 0.15s;
+}
+.btn-adjust {
+  background: none;
+  border: 1px dashed var(--border);
+  color: var(--text-3);
+  padding: 0 7px;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 500;
+  border-radius: var(--r-xs);
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  height: 32px;
+  transition: all 0.15s;
+  user-select: none;
+}
+.btn-adjust:hover {
+  border-color: var(--red);
+  color: var(--red);
+  background: rgba(181, 87, 63, 0.08);
+}
+.bulk-save-bar {
+  padding: 12px 16px;
+  background: var(--bg-surface-2);
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.bulk-save-hint {
+  font-size: 12px;
+  color: var(--text-2);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.bulk-save-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+.btn-save-all {
+  min-width: 155px;
+  font-weight: 600;
+  transition: all 0.15s;
+}
 .qty-disp {
   font-family: var(--font-mono);
   font-weight: 600;
@@ -972,7 +1146,7 @@ select option { background: var(--bg-surface-2); }
 @keyframes spin { to { transform: rotate(360deg); } }
 
 /* ================================================================
-   LOGIN
+   LOGIN PROFESIONAL Y ANIMACIONES
 ================================================================ */
 .login-shell {
   width: 100%;
@@ -982,41 +1156,389 @@ select option { background: var(--bg-surface-2); }
   justify-content: center;
   background: var(--bg-base);
   padding: 24px 16px;
+  transition: opacity 0.45s ease, transform 0.45s ease;
+  will-change: opacity, transform;
+}
+
+.login-shell.fade-out {
+  opacity: 0;
+  transform: scale(0.98);
+  pointer-events: none;
+}
+
+/* ================================================================
+   LOGIN OVERLAY / MODAL FLOTANTE CENTRADO
+================================================================ */
+.login-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(18, 32, 24, 0.35);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.28s ease;
+}
+
+.login-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.login-modal-box {
+  background: var(--bg-surface);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 14px;
+  padding: 16px 26px;
+  box-shadow: 0 16px 36px -6px rgba(0, 0, 0, 0.16), 0 6px 16px -4px rgba(0, 0, 0, 0.08);
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 210px;
+  justify-content: center;
+  transform: scale(0.92) translateY(6px);
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
+  user-select: none;
+}
+
+.login-overlay.active .login-modal-box {
+  transform: scale(1) translateY(0);
+}
+
+.modal-spinner {
+  width: 17px;
+  height: 17px;
+  border: 2.2px solid rgba(47, 107, 79, 0.25);
+  border-top-color: #2F6B4F;
+  border-radius: 50%;
+  animation: spin 0.75s linear infinite;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.login-modal-text {
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--text-1);
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+.login-modal-check {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #E8F5E9;
+  color: #2E7D32;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13.5px;
+  font-weight: 700;
+  flex-shrink: 0;
+  animation: modalPop 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalPop {
+  0% { transform: scale(0.5); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* ================================================================
+   MODAL FLOTANTE DE CONFIRMACIÓN (CERRAR SESIÓN)
+================================================================ */
+.confirm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(18, 32, 24, 0.35);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+.confirm-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.confirm-modal-box {
+  background: var(--bg-surface);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 14px;
+  padding: 24px 26px;
+  box-shadow: 0 16px 36px -6px rgba(0, 0, 0, 0.16), 0 6px 16px -4px rgba(0, 0, 0, 0.08);
+  width: 90%;
+  max-width: 340px;
+  text-align: center;
+  transform: scale(0.92) translateY(6px);
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
+  user-select: none;
+}
+
+.confirm-overlay.active .confirm-modal-box {
+  transform: scale(1) translateY(0);
+}
+
+.confirm-modal-title {
+  font-size: 15.5px;
+  font-weight: 700;
+  color: var(--text-1);
+  letter-spacing: -0.01em;
+  margin-bottom: 6px;
+}
+
+.confirm-modal-sub {
+  font-size: 12.5px;
+  color: var(--text-3);
+  margin-bottom: 18px;
+  line-height: 1.4;
+}
+
+.confirm-modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.confirm-btn-cancel {
+  flex: 1;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: var(--bg-surface-2);
+  color: var(--text-2);
+  transition: all 0.2s ease;
+}
+.confirm-btn-cancel:hover {
+  background: var(--bg-surface-3);
+  color: var(--text-1);
+}
+
+.confirm-btn-danger {
+  flex: 1;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid rgba(184, 74, 74, 0.25);
+  background: #B84A4A;
+  color: #FFFFFF;
+  transition: all 0.2s ease;
+}
+.confirm-btn-danger:hover {
+  background: #9E3838;
+}
+
+.confirm-modal-loading {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 10px 8px;
+}
+
+.login-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #FFFFFF;
+  border-radius: 50%;
+  animation: spin 0.75s linear infinite;
+  display: inline-block;
+  margin-right: 8px;
+  flex-shrink: 0;
 }
 
 .login-card {
   background: var(--bg-surface);
   border: 1px solid var(--border);
   border-radius: var(--r-lg);
-  padding: 32px 28px;
+  padding: 36px 32px;
   width: 100%;
-  max-width: 380px;
+  max-width: 410px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.03);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.login-card.shake {
+  animation: loginShake 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+.login-card.success {
+  border-color: #3F805C;
+  box-shadow: 0 0 0 3px rgba(63, 128, 92, 0.22), 0 12px 28px rgba(47, 107, 79, 0.15);
+}
+
+@keyframes loginShake {
+  10%, 90% { transform: translate3d(-2px, 0, 0); }
+  20%, 80% { transform: translate3d(3px, 0, 0); }
+  30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+  40%, 60% { transform: translate3d(4px, 0, 0); }
 }
 
 .login-brand {
   display: flex;
   align-items: center;
-  gap: 12px;
+  justify-content: center;
   margin-bottom: 28px;
 }
 
+.login-logo {
+  width: 100%;
+  max-width: 320px;
+  height: auto;
+  display: block;
+  user-select: none;
+}
+
 .login-mark {
-  width: 42px; height: 42px;
-  background: var(--accent);
-  border-radius: var(--r-sm);
+  width: 44px; height: 44px;
+  background: linear-gradient(135deg, #1D4030, #2F6B4F);
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 20px;
+  font-size: 21px;
   font-weight: 700;
   color: #fff;
   flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(47, 107, 79, 0.25);
 }
 
-.login-brand-name { font-size: 20px; font-weight: 700; color: var(--text-1); letter-spacing: -0.02em; }
-.login-brand-sub  { font-size: 11px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.07em; margin-top: 2px; }
+.login-brand-name { font-size: 22px; font-weight: 700; color: var(--text-1); letter-spacing: -0.02em; line-height: 1.1; }
+.login-brand-sub  { font-size: 11px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 3px; font-weight: 600; }
 
-.login-err { color: #B84A4A; font-size: 12.5px; font-weight: 500; min-height: 18px; margin-bottom: 10px; }
+.login-feedback {
+  min-height: 22px;
+  margin: 10px 0 14px;
+  font-size: 12.5px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+.login-feedback.err { color: #C62828; }
+.login-feedback.suc { color: #2E7D32; font-weight: 600; }
+
+.login-input {
+  font-size: 22px;
+  letter-spacing: 6px;
+  text-align: center;
+  padding: 13px;
+  border-radius: 8px;
+  border: 1.5px solid var(--border);
+  background: var(--bg-base);
+  color: var(--text-1);
+  width: 100%;
+  box-sizing: border-box;
+  transition: all 0.25s ease;
+}
+.login-input:focus {
+  border-color: var(--accent);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(47, 107, 79, 0.18);
+  background: #fff;
+}
+.login-input.err {
+  border-color: #E53935 !important;
+  box-shadow: 0 0 0 3px rgba(229, 57, 53, 0.15) !important;
+}
+.login-input.suc {
+  border-color: #388E3C !important;
+  box-shadow: 0 0 0 3px rgba(56, 142, 60, 0.2) !important;
+  background: #F1F8F4 !important;
+}
+
+/* ================================================================
+   TOP NAVBAR USER — MINIMALISTA Y ELEGANTE (SIN FONDOS NI CAJAS)
+================================================================ */
+.top-nav-user {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0;
+  margin: 0;
+}
+
+.top-nav-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #4ADE80;
+  box-shadow: 0 0 6px rgba(74, 222, 128, 0.55);
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+.top-nav-name {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.94);
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  user-select: none;
+}
+
+.top-nav-logout {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 15px;
+  line-height: 1;
+  padding: 4px;
+  margin-left: 2px;
+  cursor: pointer;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.top-nav-logout:hover {
+  color: #FFFFFF;
+  transform: scale(1.1);
+}
+
+.top-nav-logout:active {
+  transform: scale(0.95);
+}
+
+@media (max-width: 768px) {
+  .top-nav-user {
+    gap: 8px;
+  }
+  .top-nav-name {
+    font-size: 12.5px;
+    max-width: 140px;
+  }
+  .top-nav-logout {
+    font-size: 14px;
+    padding: 2px;
+  }
+}
 
 /* ================================================================
    UTILITY
@@ -1504,9 +2026,18 @@ select option { background: var(--bg-surface-2); }
   }
 
   .m-nb .mn-i {
-    font-size: 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
     line-height: 1;
     margin-bottom: 2px;
+  }
+  .m-nb .mn-i svg {
+    width: 19px;
+    height: 19px;
+    display: block;
   }
 
   .m-nb .mn-t {
@@ -1609,6 +2140,44 @@ select option { background: var(--bg-surface-2); }
   .prod-controls {
     gap: 4px;
     flex-shrink: 0;
+  }
+
+  .sale-row-controls {
+    gap: 5px;
+  }
+
+  .sale-qty-input {
+    width: 48px;
+    height: 32px;
+    padding: 3px 5px;
+    font-size: 13.5px;
+  }
+
+  .btn-send-sale {
+    height: 32px;
+    padding: 0 8px;
+    min-width: 46px;
+    font-size: 11.5px;
+  }
+
+  .btn-adjust {
+    height: 32px;
+    padding: 0 5px;
+  }
+
+  .btn-adjust span {
+    display: none;
+  }
+
+  .bulk-save-bar {
+    padding: 10px 12px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .btn-save-all {
+    width: 100%;
   }
 
   .qbtn {
@@ -1890,6 +2459,8 @@ const S = {
   modal: null,
   expandedWaiter: null,
   loading: false,
+  selectedSaleDate: localDateStr(),
+  selectedPaymentMethod: 'EFECTIVO',
   users: [],
   products: [],
   sales: [],
@@ -1918,7 +2489,7 @@ function closeM() { S.modal = null; render(); }
 // ================================================================
 // DATA SYNC
 // ================================================================
-async function syncFromD1() {
+async function syncFromD1(renderAfter = true) {
   if (!S.session) return;
   S.loading = true;
   try {
@@ -1963,7 +2534,7 @@ async function syncFromD1() {
     toast('Aviso: ' + e.message);
   } finally {
     S.loading = false;
-    render();
+    if (renderAfter) render();
   }
 }
 
@@ -2033,52 +2604,154 @@ function goalPace(goal) {
 }
 
 // ================================================================
-// VIEW: LOGIN
+// VIEW: LOGIN PROFESIONAL CON OVERLAY MODAL CENTRADO Y PAUSADO
 // ================================================================
 function vLogin() {
   return `
   <div class="login-shell">
-    <div class="login-card">
+    <div class="login-card" id="login-card">
       <div class="login-brand">
-        <div class="login-mark">A</div>
-        <div>
-          <div class="login-brand-name">AdminRest</div>
-          <div class="login-brand-sub">Sistema de gestión</div>
-        </div>
+        <img src="src/images/LOGIN.svg" alt="AdminRest — Sistema de gestión Operativa" class="login-logo" onerror="this.onerror=null;this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' viewBox=\\'0 0 560 150\\'><rect x=\\'16\\' y=\\'78\\' width=\\'18\\' height=\\'40\\' rx=\\'5\\' fill=\\'%231F5B3D\\'/><rect x=\\'44\\' y=\\'52\\' width=\\'18\\' height=\\'66\\' rx=\\'5\\' fill=\\'%231F5B3D\\'/><rect x=\\'72\\' y=\\'24\\' width=\\'18\\' height=\\'94\\' rx=\\'5\\' fill=\\'%23D5A678\\'/><text x=\\'110\\' y=\\'94\\' font-family=\\'system-ui, sans-serif\\' font-size=\\'78\\' font-weight=\\'700\\'><tspan fill=\\'%231F5B3D\\'>Admin</tspan><tspan fill=\\'%237C5332\\'>Rest</tspan></text><text x=\\'112\\' y=\\'128\\' font-family=\\'system-ui, sans-serif\\' font-size=\\'19\\' fill=\\'%236B7280\\'>Sistema de gestión Operativa</text></svg>';">
       </div>
-      <div class="field">
-        <label>Código de empleado</label>
-        <input id="lc" type="password" placeholder="••••"
-          style="font-size:22px;letter-spacing:5px;text-align:center;padding:14px">
+      <div class="field" style="margin-bottom:6px">
+        <label style="font-weight:600;font-size:12.5px;color:var(--text-2);margin-bottom:6px">Código de empleado</label>
+        <input id="lc" class="login-input" type="password" placeholder="••••" autocomplete="current-password" autofocus>
       </div>
-      <div class="login-err" id="le"></div>
-      <button class="btn pri full" id="lb" style="padding:12px;font-size:14px">
+      <div class="login-feedback" id="le"></div>
+      <button class="btn pri full" id="lb" style="padding:13px;font-size:14px;font-weight:600;display:flex;align-items:center;justify-content:center;transition:all 0.3s ease;min-height:46px">
         Ingresar al sistema
       </button>
+    </div>
+
+    <!-- Overlay flotante centrado con backdrop sutil -->
+    <div class="login-overlay" id="login-overlay" aria-live="polite">
+      <div class="login-modal-box" id="login-modal-box">
+        <span class="modal-spinner"></span>
+        <span class="login-modal-text">Autenticando...</span>
+      </div>
     </div>
   </div>`;
 }
 
 function wLogin(r) {
-  const ic = r.querySelector('#lc'), b = r.querySelector('#lb'), e = r.querySelector('#le');
+  const card = r.querySelector('#login-card');
+  const ic = r.querySelector('#lc');
+  const b = r.querySelector('#lb');
+  const e = r.querySelector('#le');
+  const overlay = r.querySelector('#login-overlay');
+  const modalBox = r.querySelector('#login-modal-box');
+  let inProgress = false;
+
   async function go() {
-    const c = ic.value.trim();
-    if (!c) { e.textContent = 'Ingresa tu código de empleado.'; return; }
+    if (inProgress) return;
+    const code = ic.value.trim();
+    if (!code) {
+      if (card) {
+        card.classList.remove('shake');
+        void card.offsetWidth;
+        card.classList.add('shake');
+      }
+      ic.classList.add('err');
+      e.className = 'login-feedback err';
+      e.innerHTML = '<span style="font-size:13px;margin-right:4px">⚠️</span><span>Ingresa tu código de empleado.</span>';
+      ic.focus();
+      return;
+    }
+
+    inProgress = true;
+
+    // Bloquear controles sin alterar ni desarmar el formulario
+    ic.disabled = true;
     b.disabled = true;
-    b.innerHTML = '<span class="spinner"></span> Verificando...';
+    ic.classList.remove('err', 'suc');
+    e.className = 'login-feedback';
+    e.innerHTML = '';
+
+    // 1. Mostrar tarjeta flotante centrada con spinner fino + "Autenticando..."
+    modalBox.innerHTML = `
+      <span class="modal-spinner"></span>
+      <span class="login-modal-text">Autenticando...</span>
+    `;
+    overlay.classList.add('active');
+
+    const startTime = Date.now();
+
     try {
-      const data = await api.login(c);
+      const data = await api.login(code);
+
+      // Iniciar la precarga de datos inmediatamente en paralelo mientras se muestra el flotante
       saveSession(data.user);
       S.tab = 'ventas';
-      await syncFromD1();
+      const syncPromise = syncFromD1(false);
+
+      // Mantener visible al menos ~700 ms sin parpadeos
+      const elapsed = Date.now() - startTime;
+      if (elapsed < 700) {
+        await new Promise(res => setTimeout(res, 700 - elapsed));
+      }
+
+      // 2. Cambiar suavemente dentro del mismo flotante al check verde con "Autenticación correcta" (~800 ms)
+      modalBox.innerHTML = `
+        <span class="login-modal-check">✓</span>
+        <span class="login-modal-text" style="color:#2E7D32">Autenticación correcta</span>
+      `;
+
+      await new Promise(res => setTimeout(res, 800));
+
+      // Esperar a que la promesa de datos termine antes de desvanecer y mostrar la pantalla principal
+      try {
+        await syncPromise;
+      } catch (errSync) {
+        console.error('Error precargando datos:', errSync);
+      }
+
+      // 3. Desvanecer suavemente tanto el flotante como la vista de login para entrar al sistema
+      const shell = card.closest('.login-shell') || card;
+      shell.classList.add('fade-out');
+
+      await new Promise(res => setTimeout(res, 450));
+
+      // Render limpio y único con los datos reales ya cargados
+      render();
+
     } catch (err) {
-      e.textContent = err.message || 'Código no reconocido.';
+      // Garantizar que no haya corte abrupto antes de volver
+      const elapsed = Date.now() - startTime;
+      if (elapsed < 700) {
+        await new Promise(res => setTimeout(res, 700 - elapsed));
+      }
+
+      // Ocultar el flotante suavemente
+      overlay.classList.remove('active');
+      await new Promise(res => setTimeout(res, 200));
+
+      // Mostrar error de código inválido sin desarmar el formulario
+      if (card) {
+        card.classList.remove('shake');
+        void card.offsetWidth;
+        card.classList.add('shake');
+      }
+      ic.classList.add('err');
+      e.className = 'login-feedback err';
+      const msg = err.message || 'Código incorrecto.';
+      e.innerHTML = '<span style="font-size:13px;margin-right:4px">✕</span><span>' + esc(msg) + '</span>';
+
+      // Restaurar controles
+      ic.disabled = false;
       b.disabled = false;
-      b.textContent = 'Ingresar al sistema';
+      inProgress = false;
+      ic.focus();
+      ic.select();
     }
   }
+
   b.addEventListener('click', go);
-  ic.addEventListener('keydown', ev => { if (ev.key === 'Enter') go(); });
+  ic.addEventListener('keydown', ev => {
+    if (ev.key === 'Enter') {
+      ev.preventDefault();
+      go();
+    }
+  });
 }
 
 // ================================================================
@@ -2242,6 +2915,38 @@ function vVentasUser() {
     </div>
   </div>`;
 
+  // Cabecera de Ventas: Selector de Fecha y Método de Pago
+  const sDate = S.selectedSaleDate || localDateStr();
+  const sPay = S.selectedPaymentMethod || 'EFECTIVO';
+  html += `
+  <div class="sales-header-card">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:7px;background:var(--accent-dim);color:var(--accent);flex-shrink:0">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+        </span>
+        <div>
+          <div style="font-weight:600;font-size:13.5px;color:var(--text-1)">Registro de Comandas</div>
+          <div style="font-size:11px;color:var(--text-3)">Parámetros activos para el ingreso de ventas</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:6px">
+          <label for="sales-date" style="font-size:11px;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:0.03em">Fecha:</label>
+          <input type="date" id="sales-date" value="${sDate}" class="input sm" style="width:130px;padding:5px 8px;font-size:12px">
+        </div>
+        <div style="display:flex;align-items:center;gap:6px">
+          <label for="sales-paymethod" style="font-size:11px;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:0.03em">Pago:</label>
+          <select id="sales-paymethod" class="input sm" style="width:135px;padding:5px 8px;font-size:12px">
+            <option value="EFECTIVO" ${sPay === 'EFECTIVO' ? 'selected' : ''}>💵 Efectivo</option>
+            <option value="TARJETA" ${sPay === 'TARJETA' ? 'selected' : ''}>💳 Tarjeta</option>
+            <option value="DIGITAL" ${sPay === 'DIGITAL' ? 'selected' : ''}>📱 Yape / Plin</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>`;
+
   // Componente de Ingreso Rápido por Cuadro de Texto
   html += vBulkInputComponent(w.id, w.role);
 
@@ -2269,13 +2974,41 @@ function vVentasUser() {
             <div class="prod-nums" style="text-align:right;min-width:36px">${p}%</div>
           </div>
         </div>
-        <div class="prod-controls">
-          <button class="qbtn" data-dec="${prod.id}" title="Restar 1">−</button>
-          <span class="qty-disp">${q}</span>
-          <button class="qbtn" data-inc="${prod.id}" title="Sumar 1">+</button>
+        <div class="prod-controls sale-row-controls" data-pid="${prod.id}">
+          <button type="button" class="btn-adjust" data-adjust-btn="${prod.id}" title="Ajustar o descontar venta">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            <span>Ajustar</span>
+          </button>
+          <div class="sale-input-group">
+            <input type="number" 
+                   class="sale-qty-input" 
+                   data-pid="${prod.id}" 
+                   min="0" 
+                   step="1" 
+                   inputmode="numeric" 
+                   placeholder="0">
+            <button type="button" 
+                    class="btn pri sm btn-send-sale" 
+                    data-send-pid="${prod.id}" 
+                    disabled 
+                    style="opacity:0.4;cursor:not-allowed">
+              Enviar
+            </button>
+          </div>
         </div>
       </div>`;
     });
+
+    html += `
+    <div class="bulk-save-bar">
+      <div class="bulk-save-hint">
+        <span class="bulk-save-dot"></span>
+        <span>Ingreso múltiple: ingresa cantidades y guarda varios productos en un solo lote.</span>
+      </div>
+      <button type="button" id="btn-save-all-sales" class="btn pri sm btn-save-all" disabled style="opacity:0.4;cursor:not-allowed">
+        ⚡ Guardar todos
+      </button>
+    </div>`;
   }
   html += `</div>`;
 
@@ -2314,6 +3047,37 @@ function vVentasAdmin() {
   <div class="subtab-row">
     <button class="st ${sub === 'mozo' ? 'a' : ''}" data-sub="mozo">Mozos</button>
     <button class="st ${sub !== 'mozo' ? 'a' : ''}" data-sub="anf">Anfitrionas</button>
+  </div>`;
+
+  const sDate = S.selectedSaleDate || localDateStr();
+  const sPay = S.selectedPaymentMethod || 'EFECTIVO';
+  html += `
+  <div class="sales-header-card">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:7px;background:var(--accent-dim);color:var(--accent);flex-shrink:0">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+        </span>
+        <div>
+          <div style="font-weight:600;font-size:13.5px;color:var(--text-1)">Registro Administrativo de Ventas</div>
+          <div style="font-size:11px;color:var(--text-3)">Parámetros para asignar ventas a colaboradores</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:6px">
+          <label for="sales-date" style="font-size:11px;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:0.03em">Fecha:</label>
+          <input type="date" id="sales-date" value="${sDate}" class="input sm" style="width:130px;padding:5px 8px;font-size:12px">
+        </div>
+        <div style="display:flex;align-items:center;gap:6px">
+          <label for="sales-paymethod" style="font-size:11px;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:0.03em">Pago:</label>
+          <select id="sales-paymethod" class="input sm" style="width:135px;padding:5px 8px;font-size:12px">
+            <option value="EFECTIVO" ${sPay === 'EFECTIVO' ? 'selected' : ''}>💵 Efectivo</option>
+            <option value="TARJETA" ${sPay === 'TARJETA' ? 'selected' : ''}>💳 Tarjeta</option>
+            <option value="DIGITAL" ${sPay === 'DIGITAL' ? 'selected' : ''}>📱 Yape / Plin</option>
+          </select>
+        </div>
+      </div>
+    </div>
   </div>`;
 
   /* Catalog section */
@@ -2383,13 +3147,42 @@ function vVentasAdmin() {
                 <div class="prod-nums" style="text-align:right;min-width:36px">${pp}%</div>
               </div>
             </div>
-            <div class="prod-controls">
-              <button class="qbtn" data-admindec="${w.id}:${p.id}" title="Restar 1">−</button>
-              <span class="qty-disp">${q}</span>
-              <button class="qbtn" data-admininc="${w.id}:${p.id}" title="Sumar 1">+</button>
+            <div class="prod-controls sale-row-controls" data-wid="${w.id}" data-pid="${p.id}">
+              <button type="button" class="btn-adjust" data-adjust-btn="${p.id}" data-wid="${w.id}" title="Ajustar o descontar venta de ${esc(w.name)}">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                <span>Ajustar</span>
+              </button>
+              <div class="sale-input-group">
+                <input type="number" 
+                       class="sale-qty-input admin-sale-input" 
+                       data-wid="${w.id}" 
+                       data-pid="${p.id}" 
+                       min="0" 
+                       step="1" 
+                       inputmode="numeric" 
+                       placeholder="0">
+                <button type="button" 
+                        class="btn pri sm btn-send-sale btn-admin-send" 
+                        data-wid="${w.id}" 
+                        data-pid="${p.id}" 
+                        disabled 
+                        style="opacity:0.4;cursor:not-allowed">
+                  Enviar
+                </button>
+              </div>
             </div>
           </div>`;
         });
+        html += `
+        <div class="bulk-save-bar" style="padding:10px 14px">
+          <div class="bulk-save-hint">
+            <span class="bulk-save-dot"></span>
+            <span>Ingreso múltiple para ${esc(w.name)}:</span>
+          </div>
+          <button type="button" class="btn pri sm btn-save-all btn-admin-save-all" data-wid="${w.id}" disabled style="opacity:0.4;cursor:not-allowed">
+            ⚡ Guardar ventas de ${esc(w.name)}
+          </button>
+        </div>`;
         html += `<div style="padding:10px 16px">
           <button class="btn gho sm" data-editprofile="${w.id}">Editar datos de ${esc(w.name)}</button>
         </div>`;
@@ -2913,6 +3706,39 @@ function renderM() {
       <input id="mf-cash-target" type="number" step="100" min="0" value="${currCashMeta}" placeholder="Ej: 4000">
       <small style="color:var(--text-3);font-size:11px;display:block;margin-top:3px">Se medirá el % de cumplimiento sobre esta meta en efectivo.</small>
     </div>`;
+  } else if (m.type === 'adjust-sale') {
+    const prod = S.products.find(p => p.id === m.data.productId);
+    const wid = m.data.workerId || (S.session ? S.session.id : '');
+    const worker = S.users.find(u => u.id === wid) || S.session;
+    const currentQty = qtyForWorkerProduct(wid, m.data.productId);
+    const todayStr = S.selectedSaleDate || localDateStr();
+    title = 'Ajustar / Descontar Venta';
+    f = `
+    <div style="font-size:12.5px;color:var(--text-2);margin-bottom:14px;background:var(--bg-surface-2);padding:10px 12px;border-radius:8px;border:1px solid var(--border)">
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+        <span><b>Producto:</b> ${esc(prod ? prod.name : '')}</span>
+        <span style="color:var(--text-3)">S/ ${(prod ? prod.price : 0).toFixed(2)}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between">
+        <span><b>Colaborador:</b> ${esc(worker ? worker.name : '')}</span>
+        <span><b>Registrado actual:</b> <strong style="color:var(--accent)">${currentQty} u.</strong></span>
+      </div>
+    </div>
+    <div class="field">
+      <label>Unidades a descontar (número entero positivo)</label>
+      <input id="mf-adjust-qty" type="number" min="1" max="${Math.max(1, currentQty)}" step="1" inputmode="numeric" placeholder="1" value="1">
+      <small style="color:var(--text-3);font-size:11.5px;display:block;margin-top:4px">Se insertará un registro de corrección negativo (−N) en el historial de ventas.</small>
+    </div>
+    <div class="field">
+      <label>Fecha del ajuste</label>
+      <input id="mf-adjust-date" type="date" value="${todayStr}">
+    </div>
+    <div class="field">
+      <label>Motivo de la corrección</label>
+      <input id="mf-adjust-notes" type="text" placeholder="Ej: Error de digitación, comanda cancelada" value="Corrección de digitación">
+    </div>
+    <input type="hidden" id="mf-adjust-pid" value="${esc(m.data.productId)}">
+    <input type="hidden" id="mf-adjust-wid" value="${esc(wid)}">`;
   }
 
   return `
@@ -3469,11 +4295,36 @@ function wireDashboard(root) {
 // RENDER — MAIN
 // ================================================================
 const NAV_ITEMS = [
-  { id: 'ventas',     icon: '📋', label: 'Ventas',      adminOnly: false },
-  { id: 'general',    icon: '🎯', label: 'Metas',       adminOnly: false },
-  { id: 'proyectado', icon: '📈', label: 'Proyectado',  adminOnly: false },
-  { id: 'dashboard',  icon: '📊', label: 'Dashboard',   adminOnly: true  },
-  { id: 'config',     icon: '⚙️', label: 'Config',      adminOnly: false },
+  {
+    id: 'ventas',
+    icon: `<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></svg>`,
+    label: 'Ventas',
+    adminOnly: false
+  },
+  {
+    id: 'general',
+    icon: `<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>`,
+    label: 'Metas',
+    adminOnly: false
+  },
+  {
+    id: 'proyectado',
+    icon: `<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>`,
+    label: 'Proyectado',
+    adminOnly: false
+  },
+  {
+    id: 'dashboard',
+    icon: `<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>`,
+    label: 'Dashboard',
+    adminOnly: true
+  },
+  {
+    id: 'config',
+    icon: `<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>`,
+    label: 'Config',
+    adminOnly: false
+  }
 ];
 
 const PAGE_INFO = {
@@ -3499,16 +4350,83 @@ function render() {
   const psub   = pi.s(isAdmin);
   const uInit  = (S.session.name || '?').charAt(0).toUpperCase();
 
+  if (S.tab === 'tareas' || S.tab === 'cronos') S.tab = 'ventas';
+
+  let contentHtml = '';
+  if      (S.tab === 'ventas')      contentHtml = isAdmin ? vVentasAdmin() : vVentasUser();
+  else if (S.tab === 'general')     contentHtml = vGeneral();
+  else if (S.tab === 'proyectado')  contentHtml = vProyectado();
+  else if (S.tab === 'dashboard')   contentHtml = vDashboard();
+  else if (S.tab === 'config')      contentHtml = vConfig();
+
+  let toastHtml = '';
+  if (S.toast) {
+    const isErr = S.toast.toLowerCase().startsWith('error') || S.toast.toLowerCase().startsWith('aviso');
+    toastHtml = `<div class="sazon-toast ${isErr ? 'err' : ''}">${esc(S.toast)}</div>`;
+  }
+  const modalHtml = renderM();
+
+  const existingShell = root.querySelector('.g-shell');
+
+  if (existingShell) {
+    // ── Actualización de contenido dinámico sin desmontar layout (sidebar, header, nav) ──
+    const titleEl = existingShell.querySelector('.page-title');
+    const subEl   = existingShell.querySelector('.page-sub');
+    if (titleEl && titleEl.textContent !== ptitle) titleEl.textContent = ptitle;
+    if (subEl && subEl.textContent !== psub) subEl.textContent = psub;
+
+    // Actualizar usuario en top navbar y sidebar si aplica
+    existingShell.querySelectorAll('.top-nav-name').forEach(el => {
+      if (el.textContent !== S.session.name) el.textContent = S.session.name;
+    });
+    const sbName = existingShell.querySelector('.sb-user-name');
+    if (sbName && sbName.textContent !== S.session.name) sbName.textContent = S.session.name;
+    const sbRole = existingShell.querySelector('.sb-user-role');
+    if (sbRole && sbRole.textContent !== S.session.role) sbRole.textContent = S.session.role;
+    const sbAvatar = existingShell.querySelector('.sb-avatar');
+    if (sbAvatar && sbAvatar.textContent !== uInit) sbAvatar.textContent = uInit;
+
+    // Actualizar botones de navegación activos
+    existingShell.querySelectorAll('.nb').forEach(b => {
+      b.classList.toggle('a', b.dataset.tab === S.tab);
+    });
+
+    // Actualizar contenedor de contenido principal
+    const contentEl = existingShell.querySelector('.g-content');
+    if (contentEl) contentEl.innerHTML = contentHtml;
+
+    // Actualizar contenedores auxiliares (Toast y Modal)
+    let toastCont = root.querySelector('#app-toast-container');
+    if (!toastCont) {
+      toastCont = document.createElement('div');
+      toastCont.id = 'app-toast-container';
+      toastCont.style.display = 'contents';
+      root.appendChild(toastCont);
+    }
+    toastCont.innerHTML = toastHtml;
+
+    let modalCont = root.querySelector('#app-modal-container');
+    if (!modalCont) {
+      modalCont = document.createElement('div');
+      modalCont.id = 'app-modal-container';
+      modalCont.style.display = 'contents';
+      root.appendChild(modalCont);
+    }
+    modalCont.innerHTML = modalHtml;
+
+    wireContent(root);
+    return;
+  }
+
+  // ── Montaje inicial del layout completo ──
   let html = `<div class="g-shell">`;
 
   /* ── SIDEBAR ── */
   html += `<aside class="g-sidebar">
     <div class="sb-brand">
-      <div class="sb-logo-row">
-        <div class="sb-logo-mark">A</div>
-        <div class="sb-logo-name">AdminRest</div>
+      <div class="sb-brand-logo-card">
+        <img src="src/images/NAV_LOGO.svg" alt="AdminRest — Sistema de gestión Operativa" class="sb-brand-logo" onerror="this.onerror=null;this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' viewBox=\\'0 0 560 150\\'><rect x=\\'16\\' y=\\'78\\' width=\\'18\\' height=\\'40\\' rx=\\'5\\' fill=\\'%23FFFFFF\\'/><rect x=\\'44\\' y=\\'52\\' width=\\'18\\' height=\\'66\\' rx=\\'5\\' fill=\\'%23FFFFFF\\'/><rect x=\\'72\\' y=\\'24\\' width=\\'18\\' height=\\'94\\' rx=\\'5\\' fill=\\'%23D5A678\\'/><text x=\\'110\\' y=\\'94\\' font-family=\\'system-ui, sans-serif\\' font-size=\\'78\\' font-weight=\\'700\\'><tspan fill=\\'%23FFFFFF\\'>Admin</tspan><tspan fill=\\'%23D5A678\\'>Rest</tspan></text><text x=\\'112\\' y=\\'128\\' font-family=\\'system-ui, sans-serif\\' font-size=\\'19\\' fill=\\'rgba(255,255,255,0.72)\\'>Sistema de gestión Operativa</text></svg>';">
       </div>
-      <div class="sb-logo-sub">Sistema de Gestión</div>
     </div>
     <nav class="sb-nav">
       <div class="sb-group-label">Operaciones</div>`;
@@ -3531,35 +4449,39 @@ function render() {
     </div>
   </aside>`;
 
-  /* ── MOBILE HEADER ── */
+  /* ── MOBILE HEADER CON PERFIL LIMPIO Y MINIMALISTA ── */
   html += `<div class="m-header">
     <div class="m-brand">
-      <div class="m-brand-mark">A</div>
-      AdminRest
+      <div class="m-brand-logo-card">
+        <img src="src/images/NAV_LOGO.svg" alt="AdminRest — Sistema de gestión Operativa" class="m-brand-logo" onerror="this.onerror=null;this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' viewBox=\\'0 0 560 150\\'><rect x=\\'16\\' y=\\'78\\' width=\\'18\\' height=\\'40\\' rx=\\'5\\' fill=\\'%23FFFFFF\\'/><rect x=\\'44\\' y=\\'52\\' width=\\'18\\' height=\\'66\\' rx=\\'5\\' fill=\\'%23FFFFFF\\'/><rect x=\\'72\\' y=\\'24\\' width=\\'18\\' height=\\'94\\' rx=\\'5\\' fill=\\'%23D5A678\\'/><text x=\\'110\\' y=\\'94\\' font-family=\\'system-ui, sans-serif\\' font-size=\\'78\\' font-weight=\\'700\\'><tspan fill=\\'%23FFFFFF\\'>Admin</tspan><tspan fill=\\'%23D5A678\\'>Rest</tspan></text><text x=\\'112\\' y=\\'128\\' font-family=\\'system-ui, sans-serif\\' font-size=\\'19\\' fill=\\'rgba(255,255,255,0.72)\\'>Sistema de gestión Operativa</text></svg>';">
+      </div>
     </div>
     <div class="m-user-area">
-      <span class="m-user-tag">${esc(S.session.name)}</span>
-      <button class="logout-btn" id="lo-m" title="Cerrar sesión">⏻</button>
+      <div class="top-nav-user" title="Usuario: ${esc(S.session.name)} (${S.session.role})">
+        <span class="top-nav-dot"></span>
+        <span class="top-nav-name">${esc(S.session.name)}</span>
+        <button class="top-nav-logout" id="lo-m" title="Cerrar sesión" aria-label="Cerrar sesión">⏻</button>
+      </div>
     </div>
   </div>`;
 
-  /* ── MAIN ── */
+  /* ── MAIN CON NAVBAR SUPERIOR Y PERFIL A LA DERECHA ── */
   html += `<main class="g-main">
     <div class="g-page-hd">
-      <div class="page-title">${ptitle}</div>
-      <div class="page-sub">${psub}</div>
+      <div class="g-page-hd-row">
+        <div>
+          <div class="page-title">${ptitle}</div>
+          <div class="page-sub" style="padding-bottom:0">${psub}</div>
+        </div>
+        <div class="top-nav-user" title="Usuario: ${esc(S.session.name)} (${S.session.role})">
+          <span class="top-nav-dot"></span>
+          <span class="top-nav-name">${esc(S.session.name)}</span>
+          <button class="top-nav-logout" id="lo-top" title="Cerrar sesión" aria-label="Cerrar sesión">⏻</button>
+        </div>
+      </div>
     </div>
-    <div class="g-content">`;
-
-  if (S.tab === 'tareas' || S.tab === 'cronos') S.tab = 'ventas';
-
-  if      (S.tab === 'ventas')      html += isAdmin ? vVentasAdmin() : vVentasUser();
-  else if (S.tab === 'general')     html += vGeneral();
-  else if (S.tab === 'proyectado')  html += vProyectado();
-  else if (S.tab === 'dashboard')   html += vDashboard();
-  else if (S.tab === 'config')      html += vConfig();
-
-  html += `</div></main>`;
+    <div class="g-content">${contentHtml}</div>
+  </main>`;
 
   /* ── MOBILE NAV ── */
   html += `<nav class="m-nav"><div class="m-nav-row">`;
@@ -3573,35 +4495,128 @@ function render() {
 
   html += `</div>`; /* g-shell */
 
-  /* Toast */
-  if (S.toast) {
-    const isErr = S.toast.toLowerCase().startsWith('error') || S.toast.toLowerCase().startsWith('aviso');
-    html += `<div class="sazon-toast ${isErr ? 'err' : ''}">${esc(S.toast)}</div>`;
-  }
+  html += `<div id="app-toast-container" style="display:contents">${toastHtml}</div>`;
+  html += `<div id="app-modal-container" style="display:contents">${modalHtml}</div>`;
 
-  html += renderM();
   root.innerHTML = html;
-  wire(root);
+  wireLayout(root);
+  wireContent(root);
 }
 
 // ================================================================
 // WIRE — EVENT HANDLERS
 // ================================================================
-function wire(root) {
-  /* Logout */
-  const lo  = root.querySelector('#lo');
-  const loM = root.querySelector('#lo-m');
-  const doLogout = () => { api.setToken(null); saveSession(null); render(); };
-  if (lo)  lo.addEventListener('click', doLogout);
-  if (loM) loM.addEventListener('click', doLogout);
+function confirmLogout() {
+  let overlay = document.getElementById('logout-confirm-overlay');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = 'logout-confirm-overlay';
+    overlay.className = 'confirm-overlay';
+    overlay.setAttribute('aria-live', 'polite');
+    document.body.appendChild(overlay);
+  }
 
-  /* Dashboard filters */
-  if (S.tab === 'dashboard') wireDashboard(root);
+  overlay.innerHTML = `
+    <div class="confirm-modal-box" id="logout-confirm-box">
+      <div id="logout-confirm-content">
+        <div class="confirm-modal-title">¿Estás seguro de cerrar sesión?</div>
+        <div class="confirm-modal-sub">Tendrás que volver a ingresar tu código para acceder.</div>
+        <div class="confirm-modal-actions">
+          <button class="confirm-btn-cancel" id="btn-cancel-logout">Cancelar</button>
+          <button class="confirm-btn-danger" id="btn-confirm-logout">Cerrar sesión</button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  requestAnimationFrame(() => {
+    overlay.classList.add('active');
+  });
+
+  const cancelBtn  = overlay.querySelector('#btn-cancel-logout');
+  const confirmBtn = overlay.querySelector('#btn-confirm-logout');
+  const content    = overlay.querySelector('#logout-confirm-content');
+
+  let inAction = false;
+
+  function closeModal() {
+    if (inAction) return;
+    inAction = true;
+    overlay.classList.remove('active');
+    setTimeout(() => {
+      overlay.remove();
+    }, 260);
+  }
+
+  cancelBtn.addEventListener('click', closeModal);
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) closeModal();
+  });
+
+  const onKey = (e) => {
+    if (e.key === 'Escape') {
+      document.removeEventListener('keydown', onKey);
+      closeModal();
+    }
+  };
+  document.addEventListener('keydown', onKey);
+
+  confirmBtn.addEventListener('click', async () => {
+    if (inAction) return;
+    inAction = true;
+    document.removeEventListener('keydown', onKey);
+
+    confirmBtn.disabled = true;
+    cancelBtn.disabled = true;
+
+    // Cambiar al spinner con "Cerrando sesión..."
+    content.innerHTML = `
+      <div class="confirm-modal-loading">
+        <span class="modal-spinner"></span>
+        <span class="login-modal-text">Cerrando sesión...</span>
+      </div>
+    `;
+
+    // Mantener durante ~700 ms
+    await new Promise(res => setTimeout(res, 700));
+
+    // Transición suave de salida hacia el login
+    const shell = document.querySelector('.g-shell');
+    if (shell) {
+      shell.style.transition = 'opacity 0.35s ease, transform 0.35s ease';
+      shell.style.opacity = '0';
+      shell.style.transform = 'scale(0.99)';
+    }
+    overlay.style.transition = 'opacity 0.35s ease';
+    overlay.style.opacity = '0';
+
+    await new Promise(res => setTimeout(res, 350));
+
+    overlay.remove();
+    api.setToken(null);
+    saveSession(null);
+    render();
+  });
+}
+
+function wireLayout(root) {
+  /* Logout (Sidebar, Mobile Header y Top Navbar) */
+  const lo    = root.querySelector('#lo');
+  const loM   = root.querySelector('#lo-m');
+  const loTop = root.querySelector('#lo-top');
+  if (lo)    lo.addEventListener('click', confirmLogout);
+  if (loM)   loM.addEventListener('click', confirmLogout);
+  if (loTop) loTop.addEventListener('click', confirmLogout);
 
   /* Navigation (sidebar + mobile) */
   root.querySelectorAll('.nb').forEach(b => b.addEventListener('click', () => {
     if (b.dataset.tab) { S.tab = b.dataset.tab; render(); }
   }));
+}
+
+function wireContent(root) {
+  /* Dashboard filters */
+  if (S.tab === 'dashboard') wireDashboard(root);
 
   /* Subtabs (Mozos / Anfitrionas) */
   root.querySelectorAll('.st').forEach(b => b.addEventListener('click', () => { S.sub = b.dataset.sub; render(); }));
@@ -3707,77 +4722,210 @@ function wire(root) {
 
   const isAdmin = S.session && S.session.role === 'ADMIN';
 
+  /* ── FECHA Y MÉTODO DE PAGO EN CABECERA DE VENTAS ── */
+  const sDateInp = root.querySelector('#sales-date');
+  if (sDateInp) {
+    sDateInp.addEventListener('change', () => {
+      S.selectedSaleDate = sDateInp.value;
+    });
+  }
+  const sPaySelect = root.querySelector('#sales-paymethod');
+  if (sPaySelect) {
+    sPaySelect.addEventListener('change', () => {
+      S.selectedPaymentMethod = sPaySelect.value;
+    });
+  }
+
+  /* ── BOTÓN AJUSTAR / DESCONTAR ── */
+  root.querySelectorAll('[data-adjust-btn]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const pid = btn.dataset.adjustBtn;
+      const wid = btn.dataset.wid || (S.session ? S.session.id : '');
+      openM('adjust-sale', { productId: pid, workerId: wid });
+    });
+  });
+
   /* ── REGISTRO DE VENTAS (USUARIO) ── */
   if (!isAdmin && S.tab === 'ventas') {
-    root.querySelectorAll('[data-inc]').forEach(b => b.addEventListener('click', async () => {
-      const pid = b.dataset.inc;
-      const wid = S.session ? S.session.id : null;
-      const sDate = localDateStr();
-      b.disabled = true;
+    const wid = S.session ? S.session.id : null;
+    const btnSaveAll = root.querySelector('#btn-save-all-sales');
+    const rowInputs = Array.from(root.querySelectorAll('.sale-qty-input:not(.admin-sale-input)'));
 
-      // Actualización optimista inmediata
+    function updateSaveAllState() {
+      if (!btnSaveAll) return;
+      const valid = rowInputs.filter(inp => (parseInt(inp.value, 10) || 0) > 0);
+      if (valid.length >= 2) {
+        btnSaveAll.disabled = false;
+        btnSaveAll.style.opacity = '1';
+        btnSaveAll.style.cursor = 'pointer';
+        btnSaveAll.innerHTML = `⚡ Guardar todos (${valid.length} productos)`;
+      } else {
+        btnSaveAll.disabled = true;
+        btnSaveAll.style.opacity = '0.4';
+        btnSaveAll.style.cursor = 'not-allowed';
+        btnSaveAll.innerHTML = '⚡ Guardar todos';
+      }
+    }
+
+    async function submitSingleRow(pid, input, btnSend) {
+      const qty = parseInt(input.value, 10);
+      if (isNaN(qty) || qty <= 0) return;
+
+      const sDate = S.selectedSaleDate || (root.querySelector('#sales-date') ? root.querySelector('#sales-date').value : localDateStr());
+      const pMethod = S.selectedPaymentMethod || (root.querySelector('#sales-paymethod') ? root.querySelector('#sales-paymethod').value : 'EFECTIVO');
+
+      btnSend.disabled = true;
+      btnSend.style.opacity = '0.6';
+      btnSend.innerHTML = '<span class="modal-spinner" style="width:12px;height:12px;border-width:2px;display:inline-block"></span>';
+      input.disabled = true;
+
       const tempId = 'temp_' + Date.now();
       S.sales.push({
         id: tempId,
         worker_id: wid,
         product_id: pid,
-        quantity: 1,
-        sale_date: sDate
+        quantity: qty,
+        sale_date: sDate,
+        payment_method: pMethod
       });
-      render();
 
       try {
         await api.recordSale({
           worker_id: wid,
           product_id: pid,
-          quantity: 1,
-          sale_date: sDate
+          quantity: qty,
+          sale_date: sDate,
+          payment_method: pMethod
         });
-        toast('+1 unidad registrada');
+        const prod = S.products.find(p => p.id === pid);
+        toast(`✓ +${qty} ${prod ? prod.name : 'unidades'} registrado (${pMethod})`);
+        input.value = '';
+        input.disabled = false;
         await syncFromD1();
       } catch (e) {
         S.sales = S.sales.filter(s => s.id !== tempId);
+        input.disabled = false;
+        btnSend.disabled = false;
+        btnSend.style.opacity = '1';
+        btnSend.textContent = 'Enviar';
         render();
         toast('Error: ' + e.message);
-      } finally {
-        b.disabled = false;
       }
-    }));
+    }
 
-    root.querySelectorAll('[data-dec]').forEach(b => b.addEventListener('click', async () => {
-      const pid = b.dataset.dec;
-      const wid = S.session ? S.session.id : null;
-      const sDate = localDateStr();
-      b.disabled = true;
+    rowInputs.forEach(input => {
+      const pid = input.dataset.pid;
+      const btnSend = root.querySelector(`.btn-send-sale[data-send-pid="${pid}"]`);
 
-      // Actualización optimista inmediata
-      const tempId = 'temp_' + Date.now();
-      S.sales.push({
-        id: tempId,
-        worker_id: wid,
-        product_id: pid,
-        quantity: -1,
-        sale_date: sDate
+      input.addEventListener('keydown', e => {
+        if (['e', 'E', '+', '-', '.', ','].includes(e.key)) {
+          e.preventDefault();
+          return;
+        }
+        if (e.key === 'ArrowDown' && (parseInt(input.value, 10) || 0) <= 0) {
+          e.preventDefault();
+          input.value = '';
+          if (btnSend) { btnSend.disabled = true; btnSend.style.opacity = '0.4'; btnSend.style.cursor = 'not-allowed'; }
+          updateSaveAllState();
+          return;
+        }
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          if (btnSend && !btnSend.disabled) {
+            submitSingleRow(pid, input, btnSend);
+          }
+        }
       });
-      render();
 
-      try {
-        await api.recordSale({
-          worker_id: wid,
-          product_id: pid,
-          quantity: -1,
-          sale_date: sDate
+      input.addEventListener('input', () => {
+        let clean = input.value.replace(/[^0-9]/g, '');
+        if (clean.length > 1 && clean.startsWith('0')) {
+          clean = clean.replace(/^0+/, '');
+        }
+        if (input.value !== clean) input.value = clean;
+
+        const val = parseInt(input.value, 10) || 0;
+        if (btnSend) {
+          if (val > 0) {
+            btnSend.disabled = false;
+            btnSend.style.opacity = '1';
+            btnSend.style.cursor = 'pointer';
+          } else {
+            btnSend.disabled = true;
+            btnSend.style.opacity = '0.4';
+            btnSend.style.cursor = 'not-allowed';
+          }
+        }
+        updateSaveAllState();
+      });
+
+      if (btnSend) {
+        btnSend.addEventListener('click', () => {
+          submitSingleRow(pid, input, btnSend);
         });
-        toast('Ajuste −1 registrado');
-        await syncFromD1();
-      } catch (e) {
-        S.sales = S.sales.filter(s => s.id !== tempId);
-        render();
-        toast('Error: ' + e.message);
-      } finally {
-        b.disabled = false;
       }
-    }));
+    });
+
+    if (btnSaveAll) {
+      btnSaveAll.addEventListener('click', async () => {
+        const validInputs = rowInputs.filter(inp => (parseInt(inp.value, 10) || 0) > 0);
+        if (validInputs.length === 0) return;
+
+        const sDate = S.selectedSaleDate || (root.querySelector('#sales-date') ? root.querySelector('#sales-date').value : localDateStr());
+        const pMethod = S.selectedPaymentMethod || (root.querySelector('#sales-paymethod') ? root.querySelector('#sales-paymethod').value : 'EFECTIVO');
+
+        btnSaveAll.disabled = true;
+        btnSaveAll.style.opacity = '0.7';
+        btnSaveAll.innerHTML = '<span class="modal-spinner" style="width:13px;height:13px;border-width:2px;display:inline-block;vertical-align:middle;margin-right:6px"></span> Guardando...';
+
+        const salesItems = [];
+        const tempIds = [];
+        const now = Date.now();
+
+        validInputs.forEach((inp, idx) => {
+          const pid = inp.dataset.pid;
+          const qty = parseInt(inp.value, 10);
+          const prod = S.products.find(p => p.id === pid);
+          if (prod && qty > 0) {
+            const tId = `temp_bulk_${now}_${idx}`;
+            tempIds.push(tId);
+            S.sales.push({
+              id: tId,
+              worker_id: wid,
+              product_id: pid,
+              quantity: qty,
+              sale_date: sDate,
+              payment_method: pMethod
+            });
+            salesItems.push({
+              product_id: pid,
+              worker_id: wid,
+              quantity: qty,
+              unit_price: prod.price,
+              sale_date: sDate,
+              payment_method: pMethod
+            });
+          }
+        });
+
+        try {
+          await api.recordSalesBulk({
+            worker_id: wid,
+            sale_date: sDate,
+            payment_method: pMethod,
+            sales: salesItems
+          });
+          const totalUnits = salesItems.reduce((acc, c) => acc + c.quantity, 0);
+          toast(`✓ ${salesItems.length} productos registrados exitosamente (${totalUnits} u.)`);
+          validInputs.forEach(inp => { inp.value = ''; });
+          await syncFromD1();
+        } catch (err) {
+          S.sales = S.sales.filter(s => !tempIds.includes(s.id));
+          render();
+          toast('Error guardando ventas: ' + err.message);
+        }
+      });
+    }
   }
 
   /* ── VENTAS ADMIN ── */
@@ -3787,61 +4935,185 @@ function wire(root) {
       render();
     }));
 
-    root.querySelectorAll('[data-admininc]').forEach(b => b.addEventListener('click', async () => {
-      const [wid, pid] = b.dataset.admininc.split(':');
-      const sDate = localDateStr();
-      b.disabled = true;
+    if (S.expandedWaiter) {
+      const wid = S.expandedWaiter;
+      const workerInputs = Array.from(root.querySelectorAll(`.admin-sale-input[data-wid="${wid}"]`));
+      const btnAdminSaveAll = root.querySelector(`.btn-admin-save-all[data-wid="${wid}"]`);
 
-      const tempId = 'temp_' + Date.now();
-      S.sales.push({
-        id: tempId,
-        worker_id: wid,
-        product_id: pid,
-        quantity: 1,
-        sale_date: sDate
-      });
-      render();
-
-      try {
-        await api.recordSale({ worker_id: wid, product_id: pid, quantity: 1, sale_date: sDate });
-        toast('Venta registrada');
-        await syncFromD1();
-      } catch (e) {
-        S.sales = S.sales.filter(s => s.id !== tempId);
-        render();
-        toast('Error: ' + e.message);
-      } finally {
-        b.disabled = false;
+      function updateAdminSaveAll() {
+        if (!btnAdminSaveAll) return;
+        const valid = workerInputs.filter(inp => (parseInt(inp.value, 10) || 0) > 0);
+        if (valid.length >= 2) {
+          btnAdminSaveAll.disabled = false;
+          btnAdminSaveAll.style.opacity = '1';
+          btnAdminSaveAll.style.cursor = 'pointer';
+        } else {
+          btnAdminSaveAll.disabled = true;
+          btnAdminSaveAll.style.opacity = '0.4';
+          btnAdminSaveAll.style.cursor = 'not-allowed';
+        }
       }
-    }));
 
-    root.querySelectorAll('[data-admindec]').forEach(b => b.addEventListener('click', async () => {
-      const [wid, pid] = b.dataset.admindec.split(':');
-      const sDate = localDateStr();
-      b.disabled = true;
+      async function submitAdminRow(pid, input, btnSend) {
+        const qty = parseInt(input.value, 10);
+        if (isNaN(qty) || qty <= 0) return;
 
-      const tempId = 'temp_' + Date.now();
-      S.sales.push({
-        id: tempId,
-        worker_id: wid,
-        product_id: pid,
-        quantity: -1,
-        sale_date: sDate
-      });
-      render();
+        const sDate = S.selectedSaleDate || (root.querySelector('#sales-date') ? root.querySelector('#sales-date').value : localDateStr());
+        const pMethod = S.selectedPaymentMethod || (root.querySelector('#sales-paymethod') ? root.querySelector('#sales-paymethod').value : 'EFECTIVO');
 
-      try {
-        await api.recordSale({ worker_id: wid, product_id: pid, quantity: -1, sale_date: sDate });
-        toast('Ajuste registrado');
-        await syncFromD1();
-      } catch (e) {
-        S.sales = S.sales.filter(s => s.id !== tempId);
-        render();
-        toast('Error: ' + e.message);
-      } finally {
-        b.disabled = false;
+        btnSend.disabled = true;
+        btnSend.style.opacity = '0.6';
+        btnSend.innerHTML = '<span class="modal-spinner" style="width:12px;height:12px;border-width:2px;display:inline-block"></span>';
+        input.disabled = true;
+
+        const tempId = 'temp_' + Date.now();
+        S.sales.push({
+          id: tempId,
+          worker_id: wid,
+          product_id: pid,
+          quantity: qty,
+          sale_date: sDate,
+          payment_method: pMethod
+        });
+
+        try {
+          await api.recordSale({
+            worker_id: wid,
+            product_id: pid,
+            quantity: qty,
+            sale_date: sDate,
+            payment_method: pMethod
+          });
+          const prod = S.products.find(p => p.id === pid);
+          toast(`✓ Venta registrada: +${qty} ${prod ? prod.name : 'u.'}`);
+          input.value = '';
+          input.disabled = false;
+          await syncFromD1();
+        } catch (e) {
+          S.sales = S.sales.filter(s => s.id !== tempId);
+          input.disabled = false;
+          btnSend.disabled = false;
+          btnSend.style.opacity = '1';
+          btnSend.textContent = 'Enviar';
+          render();
+          toast('Error: ' + e.message);
+        }
       }
-    }));
+
+      workerInputs.forEach(input => {
+        const pid = input.dataset.pid;
+        const btnSend = root.querySelector(`.btn-admin-send[data-wid="${wid}"][data-pid="${pid}"]`);
+
+        input.addEventListener('keydown', e => {
+          if (['e', 'E', '+', '-', '.', ','].includes(e.key)) {
+            e.preventDefault();
+            return;
+          }
+          if (e.key === 'ArrowDown' && (parseInt(input.value, 10) || 0) <= 0) {
+            e.preventDefault();
+            input.value = '';
+            if (btnSend) { btnSend.disabled = true; btnSend.style.opacity = '0.4'; btnSend.style.cursor = 'not-allowed'; }
+            updateAdminSaveAll();
+            return;
+          }
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            if (btnSend && !btnSend.disabled) {
+              submitAdminRow(pid, input, btnSend);
+            }
+          }
+        });
+
+        input.addEventListener('input', () => {
+          let clean = input.value.replace(/[^0-9]/g, '');
+          if (clean.length > 1 && clean.startsWith('0')) {
+            clean = clean.replace(/^0+/, '');
+          }
+          if (input.value !== clean) input.value = clean;
+
+          const val = parseInt(input.value, 10) || 0;
+          if (btnSend) {
+            if (val > 0) {
+              btnSend.disabled = false;
+              btnSend.style.opacity = '1';
+              btnSend.style.cursor = 'pointer';
+            } else {
+              btnSend.disabled = true;
+              btnSend.style.opacity = '0.4';
+              btnSend.style.cursor = 'not-allowed';
+            }
+          }
+          updateAdminSaveAll();
+        });
+
+        if (btnSend) {
+          btnSend.addEventListener('click', () => {
+            submitAdminRow(pid, input, btnSend);
+          });
+        }
+      });
+
+      if (btnAdminSaveAll) {
+        btnAdminSaveAll.addEventListener('click', async () => {
+          const validInputs = workerInputs.filter(inp => (parseInt(inp.value, 10) || 0) > 0);
+          if (validInputs.length === 0) return;
+
+          const sDate = S.selectedSaleDate || (root.querySelector('#sales-date') ? root.querySelector('#sales-date').value : localDateStr());
+          const pMethod = S.selectedPaymentMethod || (root.querySelector('#sales-paymethod') ? root.querySelector('#sales-paymethod').value : 'EFECTIVO');
+
+          btnAdminSaveAll.disabled = true;
+          btnAdminSaveAll.style.opacity = '0.7';
+          btnAdminSaveAll.innerHTML = '<span class="modal-spinner" style="width:13px;height:13px;border-width:2px;display:inline-block;vertical-align:middle;margin-right:6px"></span> Guardando...';
+
+          const salesItems = [];
+          const tempIds = [];
+          const now = Date.now();
+
+          validInputs.forEach((inp, idx) => {
+            const pid = inp.dataset.pid;
+            const qty = parseInt(inp.value, 10);
+            const prod = S.products.find(p => p.id === pid);
+            if (prod && qty > 0) {
+              const tId = `temp_adminbulk_${now}_${idx}`;
+              tempIds.push(tId);
+              S.sales.push({
+                id: tId,
+                worker_id: wid,
+                product_id: pid,
+                quantity: qty,
+                sale_date: sDate,
+                payment_method: pMethod
+              });
+              salesItems.push({
+                product_id: pid,
+                worker_id: wid,
+                quantity: qty,
+                unit_price: prod.price,
+                sale_date: sDate,
+                payment_method: pMethod
+              });
+            }
+          });
+
+          try {
+            await api.recordSalesBulk({
+              worker_id: wid,
+              sale_date: sDate,
+              payment_method: pMethod,
+              sales: salesItems
+            });
+            const totalUnits = salesItems.reduce((acc, c) => acc + c.quantity, 0);
+            toast(`✓ ${salesItems.length} ventas guardadas en lote (${totalUnits} u.)`);
+            validInputs.forEach(inp => { inp.value = ''; });
+            await syncFromD1();
+          } catch (err) {
+            S.sales = S.sales.filter(s => !tempIds.includes(s.id));
+            render();
+            toast('Error guardando ventas: ' + err.message);
+          }
+        });
+      }
+    }
 
     const apb = root.querySelector('#add-prod-btn');
     if (apb) apb.addEventListener('click', () => openM('add-prod', { role: apb.dataset.role }));
@@ -4023,6 +5295,29 @@ function wire(root) {
         toast(`Meta de ${money(targetAmount)} (Efectivo: ${money(cashTargetAmount)}) guardada para ${targetUser ? targetUser.name : 'el colaborador'}`);
         closeM();
         await syncFromD1();
+
+      } else if (m.type === 'adjust-sale') {
+        const pid = v('mf-adjust-pid');
+        const wid = v('mf-adjust-wid');
+        const qtyToDeduct = parseInt(v('mf-adjust-qty'), 10) || 0;
+        const sDate = v('mf-adjust-date') || localDateStr();
+        const notes = v('mf-adjust-notes') || 'Ajuste de venta';
+
+        if (qtyToDeduct <= 0) throw new Error('Ingresa una cantidad mayor a 0 para descontar.');
+
+        await api.recordSale({
+          worker_id: wid,
+          product_id: pid,
+          quantity: -qtyToDeduct,
+          sale_date: sDate,
+          notes: notes,
+          payment_method: S.selectedPaymentMethod || 'EFECTIVO'
+        });
+
+        const prod = S.products.find(p => p.id === pid);
+        toast(`✓ Descuento de −${qtyToDeduct} ${prod ? prod.name : 'unidades'} registrado.`);
+        closeM();
+        await syncFromD1();
       }
     } catch (err) {
       toast('Error: ' + err.message);
@@ -4030,6 +5325,11 @@ function wire(root) {
       ms.disabled = false;
     }
   });
+}
+
+function wire(root) {
+  wireLayout(root);
+  wireContent(root);
 }
 
 // ================================================================
