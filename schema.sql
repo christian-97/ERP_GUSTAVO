@@ -35,6 +35,7 @@ CREATE TABLE IF NOT EXISTS sales (
     quantity REAL NOT NULL DEFAULT 1,
     unit_price REAL NOT NULL,
     total REAL NOT NULL,
+    payment_method TEXT DEFAULT 'EFECTIVO',
     notes TEXT,
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
@@ -74,6 +75,7 @@ CREATE TABLE IF NOT EXISTS worker_targets (
     period_month TEXT NOT NULL,
     worker_id TEXT NOT NULL REFERENCES users(id),
     target_amount REAL NOT NULL,
+    cash_target_amount REAL DEFAULT 0.0,
     created_at TEXT NOT NULL DEFAULT (datetime('now')),
     UNIQUE(period_month, worker_id)
 );

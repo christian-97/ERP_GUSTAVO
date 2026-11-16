@@ -1,5 +1,5 @@
 /**
- * SAZON - Cloudflare Worker API REST
+ * AdminRest - Cloudflare Worker API REST
  * Backend exclusivo para sazon-db
  */
 import HTML from '../index.html';
@@ -420,21 +420,88 @@ export default {
 
         const unitPrice = b.unit_price !== undefined ? parseFloat(b.unit_price) : product.price;
         const total = quantity * unitPrice;
+        const paymentMethod = (b.payment_method || 'EFECTIVO').toUpperCase().trim();
         const id = 'sal_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6);
 
         await db.prepare(
-          `INSERT INTO sales (id, sale_date, product_id, worker_id, created_by_id, quantity, unit_price, total, notes)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
-        ).bind(id, saleDate, productId, workerId, createdById, quantity, unitPrice, total, notes).run();
+          `INSERT INTO sales (id, sale_date, product_id, worker_id, created_by_id, quantity, unit_price, total, payment_method, notes)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+        ).bind(id, saleDate, productId, workerId, createdById, quantity, unitPrice, total, paymentMethod, notes).run();
 
-        await logAudit(db, auth.id, 'CREATE_SALE', 'sales', id, { workerId, productId, quantity, total, saleDate });
+        await logAudit(db, auth.id, 'CREATE_SALE', 'sales', id, { workerId, productId, quantity, total, saleDate, paymentMethod });
 
         return jsonResponse({
           ok: true,
-          sale: { id, sale_date: saleDate, product_id: productId, worker_id: workerId, created_by_id: createdById, quantity, unit_price: unitPrice, total, notes }
+          sale: { id, sale_date: saleDate, product_id: productId, worker_id: workerId, created_by_id: createdById, quantity, unit_price: unitPrice, total, payment_method: paymentMethod, notes }
         }, 201, request);
       } catch (e) {
         return errorResponse('Error registrando venta: ' + e.message, 500, request);
+      }
+    }
+
+    // ===============================================================
+    // REGISTRO MASIVO DE VENTAS (BULK SALES)
+    // ===============================================================
+    if (path === '/api/sales/bulk' && method === 'POST') {
+      try {
+        const b = await request.json();
+        const salesList = Array.isArray(b.sales) ? b.sales : [];
+        if (salesList.length === 0) {
+          return errorResponse('Debe enviar al menos una venta en la lista.', 400, request);
+        }
+
+        const peruDefaultDate = new Date(Date.now() - 5 * 3600000).toISOString().split('T')[0];
+        const defaultDate = (b.sale_date || peruDefaultDate).trim();
+        const defaultWorkerId = (isAdmin && b.worker_id) ? b.worker_id : auth.id;
+
+        // Obtener catálogo de precios en un solo query
+        const allProducts = await db.prepare('SELECT id, price FROM products').all();
+        const priceMap = new Map();
+        (allProducts.results || []).forEach(p => priceMap.set(p.id, p.price));
+
+        const statements = [];
+        const createdSales = [];
+        const baseTs = Date.now();
+
+        for (let i = 0; i < salesList.length; i++) {
+          const item = salesList[i];
+          const productId = item.product_id;
+          if (!productId || !priceMap.has(productId)) {
+            return errorResponse(`Producto ID no válido o inexistente: ${productId}`, 400, request);
+          }
+
+          const workerId = (isAdmin && item.worker_id) ? item.worker_id : defaultWorkerId;
+          const createdById = auth.id;
+          const quantity = parseFloat(item.quantity) || 1;
+          const unitPrice = item.unit_price !== undefined ? parseFloat(item.unit_price) : priceMap.get(productId);
+          const total = quantity * unitPrice;
+          const saleDate = (item.sale_date || defaultDate).trim();
+          const paymentMethod = (item.payment_method || b.payment_method || 'EFECTIVO').toUpperCase().trim();
+          const notes = (item.notes || b.notes || 'Ingreso masivo').trim();
+          const id = `sal_bulk_${baseTs}_${i}_${Math.random().toString(36).substring(2, 5)}`;
+
+          statements.push(
+            db.prepare(
+              `INSERT INTO sales (id, sale_date, product_id, worker_id, created_by_id, quantity, unit_price, total, payment_method, notes)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+            ).bind(id, saleDate, productId, workerId, createdById, quantity, unitPrice, total, paymentMethod, notes)
+          );
+
+          createdSales.push({ id, sale_date: saleDate, product_id: productId, worker_id: workerId, quantity, unit_price: unitPrice, total, payment_method: paymentMethod });
+        }
+
+        if (statements.length > 0) {
+          await db.batch(statements);
+          await logAudit(db, auth.id, 'CREATE_SALES_BULK', 'sales', `bulk_${baseTs}`, { count: statements.length, totalAmount: createdSales.reduce((acc, s) => acc + s.total, 0) });
+        }
+
+        return jsonResponse({
+          ok: true,
+          count: createdSales.length,
+          sales: createdSales
+        }, 201, request);
+      } catch (e) {
+        return errorResponse('Error procesando ventas masivas: ' + e.message, 500, request);
       }
     }
 
@@ -558,6 +625,7 @@ export default {
         } else if (type === 'WORKER_TARGET') {
           const workerId = b.worker_id;
           const targetAmount = parseFloat(b.target_amount) || 0;
+          const cashTargetAmount = b.cash_target_amount !== undefined ? parseFloat(b.cash_target_amount) : 0;
           if (!workerId) return errorResponse('worker_id es requerido.', 400, request);
 
           await db.prepare(`
@@ -566,6 +634,7 @@ export default {
               period_month TEXT NOT NULL,
               worker_id TEXT NOT NULL REFERENCES users(id),
               target_amount REAL NOT NULL,
+              cash_target_amount REAL DEFAULT 0.0,
               created_at TEXT NOT NULL DEFAULT (datetime('now')),
               UNIQUE(period_month, worker_id)
             )
@@ -579,17 +648,17 @@ export default {
           if (existing) {
             finalId = existing.id;
             await db.prepare(
-              'UPDATE worker_targets SET target_amount = ? WHERE id = ?'
-            ).bind(targetAmount, finalId).run();
+              'UPDATE worker_targets SET target_amount = ?, cash_target_amount = ? WHERE id = ?'
+            ).bind(targetAmount, cashTargetAmount, finalId).run();
           } else {
             finalId = `wt_${periodMonth}_${workerId}`;
             await db.prepare(
-              'INSERT INTO worker_targets (id, period_month, worker_id, target_amount) VALUES (?, ?, ?, ?)'
-            ).bind(finalId, periodMonth, workerId, targetAmount).run();
+              'INSERT INTO worker_targets (id, period_month, worker_id, target_amount, cash_target_amount) VALUES (?, ?, ?, ?, ?)'
+            ).bind(finalId, periodMonth, workerId, targetAmount, cashTargetAmount).run();
           }
 
-          await logAudit(db, auth.id, 'SET_WORKER_TARGET', 'worker_targets', finalId, { periodMonth, workerId, targetAmount });
-          return jsonResponse({ ok: true, id: finalId, periodMonth, workerId, targetAmount }, 200, request);
+          await logAudit(db, auth.id, 'SET_WORKER_TARGET', 'worker_targets', finalId, { periodMonth, workerId, targetAmount, cashTargetAmount });
+          return jsonResponse({ ok: true, id: finalId, periodMonth, workerId, targetAmount, cashTargetAmount }, 200, request);
 
         } else if (type === 'PRODUCT_GOAL') {
           const productId = b.product_id;
@@ -909,27 +978,57 @@ export default {
       const currentMonth = url.searchParams.get('month') || `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
       const todayStr = url.searchParams.get('date') || now.toISOString().split('T')[0];
       const workerParam = url.searchParams.get('worker_id');
+      const productIdParam = url.searchParams.get('product_id');
       const filterWorker = (!isAdmin) ? auth.id : workerParam;
 
-      // Meta de tienda
+      // Meta de tienda mensual independiente
       const targetMonthRow = await db.prepare(
         'SELECT target_amount FROM store_targets WHERE period_month = ? AND day IS NULL'
       ).bind(currentMonth).first();
       const totalTarget = targetMonthRow ? targetMonthRow.target_amount : 350000.0;
 
-      // Días del mes y día actual
-      const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-      const currentDay = now.getDate();
+      // Suma independiente de metas asignadas a mozos
+      const workerTargetsSumRow = await db.prepare(
+        'SELECT COALESCE(SUM(target_amount), 0) as total, COALESCE(SUM(cash_target_amount), 0) as cash_total FROM worker_targets WHERE period_month = ?'
+      ).bind(currentMonth).first();
+      const workerTargetsSum = workerTargetsSumRow ? workerTargetsSumRow.total : 0;
+      const workerCashTargetsSum = workerTargetsSumRow ? workerTargetsSumRow.cash_total : 0;
 
-      // Ventas acumuladas en el mes
+      // Días del mes y día actual
+      const [yStr, mStr] = currentMonth.split('-');
+      const y = parseInt(yStr) || now.getFullYear();
+      const m = parseInt(mStr) || (now.getMonth() + 1);
+      const daysInMonth = new Date(y, m, 0).getDate();
+      const isCurrentMonth = currentMonth === `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+      const currentDay = isCurrentMonth ? now.getDate() : daysInMonth;
+
+      // Ventas acumuladas en el mes (con filtro opcional de producto y trabajador)
       let monthlySalesSql = 'SELECT COALESCE(SUM(total), 0) as total, COUNT(*) as count FROM sales WHERE sale_date LIKE ?';
       const mParams = [`${currentMonth}%`];
       if (filterWorker) {
         monthlySalesSql += ' AND worker_id = ?';
         mParams.push(filterWorker);
       }
+      if (productIdParam) {
+        monthlySalesSql += ' AND product_id = ?';
+        mParams.push(productIdParam);
+      }
       const monthlySalesRow = await db.prepare(monthlySalesSql).bind(...mParams).first();
       const monthlySales = monthlySalesRow ? monthlySalesRow.total : 0;
+
+      // Ventas en efectivo acumuladas en el mes
+      let cashSalesSql = "SELECT COALESCE(SUM(total), 0) as total FROM sales WHERE sale_date LIKE ? AND (payment_method IS NULL OR UPPER(payment_method) = 'EFECTIVO')";
+      const cParams = [`${currentMonth}%`];
+      if (filterWorker) {
+        cashSalesSql += ' AND worker_id = ?';
+        cParams.push(filterWorker);
+      }
+      if (productIdParam) {
+        cashSalesSql += ' AND product_id = ?';
+        cParams.push(productIdParam);
+      }
+      const cashSalesRow = await db.prepare(cashSalesSql).bind(...cParams).first();
+      const cashSales = cashSalesRow ? cashSalesRow.total : 0;
 
       // Ventas de hoy
       let todaySalesSql = 'SELECT COALESCE(SUM(total), 0) as total FROM sales WHERE sale_date = ?';
@@ -938,8 +1037,50 @@ export default {
         todaySalesSql += ' AND worker_id = ?';
         tParams.push(filterWorker);
       }
+      if (productIdParam) {
+        todaySalesSql += ' AND product_id = ?';
+        tParams.push(productIdParam);
+      }
       const todaySalesRow = await db.prepare(todaySalesSql).bind(...tParams).first();
       const todaySales = todaySalesRow ? todaySalesRow.total : 0;
+
+      // Metas y ventas diarias para la tabla proyectada día por día
+      const dailyTargetsRows = await db.prepare(
+        'SELECT day, target_amount FROM store_targets WHERE period_month = ? AND day IS NOT NULL'
+      ).bind(currentMonth).all();
+      const dailyTargetMap = new Map();
+      (dailyTargetsRows.results || []).forEach(r => dailyTargetMap.set(r.day, r.target_amount));
+
+      let dailyActualsSql = 'SELECT substr(sale_date, 9, 2) as day_str, COALESCE(SUM(total), 0) as total FROM sales WHERE sale_date LIKE ?';
+      const daParams = [`${currentMonth}%`];
+      if (filterWorker) {
+        dailyActualsSql += ' AND worker_id = ?';
+        daParams.push(filterWorker);
+      }
+      if (productIdParam) {
+        dailyActualsSql += ' AND product_id = ?';
+        daParams.push(productIdParam);
+      }
+      dailyActualsSql += ' GROUP BY day_str';
+      const dailyActualsRows = await db.prepare(dailyActualsSql).bind(...daParams).all();
+      const dailyActualMap = new Map();
+      (dailyActualsRows.results || []).forEach(r => dailyActualMap.set(parseInt(r.day_str), r.total));
+
+      const defaultDailyTarget = daysInMonth > 0 ? (totalTarget / daysInMonth) : 0;
+      const dailyList = [];
+      for (let d = 1; d <= daysInMonth; d++) {
+        const dStr = String(d).padStart(2, '0');
+        const target = dailyTargetMap.has(d) ? dailyTargetMap.get(d) : Math.round(defaultDailyTarget);
+        const actual = dailyActualMap.get(d) || 0;
+        const diff = actual - target;
+        dailyList.push({
+          day: d,
+          date: `${currentMonth}-${dStr}`,
+          target,
+          actual,
+          diff
+        });
+      }
 
       // Venta esperada a la fecha y ritmo
       const expectedPace = Math.round((totalTarget / daysInMonth) * currentDay);
@@ -960,31 +1101,41 @@ export default {
       if (filterWorker) psParams.push(filterWorker);
       const { results: productSales } = await db.prepare(productSalesSql).bind(...psParams).all();
 
-      // Ventas por trabajador
+      // Ventas por trabajador (si se filtra por producto, suma solo ese producto)
       let workerSalesSql = `
-        SELECT u.id, u.name, u.role, COALESCE(SUM(s.total), 0) as total_amount, COALESCE(SUM(s.quantity), 0) as total_units
+        SELECT u.id, u.name, u.role,
+               COALESCE(SUM(s.total), 0) as total_amount,
+               COALESCE(SUM(s.quantity), 0) as total_units,
+               COALESCE(SUM(CASE WHEN s.payment_method IS NULL OR UPPER(s.payment_method) = 'EFECTIVO' THEN s.total ELSE 0 END), 0) as cash_amount
         FROM users u
-        LEFT JOIN sales s ON u.id = s.worker_id AND s.sale_date LIKE ?
+        LEFT JOIN sales s ON u.id = s.worker_id AND s.sale_date LIKE ? ${productIdParam ? 'AND s.product_id = ?' : ''}
         WHERE u.active = 1 AND u.role IN ('MOZO', 'ANFITRIONA')
         GROUP BY u.id
-        ORDER BY total_amount DESC
+        ORDER BY ${productIdParam ? 'total_units DESC, total_amount DESC' : 'total_amount DESC'}
       `;
-      const { results: workerSales } = await db.prepare(workerSalesSql).bind(`${currentMonth}%`).all();
+      const wsParams = [`${currentMonth}%`];
+      if (productIdParam) wsParams.push(productIdParam);
+      const { results: workerSales } = await db.prepare(workerSalesSql).bind(...wsParams).all();
 
       return jsonResponse({
         ok: true,
         month: currentMonth,
         currentDay,
         daysInMonth,
+        filterProductId: productIdParam || null,
         kpis: {
           monthlySales,
+          cashSales,
           todaySales,
           totalTarget,
+          workerTargetsSum,
+          workerCashTargetsSum,
           expectedPace,
           diffAgainstExpected,
           projectedClosing,
           targetCompliance: parseFloat(targetCompliance)
         },
+        dailyList,
         productSales,
         workerSales
       }, 200, request);
