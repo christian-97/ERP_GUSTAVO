@@ -146,6 +146,63 @@ CREATE TABLE IF NOT EXISTS audit_log (
 
 CREATE INDEX IF NOT EXISTS idx_audit_created ON audit_log(created_at);
 
+-- 11. REGISTROS MENSUALES POR COLABORADOR (Pollos Apoyo y Efectivo)
+CREATE TABLE IF NOT EXISTS worker_monthly_records (
+    id TEXT PRIMARY KEY,
+    period_month TEXT NOT NULL,
+    worker_id TEXT NOT NULL REFERENCES users(id),
+    support_pollos REAL DEFAULT 0.0,
+    cash_achieved REAL DEFAULT 0.0,
+    updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+    UNIQUE(period_month, worker_id)
+);
+CREATE INDEX IF NOT EXISTS idx_wmr_period ON worker_monthly_records(period_month);
+
+-- 12. TIENDA INDEPENDIENTE: MÉTRICAS GLOBALES POR MES
+CREATE TABLE IF NOT EXISTS store_monthly_records (
+    id TEXT PRIMARY KEY,
+    period_month TEXT NOT NULL UNIQUE,
+    accumulated_sales REAL DEFAULT 0.0,
+    monthly_target REAL DEFAULT 0.0,
+    total_store_pollos REAL DEFAULT 0.0,
+    updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+-- 13. TIENDA INDEPENDIENTE: SEGUIMIENTO POR PRODUCTO
+CREATE TABLE IF NOT EXISTS store_product_records (
+    id TEXT PRIMARY KEY,
+    period_month TEXT NOT NULL,
+    product_id TEXT NOT NULL REFERENCES products(id),
+    target_units REAL DEFAULT 0.0,
+    actual_units REAL DEFAULT 0.0,
+    updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+    UNIQUE(period_month, product_id)
+);
+CREATE INDEX IF NOT EXISTS idx_spr_period ON store_product_records(period_month);
+
+-- 14. PESTAÑA PROYECTADO: DÍA POR DÍA (1 al 31)
+CREATE TABLE IF NOT EXISTS daily_projections (
+    id TEXT PRIMARY KEY,
+    period_month TEXT NOT NULL,
+    day INTEGER NOT NULL,
+    projected_amount REAL DEFAULT 0.0,
+    actual_amount REAL DEFAULT 0.0,
+    updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+    UNIQUE(period_month, day)
+);
+CREATE INDEX IF NOT EXISTS idx_dp_period ON daily_projections(period_month);
+
+-- 15. DASHBOARD: OBSERVACIONES Y COMENTARIOS DEL ADMINISTRADOR
+CREATE TABLE IF NOT EXISTS worker_comments (
+    id TEXT PRIMARY KEY,
+    worker_id TEXT NOT NULL REFERENCES users(id),
+    period_month TEXT NOT NULL,
+    author_id TEXT NOT NULL REFERENCES users(id),
+    comment TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_wc_worker_period ON worker_comments(worker_id, period_month);
+
 -- ========================================================
 -- DATOS INICIALES REALES DE SAZÓN
 -- ========================================================
