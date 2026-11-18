@@ -659,14 +659,18 @@ export default {
       const now = new Date();
       const month = url.searchParams.get('month') || `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
       const record = await db.prepare('SELECT * FROM store_monthly_records WHERE period_month = ?').bind(month).first();
+      const st = await db.prepare('SELECT target_amount FROM store_targets WHERE period_month = ? AND day IS NULL').bind(month).first();
+      const mTarget = (record && record.monthly_target > 0) ? record.monthly_target : ((st && st.target_amount > 0) ? st.target_amount : 350000.0);
       const pollos = record ? (record.total_store_pollos != null ? record.total_store_pollos : 0.0) : 0.0;
       return jsonResponse({
         ok: true,
-        record: record ? {
-          ...record,
+        record: {
+          period_month: month,
+          accumulated_sales: record ? (record.accumulated_sales || 0.0) : 0.0,
+          monthly_target: mTarget,
           total_store_pollos: pollos,
           total_pollos: pollos
-        } : { period_month: month, accumulated_sales: 0.0, monthly_target: 0.0, total_store_pollos: 0.0, total_pollos: 0.0 }
+        }
       }, 200, request);
     }
 
@@ -675,7 +679,7 @@ export default {
       try {
         const b = await request.json();
         const now = new Date();
-        const month = (b.period_month || `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`).trim();
+        const month = (b.period_month || b.month || `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`).trim();
         const accSales = parseFloat(b.accumulated_sales) || 0.0;
         const mTarget = parseFloat(b.monthly_target) || 0.0;
         const storePollos = parseFloat(b.total_store_pollos !== undefined ? b.total_store_pollos : b.total_pollos) || 0.0;
@@ -690,6 +694,14 @@ export default {
             total_store_pollos = excluded.total_store_pollos,
             updated_at = datetime('now')
         `).bind(id, month, accSales, mTarget, storePollos).run();
+
+        // Sincronizar en store_targets para consistencia en consultas de metas de tienda
+        await db.prepare(`
+          INSERT INTO store_targets (id, period_month, day, target_amount)
+          VALUES (?, ?, NULL, ?)
+          ON CONFLICT(period_month, day) DO UPDATE SET
+            target_amount = excluded.target_amount
+        `).bind(`st_${month}_month`, month, mTarget).run();
 
         await logAudit(db, auth.id, 'SAVE_STORE_RECORD', 'store_monthly_records', id, { month, accSales, mTarget, storePollos });
         return jsonResponse({ ok: true, id, period_month: month, accumulated_sales: accSales, monthly_target: mTarget, total_store_pollos: storePollos, total_pollos: storePollos }, 200, request);
@@ -706,13 +718,14 @@ export default {
       const month = url.searchParams.get('month') || `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
       const { results } = await db.prepare(`
         SELECT p.id as product_id, p.name as product_name, p.category as product_category,
+               ? as period_month,
                COALESCE(spr.target_units, 0) as target_units,
                COALESCE(spr.actual_units, 0) as actual_units
         FROM products p
         LEFT JOIN store_product_records spr ON p.id = spr.product_id AND spr.period_month = ?
         WHERE p.active = 1
         ORDER BY p.name ASC
-      `).bind(month).all();
+      `).bind(month, month).all();
       return jsonResponse({ ok: true, products: results || [] }, 200, request);
     }
 
@@ -722,7 +735,7 @@ export default {
         const b = await request.json();
         const now = new Date();
         const month = (b.period_month || b.month || `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`).trim();
-        const items = Array.isArray(b.records) ? b.records : [b];
+        const items = Array.isArray(b.records) ? b.records : (Array.isArray(b.products) ? b.products : [b]);
         const stmts = [];
 
         for (const it of items) {
@@ -767,6 +780,19 @@ export default {
         const now = new Date();
         const month = (b.period_month || b.month || `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`).trim();
         const days = Array.isArray(b.days) ? b.days : (Array.isArray(b.projections) ? b.projections : [b]);
+
+        await db.prepare(`
+          CREATE TABLE IF NOT EXISTS daily_projections (
+            id TEXT PRIMARY KEY,
+            period_month TEXT NOT NULL,
+            day INTEGER NOT NULL,
+            projected_amount REAL DEFAULT 0.0,
+            actual_amount REAL DEFAULT 0.0,
+            updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+            UNIQUE(period_month, day)
+          )
+        `).run();
+
         const stmts = [];
 
         for (const d of days) {

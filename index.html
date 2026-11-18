@@ -2684,6 +2684,29 @@ function shiftMonth(mStr, delta) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
 }
 
+function calcCuartosPollosPct(cuartosUnits, totalPollos) {
+  const t = parseFloat(totalPollos) || 0;
+  const u = parseFloat(cuartosUnits) || 0;
+  if (t <= 0) return 0;
+  return Math.round(((u / 4.0) / t) * 100);
+}
+
+function calcBebidasPollosPct(bebidasUnits, totalPollos) {
+  const t = parseFloat(totalPollos) || 0;
+  const u = parseFloat(bebidasUnits) || 0;
+  if (t <= 0) return 0;
+  return Math.round((u / t) * 100);
+}
+
+function calcTragosPollosPct(happyUnits, tragosUnits, totalPollos) {
+  const t = parseFloat(totalPollos) || 0;
+  const h = parseFloat(happyUnits) || 0;
+  const tr = parseFloat(tragosUnits) || 0;
+  if (t <= 0) return 0;
+  const eq = (h / 2.0) + tr;
+  return Math.round((eq / t) * 100);
+}
+
 function calcPollosPct(units, totalPollos) {
   const t = parseFloat(totalPollos) || 0;
   const u = parseFloat(units) || 0;
@@ -2694,12 +2717,12 @@ function calcPollosPct(units, totalPollos) {
 function renderMonthSelector(currentM, selectorId = 'sel-month') {
   return `
   <div class="month-selector-bar">
-    <button type="button" class="btn gho sm btn-prev-month" data-for="${selectorId}" title="Mes anterior">◀</button>
+    <button type="button" class="btn gho sm btn-prev-month" data-shift-month="-1" data-for="${selectorId}" title="Mes anterior">◀</button>
     <div class="month-display" title="Cambiar mes">
       <span class="month-text">${formatMonthName(currentM)}</span>
       <input type="month" id="${selectorId}" value="${currentM}" class="month-native-input">
     </div>
-    <button type="button" class="btn gho sm btn-next-month" data-for="${selectorId}" title="Mes siguiente">▶</button>
+    <button type="button" class="btn gho sm btn-next-month" data-shift-month="1" data-for="${selectorId}" title="Mes siguiente">▶</button>
   </div>`;
 }
 
@@ -3105,18 +3128,20 @@ function getWorkerMonthMetrics(workerId, role, month) {
   const cashPct = cashGoal > 0 ? Math.round((cashAchieved / cashGoal) * 100) : 0;
   const cashSem = cashPct >= 100 ? 'green' : cashPct >= 70 ? 'yellow' : 'red';
   
-  // Specific products: 1/4 Pollo, Bebidas, Tragos
+  // Specific products: 1/4 Pollo, Bebidas, Happy Hour, Tragos
   const pCuarto = prodStats.find(ps => ps.prod.name.toLowerCase().includes('1/4') || ps.prod.name.toLowerCase().includes('cuarto'));
-  const pBebidas = prodStats.find(ps => ps.prod.name.toLowerCase() === 'bebidas' || (ps.prod.category === 'BEBIDAS' && ps.prod.name.toLowerCase().includes('bebida')));
-  const pTragos = prodStats.find(ps => ps.prod.name.toLowerCase().includes('trago') || ps.prod.name.toLowerCase().includes('happy'));
+  const pBebidas = prodStats.find(ps => ps.prod.name.toLowerCase() === 'bebidas' || (ps.prod.category === 'BEBIDAS' && ps.prod.name.toLowerCase().includes('bebida') && !ps.prod.name.toLowerCase().includes('trago') && !ps.prod.name.toLowerCase().includes('happy')));
+  const pHappy = prodStats.find(ps => ps.prod.name.toLowerCase().includes('happy'));
+  const pTragos = prodStats.find(ps => ps.prod.name.toLowerCase().includes('trago') && !ps.prod.name.toLowerCase().includes('happy'));
   
   const cuartosUnits = pCuarto ? pCuarto.sold : 0;
   const bebidasUnits = pBebidas ? pBebidas.sold : 0;
+  const happyUnits = pHappy ? pHappy.sold : 0;
   const tragosUnits = pTragos ? pTragos.sold : 0;
   
-  const cuartosPct = calcPollosPct(cuartosUnits, supportPollos);
-  const bebidasPct = calcPollosPct(bebidasUnits, supportPollos);
-  const tragosPct = calcPollosPct(tragosUnits, supportPollos);
+  const cuartosPct = calcCuartosPollosPct(cuartosUnits, supportPollos);
+  const bebidasPct = calcBebidasPollosPct(bebidasUnits, supportPollos);
+  const tragosPct = calcTragosPollosPct(happyUnits, tragosUnits, supportPollos);
   
   return {
     prods: prodStats,
@@ -3603,16 +3628,19 @@ function vGeneral() {
     
     // Identificar productos clave en tienda
     const pCuarto = prods.find(p => p.name.toLowerCase().includes('1/4') || p.name.toLowerCase().includes('cuarto'));
-    const pBebidas = prods.find(p => p.name.toLowerCase() === 'bebidas' || (p.category === 'BEBIDAS' && p.name.toLowerCase().includes('bebida')));
-    const pTragos = prods.find(p => p.name.toLowerCase().includes('trago') || p.name.toLowerCase().includes('happy'));
+    const pBebidas = prods.find(p => p.name.toLowerCase() === 'bebidas' || (p.category === 'BEBIDAS' && p.name.toLowerCase().includes('bebida') && !p.name.toLowerCase().includes('trago') && !p.name.toLowerCase().includes('happy')));
+    const pHappy = prods.find(p => p.name.toLowerCase().includes('happy'));
+    const pTragos = prods.find(p => p.name.toLowerCase().includes('trago') && !p.name.toLowerCase().includes('happy'));
 
     const cRec = pCuarto ? getStoreProductRecord(pCuarto.id, activeMonth) : { actual_units: 0 };
     const bRec = pBebidas ? getStoreProductRecord(pBebidas.id, activeMonth) : { actual_units: 0 };
+    const hRec = pHappy ? getStoreProductRecord(pHappy.id, activeMonth) : { actual_units: 0 };
     const tRec = pTragos ? getStoreProductRecord(pTragos.id, activeMonth) : { actual_units: 0 };
 
-    const cuartosPct = calcPollosPct(cRec.actual_units, storeRec.total_store_pollos || storeRec.total_pollos);
-    const bebidasPct = calcPollosPct(bRec.actual_units, storeRec.total_store_pollos || storeRec.total_pollos);
-    const tragosPct = calcPollosPct(tRec.actual_units, storeRec.total_store_pollos || storeRec.total_pollos);
+    const tStorePollos = parseFloat(storeRec.total_store_pollos || storeRec.total_pollos) || 0;
+    const cuartosPct = calcCuartosPollosPct(cRec.actual_units, tStorePollos);
+    const bebidasPct = calcBebidasPollosPct(bRec.actual_units, tStorePollos);
+    const tragosPct = calcTragosPollosPct(hRec.actual_units, tRec.actual_units, tStorePollos);
 
     html += `
     <div class="sales-header-card">
@@ -3752,8 +3780,8 @@ function vProyectado() {
   const dailyData = [];
   for (let d = 1; d <= daysInSelMonth; d++) {
     const found = (S.dailyProjections || []).find(r => r.day === d);
-    const target = found ? found.target_amount : defaultDayTarget;
-    const actual = found ? found.actual_amount : 0;
+    const target = found ? (found.projected_amount != null ? parseFloat(found.projected_amount) : (found.target_amount != null ? parseFloat(found.target_amount) : defaultDayTarget)) : defaultDayTarget;
+    const actual = found ? (found.actual_amount != null ? parseFloat(found.actual_amount) : 0) : 0;
     const diff = actual - target;
     const dateStr = `${activeMonth}-${String(d).padStart(2, '0')}`;
     dailyData.push({ day: d, date: dateStr, target, actual, diff });
@@ -4322,13 +4350,13 @@ function vDashboard() {
 
     // Variación vs mes anterior
     let variation = 0;
-    if (df.rankType === 'efectivo') {
-      const prevCashCumpl = (prevGInfo.cashAmount || 0) > 0 ? Math.round((prevData.cashAchieved / prevGInfo.cashAmount) * 100) : 0;
-      variation = cashCumpl - prevCashCumpl;
-    } else if (df.rankType === 'producto' && selectedProd) {
+    if (selectedProd) {
       const prevProdMeta = goalForProduct(selectedProd.id, w.id);
       const prevProdCumpl = prevProdMeta > 0 ? Math.round((prevData.units / prevProdMeta) * 100) : 0;
       variation = prodCumpl - prevProdCumpl;
+    } else if (df.rankType === 'efectivo') {
+      const prevCashCumpl = (prevGInfo.cashAmount || 0) > 0 ? Math.round((prevData.cashAchieved / prevGInfo.cashAmount) * 100) : 0;
+      variation = cashCumpl - prevCashCumpl;
     } else {
       const prevMetrics = getWorkerMonthMetrics(w.id, w.role, prevMonth);
       variation = cumplPromedio - prevMetrics.generalPct;
@@ -4350,10 +4378,10 @@ function vDashboard() {
   });
 
   // Ordenamiento según criterio de ranking
-  if (df.rankType === 'efectivo') {
-    wkData.sort((a,b) => b.cashCumpl - a.cashCumpl || b.cashAchieved - a.cashAchieved);
-  } else if (df.rankType === 'producto' && selectedProd) {
+  if (selectedProd || df.rankType === 'producto') {
     wkData.sort((a,b) => b.units - a.units || b.prodCumpl - a.prodCumpl);
+  } else if (df.rankType === 'efectivo') {
+    wkData.sort((a,b) => b.cashCumpl - a.cashCumpl || b.cashAchieved - a.cashAchieved);
   } else {
     wkData.sort((a,b) => b.cumplPromedio - a.cumplPromedio || b.metrics.totalSold - a.metrics.totalSold);
   }
@@ -4361,9 +4389,10 @@ function vDashboard() {
   // Filtros de colaborador y estado
   let filtered = [...wkData];
   if (df.worker !== 'all') filtered = filtered.filter(w => String(w.id) === String(df.worker));
-  if (df.status === 'cumplida')  filtered = filtered.filter(w => (df.rankType === 'efectivo' ? w.cashCumpl : w.cumplPromedio) >= 100);
-  else if (df.status === 'camino') filtered = filtered.filter(w => (df.rankType === 'efectivo' ? w.cashCumpl : w.cumplPromedio) >= 60 && (df.rankType === 'efectivo' ? w.cashCumpl : w.cumplPromedio) < 100);
-  else if (df.status === 'bajo')   filtered = filtered.filter(w => (df.rankType === 'efectivo' ? w.cashCumpl : w.cumplPromedio) < 60);
+  const currentMetricPct = w => selectedProd ? w.prodCumpl : (df.rankType === 'efectivo' ? w.cashCumpl : w.cumplPromedio);
+  if (df.status === 'cumplida')  filtered = filtered.filter(w => currentMetricPct(w) >= 100);
+  else if (df.status === 'camino') filtered = filtered.filter(w => currentMetricPct(w) >= 60 && currentMetricPct(w) < 100);
+  else if (df.status === 'bajo')   filtered = filtered.filter(w => currentMetricPct(w) < 60);
 
   // Totales de tienda
   const storeRec = getStoreRecord(activeMonth);
@@ -4461,7 +4490,7 @@ function vDashboard() {
     <div class="db-kpi">
       <div class="db-kpi-icon">⭐</div>
       <div class="db-kpi-val" style="font-size:16px;color:var(--accent)">${topWorker ? esc(topWorker.name) : '—'}</div>
-      <div class="db-kpi-lbl">Líder: ${topWorker ? (df.rankType === 'efectivo' ? topWorker.cashCumpl + '%' : topWorker.cumplPromedio + '%') : ''}</div>
+      <div class="db-kpi-lbl">Líder: ${topWorker ? (df.rankType === 'efectivo' ? topWorker.cashCumpl + '%' : (selectedProd ? topWorker.prodCumpl + '%' : topWorker.cumplPromedio + '%')) : ''}</div>
     </div>
   </div>`;
 
@@ -4474,7 +4503,7 @@ function vDashboard() {
     <div style="display:flex;align-items:center;gap:8px">
       <label for="db-rank-type" style="font-size:12px;font-weight:600;color:var(--text-3)">Evaluar por:</label>
       <select id="db-rank-type" class="input sm" style="font-size:12px;padding:4px 8px">
-        <option value="cumplimiento" ${df.rankType === 'cumplimiento' ? 'selected' : ''}>Cumplimiento promedio (%)</option>
+        <option value="cumplimiento" ${(!df.rankType || df.rankType === 'cumplimiento') ? 'selected' : ''}>Cumplimiento promedio (%)</option>
         <option value="efectivo" ${df.rankType === 'efectivo' ? 'selected' : ''}>Efectivo (% de meta S/)</option>
         <option value="producto" ${df.rankType === 'producto' ? 'selected' : ''}>Producto específico (unidades)</option>
       </select>
@@ -4491,8 +4520,8 @@ function vDashboard() {
       <th>Colaborador</th>
       <th>Rol</th>
       <th class="r">Pollos (Apoyo)</th>
-      <th class="r">${df.rankType === 'producto' ? 'Unidades Vendidas' : df.rankType === 'efectivo' ? 'Efectivo Logrado' : 'Metas Logradas'}</th>
-      <th class="r">Desempeño</th>
+      <th class="r">${selectedProd ? `Unidades (${esc(selectedProd.name)})` : (df.rankType === 'producto' ? 'Unidades Vendidas' : df.rankType === 'efectivo' ? 'Efectivo Logrado' : 'Metas Logradas')}</th>
+      <th class="r">${selectedProd ? `% Meta (${esc(selectedProd.name)})` : 'Desempeño'}</th>
       <th class="r">Variación vs Mes Anterior</th>
       <th class="r">Estado</th>
     </tr></thead><tbody>`;
@@ -4505,12 +4534,12 @@ function vDashboard() {
 
       let metricValStr = '';
       let metricPct = 0;
-      if (df.rankType === 'efectivo') {
-        metricValStr = money(w.cashAchieved) + ' / ' + money(w.metaCash);
-        metricPct = w.cashCumpl;
-      } else if (df.rankType === 'producto' && selectedProd) {
+      if (selectedProd) {
         metricValStr = w.units + ' / ' + w.prodMeta + ' u.';
         metricPct = w.prodCumpl;
+      } else if (df.rankType === 'efectivo') {
+        metricValStr = money(w.cashAchieved) + ' / ' + money(w.metaCash);
+        metricPct = w.cashCumpl;
       } else {
         metricValStr = w.metrics.metasDone + ' / ' + w.metrics.totalProds + ' metas';
         metricPct = w.cumplPromedio;
@@ -4635,6 +4664,8 @@ function wireDashboard(root) {
   const ap = root.querySelector('#dbf-apply');
   const cl = root.querySelector('#dbf-clear');
   const rk = root.querySelector('#db-rank-type');
+  const prodSel = root.querySelector('#dbf-product');
+  const monthSel = root.querySelector('#dbf-month');
 
   if (rk) {
     rk.addEventListener('change', () => {
@@ -4643,6 +4674,47 @@ function wireDashboard(root) {
       render();
     });
   }
+
+  // Filtro por Producto: actualización inmediata del ranking
+  if (prodSel) {
+    prodSel.addEventListener('change', () => {
+      if (!S.dash) S.dash = {};
+      S.dash.product = prodSel.value;
+      if (prodSel.value !== 'all') {
+        S.dash.rankType = 'producto';
+      } else if (S.dash.rankType === 'producto') {
+        S.dash.rankType = 'cumplimiento';
+      }
+      render();
+    });
+  }
+
+  // Cambio dinámico de mes histórico
+  if (monthSel) {
+    monthSel.addEventListener('change', async () => {
+      if (!S.dash) S.dash = {};
+      const oldMonth = S.dash.month;
+      S.dash.month = monthSel.value;
+      if (S.dash.month && S.dash.month !== oldMonth) {
+        S.selectedMonth = S.dash.month;
+        await syncFromD1();
+      }
+      render();
+    });
+  }
+
+  // Actualización inmediata para colaborador, estado y periodo
+  ['#dbf-worker', '#dbf-status', '#dbf-period'].forEach(selId => {
+    const el = root.querySelector(selId);
+    if (el) {
+      el.addEventListener('change', () => {
+        if (!S.dash) S.dash = {};
+        const key = selId.replace('#dbf-', '');
+        S.dash[key] = el.value;
+        render();
+      });
+    }
+  });
 
   if (ap) ap.addEventListener('click', async () => {
     if (!S.dash) S.dash = {};
