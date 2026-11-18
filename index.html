@@ -802,18 +802,95 @@ button { font-family: var(--font); cursor: pointer; }
   height: 100%;
 }
 
-/* 3 Percentage Cards on Pollos */
+/* 3 Percentage Cards on Pollos (Clean Row Grid) */
+.metric-card-row,
 .metric-card-3 {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
+  gap: 12px;
   margin-bottom: 16px;
 }
+.metric-card-clean {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+.metric-card-clean:hover {
+  border-color: var(--primary-light);
+}
+.metric-card-clean-lbl {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+.metric-card-clean-val {
+  font-size: 24px;
+  font-weight: 800;
+  font-family: var(--font-mono);
+  color: var(--primary);
+  line-height: 1.1;
+}
 @media (max-width: 600px) {
+  .metric-card-row,
   .metric-card-3 {
     grid-template-columns: 1fr;
     gap: 8px;
   }
+}
+
+/* Stepper buttons - and + for direct product inputs */
+.btn-step {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--bg-surface);
+  color: var(--text-2);
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.15s ease;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.btn-step:hover {
+  background: var(--bg-hover);
+  color: var(--text-1);
+  border-color: var(--primary-light);
+}
+.btn-step:active {
+  transform: scale(0.92);
+}
+
+.btn-warn-soft {
+  color: #B45309 !important;
+  border-color: rgba(245, 158, 11, 0.3) !important;
+}
+.btn-warn-soft:hover {
+  background: rgba(245, 158, 11, 0.1) !important;
+}
+.btn-acc-soft {
+  color: var(--accent) !important;
+  border-color: rgba(47, 107, 79, 0.3) !important;
+}
+.btn-acc-soft:hover {
+  background: rgba(47, 107, 79, 0.1) !important;
 }
 
 /* Semáforo de avance */
@@ -2490,6 +2567,7 @@ const api = {
   async getUsers() { return this.request('/api/users'); },
   async createUser(u) { return this.request('/api/users', { method: 'POST', body: JSON.stringify(u) }); },
   async updateUser(id, u) { return this.request(`/api/users/${id}`, { method: 'PUT', body: JSON.stringify(u) }); },
+  async deleteUser(id) { return this.request(`/api/users/${id}`, { method: 'DELETE' }); },
   async getProducts(all = false) { return this.request(`/api/products${all ? '?all=true' : ''}`); },
   async createProduct(p) { return this.request('/api/products', { method: 'POST', body: JSON.stringify(p) }); },
   async updateProduct(id, p) { return this.request(`/api/products/${id}`, { method: 'PUT', body: JSON.stringify(p) }); },
@@ -2525,15 +2603,24 @@ const api = {
     const qs = new URLSearchParams(params).toString();
     return this.request(`/api/store-products${qs ? '?' + qs : ''}`);
   },
-  async saveStoreProducts(payload) {
-    return this.request('/api/store-products', { method: 'POST', body: JSON.stringify(payload) });
+  async saveStoreProducts(monthOrPayload, records) {
+    if (records !== undefined) {
+      return this.request('/api/store-products', { method: 'POST', body: JSON.stringify({ period_month: monthOrPayload, records }) });
+    }
+    return this.request('/api/store-products', { method: 'POST', body: JSON.stringify(monthOrPayload) });
+  },
+  async saveStoreProduct(p) {
+    return this.saveStoreProducts({ period_month: p.period_month, records: [p] });
   },
   async getDailyProjections(params = {}) {
     const qs = new URLSearchParams(params).toString();
     return this.request(`/api/daily-projections${qs ? '?' + qs : ''}`);
   },
-  async saveDailyProjections(payload) {
-    return this.request('/api/daily-projections', { method: 'POST', body: JSON.stringify(payload) });
+  async saveDailyProjections(monthOrPayload, days) {
+    if (days !== undefined) {
+      return this.request('/api/daily-projections', { method: 'POST', body: JSON.stringify({ period_month: monthOrPayload, days }) });
+    }
+    return this.request('/api/daily-projections', { method: 'POST', body: JSON.stringify(monthOrPayload) });
   },
   async getWorkerComments(params = {}) {
     const qs = new URLSearchParams(params).toString();
@@ -2937,13 +3024,26 @@ function getWorkerRecord(workerId, month) {
   };
 }
 
+function getStoreActualSales(month) {
+  const m = month || S.selectedMonth || localMonthStr();
+  if (Array.isArray(S.dailyProjections) && S.dailyProjections.length > 0) {
+    return S.dailyProjections.reduce((acc, row) => acc + (parseFloat(row.actual_amount) || 0), 0);
+  }
+  return (S.storeRecord && parseFloat(S.storeRecord.accumulated_sales)) || 0;
+}
+
 function getStoreRecord(month) {
   const m = month || S.selectedMonth || localMonthStr();
-  return (S.storeRecord && S.storeRecord.period_month === m) ? S.storeRecord : {
+  const rec = (S.storeRecord && S.storeRecord.period_month === m) ? S.storeRecord : (S.storeRecord || {});
+  const pollos = rec.total_store_pollos != null ? rec.total_store_pollos : (rec.total_pollos != null ? rec.total_pollos : 0);
+  const target = rec.monthly_target != null && rec.monthly_target > 0 ? rec.monthly_target : getStoreTarget(m);
+  const acc = getStoreActualSales(m);
+  return {
     period_month: m,
-    accumulated_sales: 0,
-    monthly_target: getStoreTarget(m),
-    total_pollos: 0
+    accumulated_sales: acc,
+    monthly_target: target,
+    total_store_pollos: pollos,
+    total_pollos: pollos
   };
 }
 
@@ -3117,21 +3217,18 @@ function vVentasUser() {
 
   // 3 Tarjetas de porcentaje clave sobre pollos de apoyo
   html += `
-  <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:10px;margin-bottom:18px">
-    <div class="metric-card-3">
-      <div class="metric-card-3-lbl">Cuartos de pollo</div>
-      <div class="metric-card-3-val">${metrics.cuartosPct}</div>
-      <div class="metric-card-3-sub">${metrics.cuartosUnits} u. vendidas</div>
+  <div class="metric-card-row">
+    <div class="metric-card-clean">
+      <div class="metric-card-clean-lbl">Cuartos de pollo</div>
+      <div class="metric-card-clean-val">${metrics.cuartosPct}%</div>
     </div>
-    <div class="metric-card-3">
-      <div class="metric-card-3-lbl">Bebidas</div>
-      <div class="metric-card-3-val">${metrics.bebidasPct}</div>
-      <div class="metric-card-3-sub">${metrics.bebidasUnits} u. vendidas</div>
+    <div class="metric-card-clean">
+      <div class="metric-card-clean-lbl">Bebidas</div>
+      <div class="metric-card-clean-val">${metrics.bebidasPct}%</div>
     </div>
-    <div class="metric-card-3">
-      <div class="metric-card-3-lbl">Tragos</div>
-      <div class="metric-card-3-val">${metrics.tragosPct}</div>
-      <div class="metric-card-3-sub">${metrics.tragosUnits} u. vendidas</div>
+    <div class="metric-card-clean">
+      <div class="metric-card-clean-lbl">Tragos</div>
+      <div class="metric-card-clean-val">${metrics.tragosPct}%</div>
     </div>
   </div>`;
 
@@ -3164,6 +3261,7 @@ function vVentasUser() {
             <span>Ajustar</span>
           </button>
           <div class="sale-input-group">
+            <button type="button" class="btn-step btn-step-dec" data-step="-1" title="Restar 1">−</button>
             <input type="number" 
                    class="sale-qty-input" 
                    data-pid="${ps.prod.id}" 
@@ -3171,6 +3269,7 @@ function vVentasUser() {
                    step="1" 
                    inputmode="numeric" 
                    placeholder="0">
+            <button type="button" class="btn-step btn-step-inc" data-step="1" title="Sumar 1">+</button>
             <button type="button" 
                     class="btn pri sm btn-send-sale" 
                     data-send-pid="${ps.prod.id}" 
@@ -3330,21 +3429,18 @@ function vVentasAdmin() {
 
         // 3 Tarjetas de porcentaje clave sobre pollos de apoyo
         html += `
-        <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:10px;margin-bottom:14px">
-          <div class="metric-card-3">
-            <div class="metric-card-3-lbl">Cuartos de pollo</div>
-            <div class="metric-card-3-val">${metrics.cuartosPct}</div>
-            <div class="metric-card-3-sub">${metrics.cuartosUnits} u. vendidas</div>
+        <div class="metric-card-row">
+          <div class="metric-card-clean">
+            <div class="metric-card-clean-lbl">Cuartos de pollo</div>
+            <div class="metric-card-clean-val">${metrics.cuartosPct}%</div>
           </div>
-          <div class="metric-card-3">
-            <div class="metric-card-3-lbl">Bebidas</div>
-            <div class="metric-card-3-val">${metrics.bebidasPct}</div>
-            <div class="metric-card-3-sub">${metrics.bebidasUnits} u. vendidas</div>
+          <div class="metric-card-clean">
+            <div class="metric-card-clean-lbl">Bebidas</div>
+            <div class="metric-card-clean-val">${metrics.bebidasPct}%</div>
           </div>
-          <div class="metric-card-3">
-            <div class="metric-card-3-lbl">Tragos</div>
-            <div class="metric-card-3-val">${metrics.tragosPct}</div>
-            <div class="metric-card-3-sub">${metrics.tragosUnits} u. vendidas</div>
+          <div class="metric-card-clean">
+            <div class="metric-card-clean-lbl">Tragos</div>
+            <div class="metric-card-clean-val">${metrics.tragosPct}%</div>
           </div>
         </div>`;
 
@@ -3371,6 +3467,7 @@ function vVentasAdmin() {
                 <span>Ajustar</span>
               </button>
               <div class="sale-input-group">
+                <button type="button" class="btn-step btn-step-dec" data-step="-1" title="Restar 1">−</button>
                 <input type="number" 
                        class="sale-qty-input admin-sale-input" 
                        data-wid="${w.id}" 
@@ -3379,6 +3476,7 @@ function vVentasAdmin() {
                        step="1" 
                        inputmode="numeric" 
                        placeholder="0">
+                <button type="button" class="btn-step btn-step-inc" data-step="1" title="Sumar 1">+</button>
                 <button type="button" 
                         class="btn pri sm btn-send-sale btn-admin-send" 
                         data-wid="${w.id}" 
@@ -3401,10 +3499,6 @@ function vVentasAdmin() {
           <button type="button" class="btn pri sm btn-save-all btn-admin-save-all" data-wid="${w.id}" disabled style="opacity:0.4;cursor:not-allowed">
             ⚡ Guardar ventas de ${esc(w.name)}
           </button>
-        </div>`;
-        html += `<div style="padding:10px 16px;display:flex;gap:10px">
-          <button class="btn gho sm" data-editprofile="${w.id}">Editar perfil</button>
-          <button class="btn gho sm" data-editworkergoal="${w.id}" data-meta="${goalForWorker(w.id, S.selectedMonth).amount}" data-cashmeta="${goalForWorker(w.id, S.selectedMonth).cashAmount}">Modificar metas</button>
         </div>`;
         html += `</div>`;
       }
@@ -3479,7 +3573,6 @@ function vGeneral() {
       html += `<table class="dt"><thead><tr>
         <th>Colaborador</th>
         <th>Rol</th>
-        <th class="r">Meta Venta General</th>
         <th class="r">Meta Efectivo (S/)</th>
         ${isAdmin ? '<th class="r">Acción</th>' : ''}
       </tr></thead><tbody>`;
@@ -3488,11 +3581,10 @@ function vGeneral() {
         html += `<tr>
           <td class="fw600">${esc(w.name)}</td>
           <td><span class="badge ${w.role === 'MOZO' ? 'acc' : 'def'}">${w.role}</span></td>
-          <td class="r dt-num">${money(gInfo.amount)}</td>
           <td class="r dt-num fw600" style="color:var(--gold)">${money(gInfo.cashAmount)}</td>
           ${isAdmin ? `
           <td class="r">
-            <button class="btn gho sm" data-editworkergoal="${w.id}" data-meta="${gInfo.amount}" data-cashmeta="${gInfo.cashAmount}">Editar meta</button>
+            <button class="btn gho sm" data-editworkergoal="${w.id}" data-cashmeta="${gInfo.cashAmount}">Editar meta</button>
           </td>` : ''}
         </tr>`;
       });
@@ -3518,9 +3610,9 @@ function vGeneral() {
     const bRec = pBebidas ? getStoreProductRecord(pBebidas.id, activeMonth) : { actual_units: 0 };
     const tRec = pTragos ? getStoreProductRecord(pTragos.id, activeMonth) : { actual_units: 0 };
 
-    const cuartosPct = calcPollosPct(cRec.actual_units, storeRec.total_pollos);
-    const bebidasPct = calcPollosPct(bRec.actual_units, storeRec.total_pollos);
-    const tragosPct = calcPollosPct(tRec.actual_units, storeRec.total_pollos);
+    const cuartosPct = calcPollosPct(cRec.actual_units, storeRec.total_store_pollos || storeRec.total_pollos);
+    const bebidasPct = calcPollosPct(bRec.actual_units, storeRec.total_store_pollos || storeRec.total_pollos);
+    const tragosPct = calcPollosPct(tRec.actual_units, storeRec.total_store_pollos || storeRec.total_pollos);
 
     html += `
     <div class="sales-header-card">
@@ -3547,7 +3639,7 @@ function vGeneral() {
       </div>
       <div class="stat-box">
         <div class="stat-lbl">Total pollos tienda</div>
-        <div class="stat-val">${storeRec.total_pollos} u.</div>
+        <div class="stat-val">${storeRec.total_store_pollos || storeRec.total_pollos || 0} u.</div>
       </div>
     </div>`;
 
@@ -3557,8 +3649,8 @@ function vGeneral() {
       <div style="font-weight:700;font-size:14px;color:var(--text-1);margin-bottom:12px">Parámetros Financieros y de Producción de Tienda</div>
       <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:12px">
         <div>
-          <label style="font-size:11.5px;font-weight:600;color:var(--text-3);display:block;margin-bottom:4px">Venta acumulada (S/)</label>
-          <input type="number" id="store-acc-sales" class="input sm" value="${storeRec.accumulated_sales}" step="500" ${isAdmin ? '' : 'disabled'}>
+          <label style="font-size:11.5px;font-weight:600;color:var(--text-3);display:block;margin-bottom:4px">Venta acumulada (S/) — Calculado de Proyectado</label>
+          <input type="text" id="store-acc-sales" class="input sm" value="${money(storeRec.accumulated_sales)}" disabled style="background:var(--bg-card);color:var(--text-muted);font-weight:700">
         </div>
         <div>
           <label style="font-size:11.5px;font-weight:600;color:var(--text-3);display:block;margin-bottom:4px">Meta mensual tienda (S/)</label>
@@ -3566,7 +3658,7 @@ function vGeneral() {
         </div>
         <div>
           <label style="font-size:11.5px;font-weight:600;color:var(--text-3);display:block;margin-bottom:4px">Total de pollos vendidos (tienda)</label>
-          <input type="number" id="store-total-pollos" class="input sm" value="${storeRec.total_pollos}" step="1" ${isAdmin ? '' : 'disabled'}>
+          <input type="number" id="store-total-pollos" class="input sm" value="${storeRec.total_store_pollos || storeRec.total_pollos || 0}" step="1" ${isAdmin ? '' : 'disabled'}>
         </div>
       </div>
       ${isAdmin ? `
@@ -3577,21 +3669,18 @@ function vGeneral() {
 
     // 3 Tarjetas de porcentaje clave sobre total de pollos de tienda
     html += `
-    <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:10px;margin-bottom:18px">
-      <div class="metric-card-3">
-        <div class="metric-card-3-lbl">Cuartos de pollo tienda</div>
-        <div class="metric-card-3-val">${cuartosPct}</div>
-        <div class="metric-card-3-sub">${cRec.actual_units} u. vendidas</div>
+    <div class="metric-card-row">
+      <div class="metric-card-clean">
+        <div class="metric-card-clean-lbl">Cuartos de pollo tienda</div>
+        <div class="metric-card-clean-val">${cuartosPct}%</div>
       </div>
-      <div class="metric-card-3">
-        <div class="metric-card-3-lbl">Bebidas tienda</div>
-        <div class="metric-card-3-val">${bebidasPct}</div>
-        <div class="metric-card-3-sub">${bRec.actual_units} u. vendidas</div>
+      <div class="metric-card-clean">
+        <div class="metric-card-clean-lbl">Bebidas tienda</div>
+        <div class="metric-card-clean-val">${bebidasPct}%</div>
       </div>
-      <div class="metric-card-3">
-        <div class="metric-card-3-lbl">Tragos tienda</div>
-        <div class="metric-card-3-val">${tragosPct}</div>
-        <div class="metric-card-3-sub">${tRec.actual_units} u. vendidas</div>
+      <div class="metric-card-clean">
+        <div class="metric-card-clean-lbl">Tragos tienda</div>
+        <div class="metric-card-clean-val">${tragosPct}%</div>
       </div>
     </div>`;
 
@@ -3691,19 +3780,19 @@ function vProyectado() {
   <div class="stats-row">
     <div class="stat-box">
       <div class="stat-lbl">Total proyectado del mes</div>
-      <div class="stat-val c-gold">${money(totalProjected)}</div>
+      <div class="stat-val c-gold" id="proj-card-tot-target">${money(totalProjected)}</div>
     </div>
     <div class="stat-box">
       <div class="stat-lbl">Esperado a la fecha (${evalDay}d)</div>
-      <div class="stat-val">${money(expectedToDate)}</div>
+      <div class="stat-val" id="proj-card-expected">${money(expectedToDate)}</div>
     </div>
     <div class="stat-box">
       <div class="stat-lbl">Real acumulado (Suma diaria)</div>
-      <div class="stat-val c-accent">${money(realAccumulated)}</div>
+      <div class="stat-val c-accent" id="proj-card-real-acc">${money(realAccumulated)}</div>
     </div>
     <div class="stat-box">
       <div class="stat-lbl">Diferencia acumulada</div>
-      <div class="stat-val ${isPos ? 'c-green' : 'c-red'}" style="color:${isPos ? 'var(--green)' : 'var(--red)'}">
+      <div class="stat-val ${isPos ? 'c-green' : 'c-red'}" id="proj-card-diff-high" style="color:${isPos ? 'var(--green)' : 'var(--red)'}">
         ${isPos ? '+' : ''}${money(diffHighlight)}
       </div>
     </div>
@@ -3714,19 +3803,19 @@ function vProyectado() {
   <div class="card" style="padding:0;margin-bottom:18px">
     <div class="proj-row">
       <span class="proj-lbl">Meta mensual de tienda</span>
-      <span class="proj-val gold">${money(totalProjected)}</span>
+      <span class="proj-val gold" id="proj-summary-tot-target">${money(totalProjected)}</span>
     </div>
     <div class="proj-row">
       <span class="proj-lbl">Ritmo esperado al día ${evalDay}</span>
-      <span class="proj-val">${money(expectedToDate)}</span>
+      <span class="proj-val" id="proj-summary-expected">${money(expectedToDate)}</span>
     </div>
     <div class="proj-row">
       <span class="proj-lbl">Venta real acumulada</span>
-      <span class="proj-val" style="color:var(--accent)">${money(realAccumulated)}</span>
+      <span class="proj-val" id="proj-summary-real-acc" style="color:var(--accent)">${money(realAccumulated)}</span>
     </div>
     <div class="proj-row" style="background:var(--bg-surface-2)">
       <span class="proj-lbl fw600" style="color:var(--text-1)">Diferencia destacada frente al ritmo</span>
-      <span class="proj-val ${isPos ? 'pos' : 'neg'}" style="font-size:16px;font-weight:700">
+      <span class="proj-val ${isPos ? 'pos' : 'neg'}" id="proj-summary-diff-high" style="font-size:16px;font-weight:700">
         ${isPos ? '+' : ''}${money(diffHighlight)}
       </span>
     </div>
@@ -3970,10 +4059,16 @@ function vConfig() {
       <div class="cfg-row">
         <div class="cfg-row-info">
           <div class="cfg-row-name">${esc(w.name)}</div>
-          <div class="cfg-row-meta">${w.role} · Código: ${esc(w.code)} · ${w.active ? '<span style="color:var(--green)">Activo</span>' : '<span style="color:var(--red)">Inactivo</span>'}</div>
+          <div class="cfg-row-meta">${w.role} · Código: ${esc(w.code)} · ${w.active ? '<span style="color:var(--green);font-weight:600">● Activo</span>' : '<span style="color:var(--red);font-weight:600">● Bloqueado / Inactivo</span>'}</div>
         </div>
-        <div class="cfg-row-actions">
+        <div class="cfg-row-actions" style="display:flex;gap:6px;align-items:center">
           <button class="btn gho sm" data-editprofile="${w.id}">Editar</button>
+          <button class="btn gho sm ${w.active ? 'btn-warn-soft' : 'btn-acc-soft'}" data-toggleuseractive="${w.id}" data-currentactive="${w.active ? '1' : '0'}" title="${w.active ? 'Bloquear colaborador' : 'Activar colaborador'}">
+            ${w.active ? 'Bloquear' : 'Activar'}
+          </button>
+          <button class="btn dan sm" data-deleteuser="${w.id}" data-username="${esc(w.name)}" title="Eliminar colaborador">
+            Eliminar
+          </button>
         </div>
       </div>`;
     });
@@ -4026,10 +4121,16 @@ function renderM() {
     title = 'Configuración de endpoint';
     f = `<div class="field"><label>URL del Worker sazon-api</label><input id="mf-api" type="text" value="${esc(API_URL)}"></div>`;
   } else if (m.type === 'add-prod') {
-    title = 'Nuevo producto — ' + m.data.role;
+    title = 'Nuevo producto para catálogo';
     f = `
     <div class="field"><label>Nombre del producto</label><input id="mf-name" type="text" placeholder="Ej: 1/2 Pollo a la Brasa"></div>
     <div class="field"><label>Categoría</label><input id="mf-cat" type="text" placeholder="POLLOS, BEBIDAS, PARRILLAS..."></div>
+    <div class="field"><label>Rol Asignado</label>
+      <select id="mf-role">
+        <option value="MOZO">Mozo</option>
+        <option value="ANFITRIONA">Anfitriona</option>
+      </select>
+    </div>
     <div class="field"><label>Meta mensual en unidades</label><input id="mf-initial-goal" type="number" step="1" min="1" value="40"></div>`;
   } else if (m.type === 'edit-goal') {
     const prod = S.products.find(p => p.id === m.data.id);
@@ -4083,15 +4184,14 @@ function renderM() {
     const isNew = !m.data.workerId;
     const activeWorkers = S.users.filter(u => u.active && (u.role === 'MOZO' || u.role === 'ANFITRIONA'));
     const w = m.data.workerId ? S.users.find(u => String(u.id) === String(m.data.workerId)) : null;
-    const currPeriod = m.data.period || localMonthStr();
+    const currPeriod = m.data.period || S.selectedMonth || localMonthStr();
     const gObj = w ? goalForWorker(w.id, currPeriod) : null;
-    const currMeta = m.data.targetAmount != null ? m.data.targetAmount : (gObj ? gObj.amount : 10000);
     const currCashMeta = m.data.cashTargetAmount != null ? m.data.cashTargetAmount : (gObj ? gObj.cashAmount : 0);
 
-    title = isNew ? 'Asignar Meta de Ventas a Mozo' : ('Meta de Ventas — ' + esc(w ? w.name : 'Colaborador'));
+    title = isNew ? 'Asignar Meta de Efectivo' : ('Meta de Efectivo — ' + esc(w ? w.name : 'Colaborador'));
     f = `
     <div class="field">
-      <label>Colaborador / Mozo</label>
+      <label>Colaborador</label>
       ${isNew ? `
         <select id="mf-worker">
           ${activeWorkers.map(u => `<option value="${u.id}">${esc(u.name)} (${u.role})</option>`).join('')}
@@ -4106,13 +4206,8 @@ function renderM() {
       <input id="mf-period" type="month" value="${esc(currPeriod)}">
     </div>
     <div class="field">
-      <label>Monto Objetivo de Venta General (S/)</label>
-      <input id="mf-target" type="number" step="100" min="1" value="${currMeta}">
-    </div>
-    <div class="field">
-      <label>Meta Específica de Venta en Efectivo (S/)</label>
-      <input id="mf-cash-target" type="number" step="100" min="0" value="${currCashMeta}" placeholder="Ej: 4000">
-      <small style="color:var(--text-3);font-size:11px;display:block;margin-top:3px">Se medirá el % de cumplimiento sobre esta meta en efectivo.</small>
+      <label>Meta de Efectivo mensual (S/)</label>
+      <input id="mf-cash-target" type="number" step="50" min="0" value="${currCashMeta}" placeholder="Ej: 3500">
     </div>`;
   } else if (m.type === 'adjust-sale') {
     const prod = S.products.find(p => p.id === m.data.productId);
@@ -5018,58 +5113,72 @@ function wireContent(root) {
     });
   });
 
-  /* ── METAS: GUARDAR DATOS DE TIENDA Y PRODUCTOS ── */
-  const btnSaveStore = root.querySelector('#btn-save-store-records');
-  if (btnSaveStore) {
-    btnSaveStore.addEventListener('click', async () => {
-      const acc = parseFloat((root.querySelector('#store-acc-sales') || {}).value) || 0;
-      const target = parseFloat((root.querySelector('#store-monthly-target') || {}).value) || 0;
-      const pollos = parseFloat((root.querySelector('#store-total-pollos') || {}).value) || 0;
-      btnSaveStore.disabled = true;
-      try {
-        await api.saveStoreRecord({
-          period_month: S.selectedMonth,
-          accumulated_sales: acc,
-          monthly_target: target,
-          total_pollos: pollos
-        });
-        toast('Datos de tienda actualizados');
-        await syncFromD1();
-      } catch (e) {
-        toast('Error: ' + e.message);
-        btnSaveStore.disabled = false;
-      }
+  /* ── BOTONES STEPPER (-) Y (+) PARA CONTROLES DE PRODUCTOS ── */
+  root.querySelectorAll('.btn-step').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const parent = btn.closest('.sale-input-group');
+      if (!parent) return;
+      const input = parent.querySelector('input.sale-qty-input');
+      if (!input) return;
+      const step = parseInt(btn.dataset.step, 10) || 1;
+      let currentVal = parseInt(input.value, 10);
+      if (isNaN(currentVal)) currentVal = 0;
+      let newVal = Math.max(0, currentVal + step);
+      input.value = newVal > 0 ? String(newVal) : '';
+      input.dispatchEvent(new Event('input', { bubbles: true }));
     });
+  });
+
+  /* ── METAS: GUARDAR DATOS DE TIENDA Y PRODUCTOS ── */
+  async function saveAllStoreData() {
+    const target = parseFloat((root.querySelector('#store-monthly-target') || {}).value) || 0;
+    const pollos = parseFloat((root.querySelector('#store-total-pollos') || {}).value) || 0;
+    const acc = getStoreActualSales(S.selectedMonth);
+
+    const prods = (S.products || []).filter(p => p.active);
+    const records = [];
+    for (const p of prods) {
+      const tInp = root.querySelector(`.store-prod-target[data-pid="${p.id}"]`);
+      const aInp = root.querySelector(`.store-prod-actual[data-pid="${p.id}"]`);
+      if (tInp && aInp) {
+        records.push({
+          product_id: p.id,
+          target_units: parseInt(tInp.value, 10) || 0,
+          actual_units: parseInt(aInp.value, 10) || 0
+        });
+      }
+    }
+
+    try {
+      await api.saveStoreRecord({
+        period_month: S.selectedMonth,
+        accumulated_sales: acc,
+        monthly_target: target,
+        total_store_pollos: pollos,
+        total_pollos: pollos
+      });
+
+      if (records.length > 0) {
+        await api.saveStoreProducts({
+          period_month: S.selectedMonth,
+          records
+        });
+      }
+
+      toast('✓ Parámetros y productos de tienda guardados con éxito');
+      await syncFromD1();
+    } catch (e) {
+      toast('Error guardando datos de tienda: ' + e.message);
+    }
   }
 
+  const btnSaveStore = root.querySelector('#btn-save-store-records');
+  if (btnSaveStore) btnSaveStore.addEventListener('click', saveAllStoreData);
+
   const btnSaveStoreProds = root.querySelector('#btn-save-store-products');
-  if (btnSaveStoreProds) {
-    btnSaveStoreProds.addEventListener('click', async () => {
-      btnSaveStoreProds.disabled = true;
-      try {
-        const prods = (S.products || []).filter(p => p.active);
-        for (const p of prods) {
-          const tInp = root.querySelector(`.store-prod-target[data-pid="${p.id}"]`);
-          const aInp = root.querySelector(`.store-prod-actual[data-pid="${p.id}"]`);
-          if (tInp && aInp) {
-            const targetUnits = parseInt(tInp.value, 10) || 0;
-            const actualUnits = parseInt(aInp.value, 10) || 0;
-            await api.saveStoreProduct({
-              period_month: S.selectedMonth,
-              product_id: p.id,
-              target_units: targetUnits,
-              actual_units: actualUnits
-            });
-          }
-        }
-        toast('Avance de productos de tienda guardado');
-        await syncFromD1();
-      } catch (e) {
-        toast('Error: ' + e.message);
-        btnSaveStoreProds.disabled = false;
-      }
-    });
-  }
+  if (btnSaveStoreProds) btnSaveStoreProds.addEventListener('click', saveAllStoreData);
 
   /* ── PROYECTADO: RECÁLCULO DINÁMICO Y GUARDADO ── */
   function recalcDailyProjectionRow(day) {
@@ -5084,9 +5193,52 @@ function wireContent(root) {
     cell.textContent = (isPos ? '+' : '') + money(diff);
     cell.style.color = isPos ? 'var(--green)' : 'var(--red)';
     
-    let totTarget = 0, totActual = 0;
-    root.querySelectorAll('.proj-day-target').forEach(i => totTarget += (parseFloat(i.value) || 0));
-    root.querySelectorAll('.proj-day-actual').forEach(i => totActual += (parseFloat(i.value) || 0));
+    let totTarget = 0, totActual = 0, expectedToDate = 0;
+    const [pYear, pMonth] = (S.selectedMonth || localMonthStr()).split('-').map(Number);
+    const daysInSelMonth = new Date(pYear, pMonth, 0).getDate();
+    const isCurrentMonth = (S.selectedMonth || localMonthStr()) === localMonthStr();
+    const evalDay = isCurrentMonth ? S.currentDay : daysInSelMonth;
+
+    root.querySelectorAll('.proj-day-target').forEach(i => {
+      const d = parseInt(i.dataset.day, 10);
+      const val = parseFloat(i.value) || 0;
+      totTarget += val;
+      if (d <= evalDay) expectedToDate += val;
+    });
+    root.querySelectorAll('.proj-day-actual').forEach(i => {
+      totActual += (parseFloat(i.value) || 0);
+    });
+
+    const diffHighlight = totActual - expectedToDate;
+    const isPosDiff = diffHighlight >= 0;
+
+    // Header cards
+    const cTotTarget = root.querySelector('#proj-card-tot-target');
+    const cExpected = root.querySelector('#proj-card-expected');
+    const cRealAcc = root.querySelector('#proj-card-real-acc');
+    const cDiffHigh = root.querySelector('#proj-card-diff-high');
+    if (cTotTarget) cTotTarget.textContent = money(totTarget);
+    if (cExpected) cExpected.textContent = money(expectedToDate);
+    if (cRealAcc) cRealAcc.textContent = money(totActual);
+    if (cDiffHigh) {
+      cDiffHigh.textContent = (isPosDiff ? '+' : '') + money(diffHighlight);
+      cDiffHigh.style.color = isPosDiff ? 'var(--green)' : 'var(--red)';
+    }
+
+    // Summary breakdown
+    const sTotTarget = root.querySelector('#proj-summary-tot-target');
+    const sExpected = root.querySelector('#proj-summary-expected');
+    const sRealAcc = root.querySelector('#proj-summary-real-acc');
+    const sDiffHigh = root.querySelector('#proj-summary-diff-high');
+    if (sTotTarget) sTotTarget.textContent = money(totTarget);
+    if (sExpected) sExpected.textContent = money(expectedToDate);
+    if (sRealAcc) sRealAcc.textContent = money(totActual);
+    if (sDiffHigh) {
+      sDiffHigh.textContent = (isPosDiff ? '+' : '') + money(diffHighlight);
+      sDiffHigh.className = `proj-val ${isPosDiff ? 'pos' : 'neg'}`;
+    }
+
+    // Table footer
     const totDiff = totActual - totTarget;
     const totTEl = root.querySelector('#proj-tot-target');
     const totAEl = root.querySelector('#proj-tot-actual');
@@ -5110,12 +5262,12 @@ function wireContent(root) {
       const aInp = root.querySelector(`.proj-day-actual[data-day="${day}"]`);
       const target = parseFloat(tInp.value) || 0;
       const actual = aInp ? (parseFloat(aInp.value) || 0) : 0;
-      rows.push({ day, target_amount: target, actual_amount: actual });
+      rows.push({ day, target_amount: target, projected_amount: target, actual_amount: actual });
     });
     if (rows.length === 0) return;
     try {
-      await api.saveDailyProjections(S.selectedMonth, rows);
-      toast('Proyecciones diarias guardadas');
+      await api.saveDailyProjections({ period_month: S.selectedMonth, days: rows });
+      toast('✓ Proyecciones diarias guardadas con éxito');
       await syncFromD1();
     } catch (e) {
       toast('Error guardando proyecciones: ' + e.message);
@@ -5510,12 +5662,64 @@ function wireContent(root) {
         });
       }
     }
-
-    const apb = root.querySelector('#add-prod-btn');
-    if (apb) apb.addEventListener('click', () => openM('add-prod', { role: apb.dataset.role }));
   }
 
   /* ── ACCIONES GENERALES ── */
+  /* Agregar producto al catálogo */
+  const apb = root.querySelector('#add-prod-btn');
+  if (apb) apb.addEventListener('click', () => openM('add-prod', { role: apb.dataset.role || 'MOZO' }));
+
+  /* Metas de colaboradores (Efectivo) */
+  root.querySelectorAll('[data-editworkergoal]').forEach(b => {
+    b.addEventListener('click', () => {
+      const wid = b.dataset.editworkergoal;
+      const cashMeta = parseFloat(b.dataset.cashmeta) || 0;
+      openM('edit-worker-goal', { workerId: wid, cashTargetAmount: cashMeta, period: S.selectedMonth || localMonthStr() });
+    });
+  });
+
+  const btnAddWg = root.querySelector('#btn-add-worker-goal');
+  if (btnAddWg) {
+    btnAddWg.addEventListener('click', () => {
+      openM('edit-worker-goal', { period: S.selectedMonth || localMonthStr() });
+    });
+  }
+
+  /* Configuración: Bloquear / Activar y Eliminar colaboradores */
+  root.querySelectorAll('[data-toggleuseractive]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const uid = btn.dataset.toggleuseractive;
+      const isCurrentlyActive = btn.dataset.currentactive === '1';
+      const newActive = !isCurrentlyActive;
+      try {
+        btn.disabled = true;
+        await api.updateUser(uid, { active: newActive ? 1 : 0 });
+        toast(newActive ? 'Colaborador activado con éxito' : 'Colaborador bloqueado (acceso revocado)');
+        await syncFromD1();
+      } catch (e) {
+        toast('Error al actualizar estado: ' + e.message);
+        btn.disabled = false;
+      }
+    });
+  });
+
+  root.querySelectorAll('[data-deleteuser]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const uid = btn.dataset.deleteuser;
+      const uname = btn.dataset.username || 'este colaborador';
+      if (!confirm(`¿Estás seguro de que deseas dar de baja o eliminar a ${uname}?\n\nSi cuenta con historial de ventas o metas registradas, pasará a estado inactivo para preservar las estadísticas históricas.`)) return;
+      try {
+        btn.disabled = true;
+        const res = await api.deleteUser(uid);
+        toast(res.message || 'Colaborador procesado');
+        await syncFromD1();
+      } catch (e) {
+        toast('Error al procesar eliminación: ' + e.message);
+        btn.disabled = false;
+      }
+    });
+  });
+
   root.querySelectorAll('[data-editgoal]').forEach(b => b.addEventListener('click', () => openM('edit-goal', { id: b.dataset.editgoal, role: b.dataset.role || 'GENERAL' })));
   root.querySelectorAll('[data-editprofile]').forEach(b => b.addEventListener('click', () => openM('edit-profile', { id: b.dataset.editprofile })));
   root.querySelectorAll('[data-editadmin]').forEach(b => b.addEventListener('click', () => openM('edit-profile', { id: b.dataset.editadmin })));
@@ -5618,8 +5822,10 @@ function wireContent(root) {
       } else if (m.type === 'add-prod') {
         const name     = v('mf-name');
         const category = v('mf-cat') || 'GENERAL';
+        const role     = v('mf-role') || (m.data && m.data.role) || 'MOZO';
         const initGoal = parseFloat(v('mf-initial-goal')) || 40;
-        const newProd  = await api.createProduct({ name, category, price: 0, target_role: m.data.role });
+        if (!name) throw new Error('Ingresa el nombre del producto.');
+        const newProd  = await api.createProduct({ name, category, price: 0, target_role: role });
         if (newProd && newProd.product && newProd.product.id) {
           await api.saveGoal({ type: 'PRODUCT_GOAL', product_id: newProd.product.id, target_quantity: initGoal });
         }
@@ -5676,22 +5882,23 @@ function wireContent(root) {
 
       } else if (m.type === 'edit-worker-goal') {
         const workerId = v('mf-worker');
-        const periodMonth = v('mf-period') || localMonthStr();
-        const targetAmount = parseFloat(v('mf-target')) || 0;
+        const periodMonth = v('mf-period') || S.selectedMonth || localMonthStr();
         const cashTargetAmount = parseFloat(v('mf-cash-target')) || 0;
+        const targetAmount = parseFloat(v('mf-target')) || cashTargetAmount;
         if (!workerId) throw new Error('Selecciona un colaborador.');
-        if (targetAmount <= 0) throw new Error('Ingresa un monto objetivo mayor a 0.');
+        if (cashTargetAmount <= 0 && targetAmount <= 0) throw new Error('Ingresa un monto de meta mayor a 0.');
 
         await api.saveGoal({
           type: 'WORKER_TARGET',
           worker_id: workerId,
           period_month: periodMonth,
+          month: periodMonth,
           target_amount: targetAmount,
           cash_target_amount: cashTargetAmount
         });
 
         const targetUser = S.users.find(u => String(u.id) === String(workerId));
-        toast(`Meta de ${money(targetAmount)} (Efectivo: ${money(cashTargetAmount)}) guardada para ${targetUser ? targetUser.name : 'el colaborador'}`);
+        toast(`Meta de efectivo (${money(cashTargetAmount)}) guardada para ${targetUser ? targetUser.name : 'el colaborador'}`);
         closeM();
         await syncFromD1();
 

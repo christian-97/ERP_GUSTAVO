@@ -235,8 +235,12 @@ export default {
           'SELECT id, name, code, role, active FROM users WHERE code = ?'
         ).bind(code).first();
 
-        if (!user || user.active === 0) {
+        if (!user) {
           return errorResponse('Código de empleado no reconocido.', 401, request);
+        }
+
+        if (user.active === 0) {
+          return errorResponse('Tu cuenta se encuentra inactiva o bloqueada. Contacta al administrador.', 403, request);
         }
 
         const token = await signToken(
@@ -335,6 +339,30 @@ export default {
         return jsonResponse({ ok: true, user: { id: targetId, name, code, role, active } }, 200, request);
       } catch (e) {
         return errorResponse('Error actualizando usuario: ' + e.message, 500, request);
+      }
+    }
+
+    if (path.startsWith('/api/users/') && method === 'DELETE') {
+      if (!isAdmin) return errorResponse('Permiso denegado. Solo administrador.', 403, request);
+      const targetId = path.split('/')[3];
+      if (targetId === auth.id) return errorResponse('No puedes eliminar tu propia cuenta de administrador.', 400, request);
+
+      try {
+        const salesCount = await db.prepare('SELECT COUNT(*) as cnt FROM sales WHERE worker_id = ?').bind(targetId).first();
+        const recordsCount = await db.prepare('SELECT COUNT(*) as cnt FROM worker_monthly_records WHERE worker_id = ?').bind(targetId).first();
+        const hasHistory = (salesCount && salesCount.cnt > 0) || (recordsCount && recordsCount.cnt > 0);
+
+        if (hasHistory) {
+          await db.prepare('UPDATE users SET active = 0 WHERE id = ?').bind(targetId).run();
+          await logAudit(db, auth.id, 'ARCHIVE_USER', 'users', targetId, { reason: 'User has historical records, set active=0' });
+          return jsonResponse({ ok: true, archived: true, message: 'El colaborador tiene registros históricos de ventas. Ha sido desactivado/bloqueado.' }, 200, request);
+        } else {
+          await db.prepare('DELETE FROM users WHERE id = ?').bind(targetId).run();
+          await logAudit(db, auth.id, 'DELETE_USER', 'users', targetId, {});
+          return jsonResponse({ ok: true, deleted: true, message: 'Colaborador eliminado permanentemente.' }, 200, request);
+        }
+      } catch (e) {
+        return errorResponse('Error eliminando colaborador: ' + e.message, 500, request);
       }
     }
 
@@ -631,9 +659,14 @@ export default {
       const now = new Date();
       const month = url.searchParams.get('month') || `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
       const record = await db.prepare('SELECT * FROM store_monthly_records WHERE period_month = ?').bind(month).first();
+      const pollos = record ? (record.total_store_pollos != null ? record.total_store_pollos : 0.0) : 0.0;
       return jsonResponse({
         ok: true,
-        record: record || { period_month: month, accumulated_sales: 0.0, monthly_target: 0.0, total_store_pollos: 0.0 }
+        record: record ? {
+          ...record,
+          total_store_pollos: pollos,
+          total_pollos: pollos
+        } : { period_month: month, accumulated_sales: 0.0, monthly_target: 0.0, total_store_pollos: 0.0, total_pollos: 0.0 }
       }, 200, request);
     }
 
@@ -645,7 +678,7 @@ export default {
         const month = (b.period_month || `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`).trim();
         const accSales = parseFloat(b.accumulated_sales) || 0.0;
         const mTarget = parseFloat(b.monthly_target) || 0.0;
-        const storePollos = parseFloat(b.total_store_pollos) || 0.0;
+        const storePollos = parseFloat(b.total_store_pollos !== undefined ? b.total_store_pollos : b.total_pollos) || 0.0;
         const id = `smr_${month}`;
 
         await db.prepare(`
@@ -659,7 +692,7 @@ export default {
         `).bind(id, month, accSales, mTarget, storePollos).run();
 
         await logAudit(db, auth.id, 'SAVE_STORE_RECORD', 'store_monthly_records', id, { month, accSales, mTarget, storePollos });
-        return jsonResponse({ ok: true, id, period_month: month, accumulated_sales: accSales, monthly_target: mTarget, total_store_pollos: storePollos }, 200, request);
+        return jsonResponse({ ok: true, id, period_month: month, accumulated_sales: accSales, monthly_target: mTarget, total_store_pollos: storePollos, total_pollos: storePollos }, 200, request);
       } catch (e) {
         return errorResponse('Error guardando métricas de tienda: ' + e.message, 500, request);
       }
@@ -688,7 +721,7 @@ export default {
       try {
         const b = await request.json();
         const now = new Date();
-        const month = (b.period_month || `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`).trim();
+        const month = (b.period_month || b.month || `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`).trim();
         const items = Array.isArray(b.records) ? b.records : [b];
         const stmts = [];
 
@@ -732,14 +765,14 @@ export default {
       try {
         const b = await request.json();
         const now = new Date();
-        const month = (b.period_month || `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`).trim();
-        const days = Array.isArray(b.days) ? b.days : [b];
+        const month = (b.period_month || b.month || `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`).trim();
+        const days = Array.isArray(b.days) ? b.days : (Array.isArray(b.projections) ? b.projections : [b]);
         const stmts = [];
 
         for (const d of days) {
           const dayNum = parseInt(d.day);
           if (!dayNum || dayNum < 1 || dayNum > 31) continue;
-          const proj = parseFloat(d.projected_amount) || 0.0;
+          const proj = parseFloat(d.projected_amount != null ? d.projected_amount : d.target_amount) || 0.0;
           const act = parseFloat(d.actual_amount) || 0.0;
           const id = `dp_${month}_${dayNum}`;
           stmts.push(db.prepare(`
@@ -887,7 +920,7 @@ export default {
       try {
         const b = await request.json();
         const type = b.type; // 'STORE_TARGET', 'WORKER_TARGET' o 'PRODUCT_GOAL'
-        const periodMonth = b.period_month || `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
+        const periodMonth = b.period_month || b.month || `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
 
         if (type === 'STORE_TARGET') {
           const day = b.day != null ? parseInt(b.day) : null;
