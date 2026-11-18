@@ -696,12 +696,18 @@ export default {
         `).bind(id, month, accSales, mTarget, storePollos).run();
 
         // Sincronizar en store_targets para consistencia en consultas de metas de tienda
+        const existingSt = await db.prepare(
+          'SELECT id FROM store_targets WHERE period_month = ? AND day IS NULL'
+        ).bind(month).first();
+        const stId = existingSt ? existingSt.id : `st_${month}_month`;
+
         await db.prepare(`
           INSERT INTO store_targets (id, period_month, day, target_amount)
           VALUES (?, ?, NULL, ?)
-          ON CONFLICT(period_month, day) DO UPDATE SET
-            target_amount = excluded.target_amount
-        `).bind(`st_${month}_month`, month, mTarget).run();
+          ON CONFLICT(id) DO UPDATE SET
+            target_amount = excluded.target_amount,
+            period_month = excluded.period_month
+        `).bind(stId, month, mTarget).run();
 
         await logAudit(db, auth.id, 'SAVE_STORE_RECORD', 'store_monthly_records', id, { month, accSales, mTarget, storePollos });
         return jsonResponse({ ok: true, id, period_month: month, accumulated_sales: accSales, monthly_target: mTarget, total_store_pollos: storePollos, total_pollos: storePollos }, 200, request);
@@ -964,9 +970,14 @@ export default {
             ).bind(targetAmount, finalId).run();
           } else {
             finalId = `st_${periodMonth}_${day != null ? day : 'month'}`;
-            await db.prepare(
-              'INSERT INTO store_targets (id, period_month, day, target_amount) VALUES (?, ?, ?, ?)'
-            ).bind(finalId, periodMonth, day, targetAmount).run();
+            await db.prepare(`
+              INSERT INTO store_targets (id, period_month, day, target_amount)
+              VALUES (?, ?, ?, ?)
+              ON CONFLICT(id) DO UPDATE SET
+                target_amount = excluded.target_amount,
+                period_month = excluded.period_month,
+                day = excluded.day
+            `).bind(finalId, periodMonth, day, targetAmount).run();
           }
 
           await logAudit(db, auth.id, 'SET_STORE_TARGET', 'store_targets', finalId, { periodMonth, day, targetAmount });
@@ -1002,9 +1013,13 @@ export default {
             ).bind(targetAmount, cashTargetAmount, finalId).run();
           } else {
             finalId = `wt_${periodMonth}_${workerId}`;
-            await db.prepare(
-              'INSERT INTO worker_targets (id, period_month, worker_id, target_amount, cash_target_amount) VALUES (?, ?, ?, ?, ?)'
-            ).bind(finalId, periodMonth, workerId, targetAmount, cashTargetAmount).run();
+            await db.prepare(`
+              INSERT INTO worker_targets (id, period_month, worker_id, target_amount, cash_target_amount)
+              VALUES (?, ?, ?, ?, ?)
+              ON CONFLICT(id) DO UPDATE SET
+                target_amount = excluded.target_amount,
+                cash_target_amount = excluded.cash_target_amount
+            `).bind(finalId, periodMonth, workerId, targetAmount, cashTargetAmount).run();
           }
 
           await logAudit(db, auth.id, 'SET_WORKER_TARGET', 'worker_targets', finalId, { periodMonth, workerId, targetAmount, cashTargetAmount });
@@ -1033,9 +1048,12 @@ export default {
             ).bind(targetQuantity, finalGoalId).run();
           } else {
             finalGoalId = `pg_${periodMonth}_${productId}_${workerId || 'store'}`;
-            await db.prepare(
-              'INSERT INTO product_goals (id, period_month, product_id, worker_id, target_quantity) VALUES (?, ?, ?, ?, ?)'
-            ).bind(finalGoalId, periodMonth, productId, workerId, targetQuantity).run();
+            await db.prepare(`
+              INSERT INTO product_goals (id, period_month, product_id, worker_id, target_quantity)
+              VALUES (?, ?, ?, ?, ?)
+              ON CONFLICT(id) DO UPDATE SET
+                target_quantity = excluded.target_quantity
+            `).bind(finalGoalId, periodMonth, productId, workerId, targetQuantity).run();
           }
 
           await logAudit(db, auth.id, 'SET_PRODUCT_GOAL', 'product_goals', finalGoalId, { periodMonth, productId, workerId, targetQuantity });
