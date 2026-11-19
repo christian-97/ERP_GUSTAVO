@@ -387,16 +387,18 @@ export default {
         const price = parseFloat(b.price) || 0.0;
         const target_role = (b.target_role || 'MOZO').toUpperCase();
 
+        const in_store = b.in_store !== undefined ? (b.in_store ? 1 : 0) : 1;
+
         if (!name) return errorResponse('Nombre del producto es requerido.', 400, request);
         const id = 'mp_' + Date.now();
 
         await db.prepare(
-          'INSERT INTO products (id, name, category, price, target_role, active) VALUES (?, ?, ?, ?, ?, 1)'
-        ).bind(id, name, category, price, target_role).run();
+          'INSERT INTO products (id, name, category, price, target_role, active, in_store) VALUES (?, ?, ?, ?, ?, 1, ?)'
+        ).bind(id, name, category, price, target_role, in_store).run();
 
-        await logAudit(db, auth.id, 'CREATE_PRODUCT', 'products', id, { name, category, price, target_role });
+        await logAudit(db, auth.id, 'CREATE_PRODUCT', 'products', id, { name, category, price, target_role, in_store });
 
-        return jsonResponse({ ok: true, product: { id, name, category, price, target_role, active: 1 } }, 201, request);
+        return jsonResponse({ ok: true, product: { id, name, category, price, target_role, active: 1, in_store } }, 201, request);
       } catch (e) {
         return errorResponse('Error creando producto: ' + e.message, 500, request);
       }
@@ -451,8 +453,8 @@ export default {
       const date = url.searchParams.get('date');   // YYYY-MM-DD
       const workerParam = url.searchParams.get('worker_id');
 
-      // Restricción de permisos: si no es admin, solo ve sus propias ventas
-      const filterWorker = (!isAdmin) ? auth.id : workerParam;
+      // Visibilidad grupal en modo solo lectura para comparativas y Dashboard
+      const filterWorker = workerParam;
 
       let sql = `
         SELECT s.*, p.name as product_name, p.category as product_category,
@@ -615,7 +617,7 @@ export default {
       const now = new Date();
       const month = url.searchParams.get('month') || `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
       const workerParam = url.searchParams.get('worker_id');
-      const filterWorker = (!isAdmin) ? auth.id : workerParam;
+      const filterWorker = workerParam;
       let sql = 'SELECT * FROM worker_monthly_records WHERE period_month = ?';
       const params = [month];
       if (filterWorker) {
@@ -725,14 +727,31 @@ export default {
       const { results } = await db.prepare(`
         SELECT p.id as product_id, p.name as product_name, p.category as product_category,
                ? as period_month,
+               COALESCE(p.in_store, 1) as in_store,
                COALESCE(spr.target_units, 0) as target_units,
                COALESCE(spr.actual_units, 0) as actual_units
         FROM products p
         LEFT JOIN store_product_records spr ON p.id = spr.product_id AND spr.period_month = ?
-        WHERE p.active = 1
+        WHERE p.active = 1 AND COALESCE(p.in_store, 1) = 1
         ORDER BY p.name ASC
       `).bind(month, month).all();
       return jsonResponse({ ok: true, products: results || [] }, 200, request);
+    }
+
+    if (path === '/api/store-products/catalog' && method === 'PUT') {
+      if (!isAdmin) return errorResponse('Permiso denegado. Solo administrador.', 403, request);
+      try {
+        const b = await request.json();
+        const productId = b.product_id;
+        const inStore = b.in_store ? 1 : 0;
+        if (!productId) return errorResponse('product_id es requerido.', 400, request);
+
+        await db.prepare('UPDATE products SET in_store = ? WHERE id = ?').bind(inStore, productId).run();
+        await logAudit(db, auth.id, inStore ? 'ADD_STORE_PRODUCT' : 'REMOVE_STORE_PRODUCT', 'products', productId, { in_store: inStore });
+        return jsonResponse({ ok: true, product_id: productId, in_store: inStore }, 200, request);
+      } catch (e) {
+        return errorResponse('Error actualizando catálogo de tienda: ' + e.message, 500, request);
+      }
     }
 
     if (path === '/api/store-products' && method === 'POST') {
@@ -830,7 +849,7 @@ export default {
     if (path === '/api/worker-comments' && method === 'GET') {
       const workerParam = url.searchParams.get('worker_id');
       const monthParam = url.searchParams.get('month');
-      const targetWorker = (!isAdmin) ? auth.id : workerParam;
+      const targetWorker = workerParam;
       let sql = `
         SELECT c.*, u.name as worker_name, a.name as author_name
         FROM worker_comments c
@@ -893,7 +912,7 @@ export default {
     if (path === '/api/goals' && method === 'GET') {
       const now = new Date();
       const currentMonth = url.searchParams.get('month') || `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-      const workerId = url.searchParams.get('worker_id') || (!isAdmin ? auth.id : null);
+      const workerId = url.searchParams.get('worker_id') || null;
 
       await db.prepare(`
         CREATE TABLE IF NOT EXISTS worker_targets (
@@ -1347,7 +1366,7 @@ export default {
       const todayStr = url.searchParams.get('date') || now.toISOString().split('T')[0];
       const workerParam = url.searchParams.get('worker_id');
       const productIdParam = url.searchParams.get('product_id');
-      const filterWorker = (!isAdmin) ? auth.id : workerParam;
+      const filterWorker = workerParam;
 
       // Métricas de tienda independientes
       const storeRec = await db.prepare(

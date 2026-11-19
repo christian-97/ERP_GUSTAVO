@@ -2612,6 +2612,12 @@ const api = {
   async saveStoreProduct(p) {
     return this.saveStoreProducts({ period_month: p.period_month, records: [p] });
   },
+  async toggleStoreProduct(productId, inStore) {
+    return this.request('/api/store-products/catalog', {
+      method: 'PUT',
+      body: JSON.stringify({ product_id: productId, in_store: inStore ? 1 : 0 })
+    });
+  },
   async getDailyProjections(params = {}) {
     const qs = new URLSearchParams(params).toString();
     return this.request(`/api/daily-projections${qs ? '?' + qs : ''}`);
@@ -2824,6 +2830,20 @@ function catalog(role) {
   return S.products.filter(p => p.active && (p.target_role === 'ALL' || p.target_role === (role || 'MOZO').toUpperCase()));
 }
 
+function storeCatalog() {
+  return (S.products || []).filter(p => p.active && p.in_store !== 0);
+}
+
+function nonStoreCatalog() {
+  return (S.products || []).filter(p => p.active && p.in_store === 0);
+}
+
+function isPastMonth(mStr) {
+  const target = (mStr || S.selectedMonth || localMonthStr()).trim();
+  const current = localMonthStr();
+  return target < current;
+}
+
 function getStoreTarget(periodMonth) {
   const m = periodMonth || localMonthStr();
   const st = (S.goals.storeTargets || []).find(t => t.period_month === m && (t.day === null || t.day === undefined));
@@ -2878,8 +2898,9 @@ function totalPollosForWorker(workerId) {
   return qtyForWorkerProduct(workerId, pCuarto.id) / 4;
 }
 
-function goalPace(goal) {
-  return Math.round(goal * (S.currentDay / S.monthDays));
+function goalPace(goal, mStr) {
+  if (isPastMonth(mStr || S.selectedMonth)) return goal;
+  return S.monthDays > 0 ? Math.round(goal * (S.currentDay / S.monthDays)) : goal;
 }
 
 // ================================================================
@@ -3085,6 +3106,7 @@ function getWorkerMonthMetrics(workerId, role, month) {
   const wid = String(workerId);
   const m = month || S.selectedMonth || localMonthStr();
   const prods = catalog(role);
+  const pastMonth = isPastMonth(m);
   
   // Sales in this month
   const salesMonth = S.sales.filter(s => String(s.worker_id) === wid && (s.sale_date || '').startsWith(m));
@@ -3097,25 +3119,39 @@ function getWorkerMonthMetrics(workerId, role, month) {
     const pid = String(p.id);
     const g = goalForProduct(p.id, workerId);
     const q = salesMonth.filter(s => String(s.product_id) === pid).reduce((acc, s) => acc + (s.quantity || 0), 0);
-    const pace = goalPace(g);
+    const pace = pastMonth ? g : goalPace(g, m);
     const pPct = pct(q, g);
     const isDone = q >= g && g > 0;
     if (isDone) metasDone++;
     totalGoal += g;
     totalSold += q;
     
-    const ahead = q >= pace;
-    const close = !ahead && q >= Math.round(pace * 0.8);
-    const sem = ahead ? 'green' : close ? 'yellow' : 'red';
+    let ahead, close, sem;
+    if (pastMonth) {
+      ahead = (g > 0) ? (q >= g) : (q > 0);
+      close = false;
+      sem = ahead ? 'green' : 'red';
+    } else {
+      ahead = q >= pace;
+      close = !ahead && q >= Math.round(pace * 0.8);
+      sem = ahead ? 'green' : close ? 'yellow' : 'red';
+    }
     
     return { prod: p, goal: g, sold: q, pace, pct: pPct, sem, ahead, close };
   });
   
-  // Ritmo de avance general
-  const expectedPaceTotal = S.monthDays > 0 ? Math.round((totalGoal / S.monthDays) * S.currentDay) : 0;
+  // Ritmo de avance general (en mes anterior cerrado, el ritmo esperado es obligatoriamente 100% de la meta)
+  const expectedPaceTotal = pastMonth ? totalGoal : (S.monthDays > 0 ? Math.round((totalGoal / S.monthDays) * S.currentDay) : 0);
   const generalPct = totalGoal > 0 ? Math.round((totalSold / totalGoal) * 100) : 0;
-  const generalPaceSem = (totalSold >= expectedPaceTotal) ? 'green' : (totalSold >= Math.round(expectedPaceTotal * 0.8)) ? 'yellow' : 'red';
-  const paceStatusText = (totalSold >= expectedPaceTotal) ? 'Al día o más' : (totalSold >= Math.round(expectedPaceTotal * 0.8)) ? 'Cerca' : 'Atrasado';
+  let generalPaceSem, paceStatusText;
+  if (pastMonth) {
+    const met = totalGoal > 0 && totalSold >= totalGoal;
+    generalPaceSem = met ? 'green' : 'red';
+    paceStatusText = met ? 'Meta cumplida' : 'Bajo meta (Mes cerrado)';
+  } else {
+    generalPaceSem = (totalSold >= expectedPaceTotal) ? 'green' : (totalSold >= Math.round(expectedPaceTotal * 0.8)) ? 'yellow' : 'red';
+    paceStatusText = (totalSold >= expectedPaceTotal) ? 'Al día o más' : (totalSold >= Math.round(expectedPaceTotal * 0.8)) ? 'Cerca' : 'Atrasado';
+  }
   
   // Support pollos and cash achieved from worker_monthly_records
   const rec = getWorkerRecord(workerId, m);
@@ -3126,7 +3162,9 @@ function getWorkerMonthMetrics(workerId, role, month) {
   const cashGoalInfo = goalForWorker(workerId, m);
   const cashGoal = cashGoalInfo.cashAmount || 0;
   const cashPct = cashGoal > 0 ? Math.round((cashAchieved / cashGoal) * 100) : 0;
-  const cashSem = cashPct >= 100 ? 'green' : cashPct >= 70 ? 'yellow' : 'red';
+  const cashSem = pastMonth
+    ? (cashGoal > 0 && cashAchieved >= cashGoal ? 'green' : 'red')
+    : (cashPct >= 100 ? 'green' : cashPct >= 70 ? 'yellow' : 'red');
   
   // Specific products: 1/4 Pollo, Bebidas, Happy Hour, Tragos
   const pCuarto = prodStats.find(ps => ps.prod.name.toLowerCase().includes('1/4') || ps.prod.name.toLowerCase().includes('cuarto'));
@@ -3625,12 +3663,15 @@ function vGeneral() {
   else if (sub === 'tienda') {
     const storeRec = getStoreRecord(activeMonth);
     const storeComp = storeRec.monthly_target > 0 ? Math.round((storeRec.accumulated_sales / storeRec.monthly_target) * 100) : 0;
+    const isClosedPastMonth = isPastMonth(activeMonth);
+    const storeProds = storeCatalog();
+    const availableToAdd = nonStoreCatalog();
     
     // Identificar productos clave en tienda
-    const pCuarto = prods.find(p => p.name.toLowerCase().includes('1/4') || p.name.toLowerCase().includes('cuarto'));
-    const pBebidas = prods.find(p => p.name.toLowerCase() === 'bebidas' || (p.category === 'BEBIDAS' && p.name.toLowerCase().includes('bebida') && !p.name.toLowerCase().includes('trago') && !p.name.toLowerCase().includes('happy')));
-    const pHappy = prods.find(p => p.name.toLowerCase().includes('happy'));
-    const pTragos = prods.find(p => p.name.toLowerCase().includes('trago') && !p.name.toLowerCase().includes('happy'));
+    const pCuarto = storeProds.find(p => p.name.toLowerCase().includes('1/4') || p.name.toLowerCase().includes('cuarto'));
+    const pBebidas = storeProds.find(p => p.name.toLowerCase() === 'bebidas' || (p.category === 'BEBIDAS' && p.name.toLowerCase().includes('bebida') && !p.name.toLowerCase().includes('trago') && !p.name.toLowerCase().includes('happy')));
+    const pHappy = storeProds.find(p => p.name.toLowerCase().includes('happy'));
+    const pTragos = storeProds.find(p => p.name.toLowerCase().includes('trago') && !p.name.toLowerCase().includes('happy'));
 
     const cRec = pCuarto ? getStoreProductRecord(pCuarto.id, activeMonth) : { actual_units: 0 };
     const bRec = pBebidas ? getStoreProductRecord(pBebidas.id, activeMonth) : { actual_units: 0 };
@@ -3641,6 +3682,10 @@ function vGeneral() {
     const cuartosPct = calcCuartosPollosPct(cRec.actual_units, tStorePollos);
     const bebidasPct = calcBebidasPollosPct(bRec.actual_units, tStorePollos);
     const tragosPct = calcTragosPollosPct(hRec.actual_units, tRec.actual_units, tStorePollos);
+
+    const storeCompColorStyle = storeComp >= 100
+      ? 'color:var(--green)'
+      : (isClosedPastMonth ? 'color:var(--red)' : (storeComp >= 80 ? 'color:var(--green)' : storeComp >= 50 ? 'color:var(--gold)' : 'color:var(--accent)'));
 
     html += `
     <div class="sales-header-card">
@@ -3663,7 +3708,7 @@ function vGeneral() {
       </div>
       <div class="stat-box">
         <div class="stat-lbl">Cumplimiento tienda</div>
-        <div class="stat-val ${storeComp >= 80 ? 'c-green' : storeComp >= 50 ? 'c-gold' : 'c-accent'}">${storeComp}%</div>
+        <div class="stat-val" style="${storeCompColorStyle}">${storeComp}%</div>
       </div>
       <div class="stat-box">
         <div class="stat-lbl">Total pollos tienda</div>
@@ -3712,21 +3757,39 @@ function vGeneral() {
       </div>
     </div>`;
 
-    // Seguimiento de productos de tienda
-    html += `<div class="sec-hd"><div class="sec-label">Seguimiento por Producto de Tienda (Unidades)</div></div>`;
-    html += `<div class="card" style="padding:0">`;
-    if (prods.length === 0) {
-      html += `<div class="empty-box"><div class="empty-icon">📋</div><div class="empty-title">Sin productos</div></div>`;
+    // Seguimiento de productos de tienda (Catálogo 100% independiente)
+    html += `
+    <div class="flex-between" style="margin-bottom:10px;gap:10px;flex-wrap:wrap">
+      <div class="sec-hd" style="margin:0"><div class="sec-label">Seguimiento por Producto de Tienda (Unidades)</div></div>
+      ${isAdmin ? `
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <select id="store-add-prod-sel" class="input sm" style="min-width:190px;font-size:12px" ${availableToAdd.length === 0 ? 'disabled' : ''}>
+          ${availableToAdd.length === 0
+            ? '<option value="">Todos los productos ya están en Tienda</option>'
+            : `<option value="">Seleccionar producto...</option>` + availableToAdd.map(p => `<option value="${p.id}">${esc(p.name)}</option>`).join('')
+          }
+        </select>
+        <button class="btn pri sm" id="btn-add-store-prod" ${availableToAdd.length === 0 ? 'disabled' : ''}>+ Agregar producto a Tienda</button>
+      </div>` : ''}
+    </div>`;
+
+    html += `<div class="card" style="padding:0;overflow-x:auto">`;
+    if (storeProds.length === 0) {
+      html += `<div class="empty-box"><div class="empty-icon">📋</div><div class="empty-title">Sin productos en Meta General de Tienda</div></div>`;
     } else {
       html += `<table class="dt"><thead><tr>
         <th>Producto</th>
         <th class="r" style="width:130px">Meta Tienda (u.)</th>
         <th class="r" style="width:130px">Avance Tienda (u.)</th>
         <th class="r">Cumplimiento</th>
+        ${isAdmin ? '<th class="r" style="width:90px">Acción</th>' : ''}
       </tr></thead><tbody>`;
-      prods.forEach(p => {
+      storeProds.forEach(p => {
         const sp = getStoreProductRecord(p.id, activeMonth);
         const pComp = sp.target_units > 0 ? Math.round((sp.actual_units / sp.target_units) * 100) : 0;
+        const pCompColor = pComp >= 100
+          ? 'var(--green)'
+          : (isClosedPastMonth ? 'var(--red)' : (pComp >= 80 ? 'var(--green)' : pComp >= 50 ? 'var(--gold)' : 'var(--red)'));
         html += `<tr>
           <td class="fw600">${esc(p.name)}</td>
           <td class="r">
@@ -3740,8 +3803,12 @@ function vGeneral() {
             ` : `<span class="dt-num fw600" style="color:var(--accent)">${sp.actual_units} u.</span>`}
           </td>
           <td class="r">
-            <span class="dt-num ${pComp >= 80 ? 'text-green' : pComp >= 50 ? 'text-gold' : 'text-muted'}">${pComp}%</span>
+            <span class="dt-num fw600" style="color:${pCompColor}">${pComp}%</span>
           </td>
+          ${isAdmin ? `
+          <td class="r">
+            <button type="button" class="btn dan sm btn-remove-store-prod" data-pid="${p.id}" data-pname="${esc(p.name)}" title="Quitar de Meta General (no borra del catálogo de mozos/anfitrionas)" style="padding:3px 8px;font-size:11.5px">Quitar</button>
+          </td>` : ''}
         </tr>`;
       });
       html += `</tbody></table>`;
@@ -4270,16 +4337,69 @@ function renderM() {
     </div>
     <input type="hidden" id="mf-adjust-pid" value="${esc(m.data.productId)}">
     <input type="hidden" id="mf-adjust-wid" value="${esc(wid)}">`;
+  } else if (m.type === 'worker-product-detail') {
+    const wid = m.data.workerId;
+    const month = m.data.month || S.selectedMonth || localMonthStr();
+    const worker = S.users.find(u => String(u.id) === String(wid));
+    const isClosedPast = isPastMonth(month);
+    const metrics = worker ? getWorkerMonthMetrics(worker.id, worker.role, month) : null;
+    title = `Detalle de Productos — ${esc(worker ? worker.name : 'Colaborador')}`;
+    if (!worker || !metrics) {
+      f = `<div style="color:var(--text-3);font-size:13px">No se encontraron datos del colaborador.</div>`;
+    } else {
+      const barColor = (ps) => {
+        if (ps.pct >= 100) return 'var(--green)';
+        if (isClosedPast) return 'var(--red)';
+        if (ps.sem === 'green') return 'var(--green)';
+        if (ps.sem === 'yellow') return 'var(--gold)';
+        return 'var(--red)';
+      };
+      f = `
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:14px;padding:10px 12px;background:var(--bg-surface-2);border-radius:8px;border:1px solid var(--border)">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="badge ${worker.role === 'MOZO' ? 'acc' : 'def'}">${worker.role}</span>
+          <span style="font-size:12.5px;color:var(--text-2);font-weight:600">${formatMonthName(month)}</span>
+          ${isClosedPast ? '<span class="badge def" style="font-size:10.5px">Mes cerrado (100% meta)</span>' : ''}
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;font-size:12px;color:var(--text-2)">
+          <span><b>Pollos:</b> ${metrics.supportPollos} u.</span>
+          <span><b>Avance:</b> <strong style="color:${metrics.generalPaceSem === 'green' ? 'var(--green)' : metrics.generalPaceSem === 'yellow' ? 'var(--gold)' : 'var(--red)'}">${metrics.generalPct}%</strong></span>
+        </div>
+      </div>
+      <div class="db-barchart" style="max-height:360px;overflow-y:auto;padding-right:4px">
+        ${metrics.prods.length === 0
+          ? '<div style="font-size:12.5px;color:var(--text-3);text-align:center;padding:18px 0">Sin productos asignados para este rol.</div>'
+          : metrics.prods.map(ps => {
+              const col = barColor(ps);
+              return `
+              <div class="db-bar-row" style="margin-bottom:8px">
+                <div class="db-bar-label" title="${esc(ps.prod.name)}" style="font-size:12.5px">${esc(ps.prod.name)}</div>
+                <div class="db-bar-track">
+                  <div class="db-bar-fill" style="width:${Math.min(100, ps.pct)}%;background:${col}"></div>
+                </div>
+                <div class="db-bar-pct" style="font-weight:600;min-width:96px;text-align:right;font-size:12px">
+                  ${ps.sold} / ${ps.goal} u. <span style="font-size:11px;color:${col}">(${ps.pct}%)</span>
+                </div>
+              </div>`;
+            }).join('')
+        }
+      </div>`;
+    }
   }
 
+  const isReadOnlyModal = m.type === 'worker-product-detail';
   return `
   <div class="mbd" id="mbd">
-    <div class="mbox">
+    <div class="mbox" style="${isReadOnlyModal ? 'max-width:560px;width:94%' : ''}">
       <h3>${title}</h3>
       ${f}
-      <button class="btn pri full" id="m-save" style="margin-top:8px">Guardar cambios</button>
-      <div style="height:8px"></div>
-      <button class="btn gho full" id="m-cancel">Cancelar</button>
+      ${isReadOnlyModal ? `
+        <button class="btn pri full" id="m-cancel" style="margin-top:14px">Cerrar</button>
+      ` : `
+        <button class="btn pri full" id="m-save" style="margin-top:8px">Guardar cambios</button>
+        <div style="height:8px"></div>
+        <button class="btn gho full" id="m-cancel">Cancelar</button>
+      `}
     </div>
   </div>`;
 }
@@ -4387,29 +4507,30 @@ function vDashboard() {
   }
 
   // Filtros de colaborador y estado
+  const isClosedPastMonth = isPastMonth(activeMonth);
   let filtered = [...wkData];
   if (df.worker !== 'all') filtered = filtered.filter(w => String(w.id) === String(df.worker));
   const currentMetricPct = w => selectedProd ? w.prodCumpl : (df.rankType === 'efectivo' ? w.cashCumpl : w.cumplPromedio);
   if (df.status === 'cumplida')  filtered = filtered.filter(w => currentMetricPct(w) >= 100);
-  else if (df.status === 'camino') filtered = filtered.filter(w => currentMetricPct(w) >= 60 && currentMetricPct(w) < 100);
-  else if (df.status === 'bajo')   filtered = filtered.filter(w => currentMetricPct(w) < 60);
+  else if (df.status === 'camino') filtered = isClosedPastMonth ? [] : filtered.filter(w => currentMetricPct(w) >= 60 && currentMetricPct(w) < 100);
+  else if (df.status === 'bajo')   filtered = isClosedPastMonth ? filtered.filter(w => currentMetricPct(w) < 100) : filtered.filter(w => currentMetricPct(w) < 60);
 
   // Totales de tienda
   const storeRec = getStoreRecord(activeMonth);
   const totalUnits = wkData.reduce((sum, w) => sum + w.units, 0);
   const totalCashAchieved = wkData.reduce((sum, w) => sum + w.cashAchieved, 0);
-  const avgCumpl = wkData.length > 0 ? Math.round(wkData.reduce((s, w) => s + w.cumplPromedio, 0) / wkData.length) : 0;
   const topWorker = wkData[0];
 
   function statusBadge(c) {
     if (c >= 100) return '<span class="badge sem-green">Cumplida</span>';
+    if (isClosedPastMonth) return '<span class="badge sem-red">Bajo meta</span>';
     if (c >= 60)  return '<span class="badge sem-yellow">En camino</span>';
     return '<span class="badge sem-red">Por debajo</span>';
   }
 
   let html = '';
 
-  // ── FILTER BAR LIMPIA (SIN MÉTODOS DE PAGO NI PRECIOS) ──
+  // ── FILTER BAR LIMPIA (FILTROS REACTIVOS SIN BOTÓN APLICAR) ──
   html += `
   <div class="db-filters card card-body" style="margin-bottom:18px">
     <div class="db-filter-grid">
@@ -4457,13 +4578,12 @@ function vDashboard() {
         </select>
       </div>
       <div class="db-fg db-fg-btns">
-        <button class="btn pri" id="dbf-apply">Aplicar filtros</button>
         <button class="btn gho" id="dbf-clear">Limpiar</button>
       </div>
     </div>
   </div>`;
 
-  // ── KPI CARDS ──
+  // ── KPI CARDS (SOLO INDICADORES REALES) ──
   html += `
   <div class="db-kpi-row">
     <div class="db-kpi">
@@ -4482,12 +4602,6 @@ function vDashboard() {
       <div class="db-kpi-lbl">Efectivo Logrado Equipo</div>
     </div>
     <div class="db-kpi">
-      <div class="db-kpi-icon">${avgCumpl >= 80 ? '🟢' : avgCumpl >= 50 ? '🟡' : '🔴'}</div>
-      <div class="db-kpi-val" style="color:${avgCumpl>=80?'var(--green)':avgCumpl>=50?'var(--gold)':'var(--red)'}">${avgCumpl}%</div>
-      <div class="db-kpi-lbl">Cumplimiento Promedio</div>
-      <div class="db-kpi-prog"><div style="width:${Math.min(100,avgCumpl)}%;background:${avgCumpl>=80?'var(--green)':avgCumpl>=50?'var(--gold)':'var(--red)'}"></div></div>
-    </div>
-    <div class="db-kpi">
       <div class="db-kpi-icon">⭐</div>
       <div class="db-kpi-val" style="font-size:16px;color:var(--accent)">${topWorker ? esc(topWorker.name) : '—'}</div>
       <div class="db-kpi-lbl">Líder: ${topWorker ? (df.rankType === 'efectivo' ? topWorker.cashCumpl + '%' : (selectedProd ? topWorker.prodCumpl + '%' : topWorker.cumplPromedio + '%')) : ''}</div>
@@ -4498,7 +4612,7 @@ function vDashboard() {
   html += `
   <div class="flex-between" style="margin-bottom:12px;flex-wrap:wrap;gap:10px">
     <div class="sec-hd" style="margin:0">
-      <div class="sec-label">Ranking y Comparativas con Variación vs Mes Anterior (${formatMonthName(prevMonth)})</div>
+      <div class="sec-label">Ranking y Comparativas con Variación vs Mes Anterior (${formatMonthName(prevMonth)}) ${isClosedPastMonth ? '<span class="badge def" style="margin-left:6px;font-size:10.5px">Mes cerrado · 100% requerido</span>' : ''}</div>
     </div>
     <div style="display:flex;align-items:center;gap:8px">
       <label for="db-rank-type" style="font-size:12px;font-weight:600;color:var(--text-3)">Evaluar por:</label>
@@ -4517,7 +4631,7 @@ function vDashboard() {
   } else {
     html += `<table class="dt"><thead><tr>
       <th style="width:50px">#</th>
-      <th>Colaborador</th>
+      <th>Colaborador <span style="font-weight:400;font-size:10.5px;color:var(--text-3)">(clic para ver detalle)</span></th>
       <th>Rol</th>
       <th class="r">Pollos (Apoyo)</th>
       <th class="r">${selectedProd ? `Unidades (${esc(selectedProd.name)})` : (df.rankType === 'producto' ? 'Unidades Vendidas' : df.rankType === 'efectivo' ? 'Efectivo Logrado' : 'Metas Logradas')}</th>
@@ -4545,10 +4659,12 @@ function vDashboard() {
         metricPct = w.cumplPromedio;
       }
 
-      html += `<tr style="${isTop ? 'background:rgba(201,138,59,0.06);font-weight:600' : ''}">
+      const barSemClass = metricPct >= 100 ? 'sem-green' : (isClosedPastMonth ? 'sem-red' : (metricPct >= 60 ? 'sem-yellow' : 'sem-red'));
+
+      html += `<tr class="db-worker-row" data-worker-detail="${w.id}" title="Ver avance por producto de ${esc(w.name)}" style="cursor:pointer;${isTop ? 'background:rgba(201,138,59,0.06);font-weight:600' : ''}">
         <td><div class="w-avatar" style="width:26px;height:26px;font-size:11px;${isTop ? 'background:var(--gold);color:#fff' : ''}">${idx + 1}</div></td>
         <td>
-          <span class="fw600">${esc(w.name)}</span>
+          <span class="fw600" style="text-decoration:underline;text-decoration-color:rgba(31,91,61,0.28);text-underline-offset:3px">${esc(w.name)}</span>
           ${isTop ? ' <span style="font-size:12px">🏆</span>' : ''}
         </td>
         <td><span class="badge ${w.role === 'MOZO' ? 'acc' : 'def'}">${w.role}</span></td>
@@ -4556,7 +4672,7 @@ function vDashboard() {
         <td class="r dt-num fw600">${metricValStr}</td>
         <td class="r">
           <div style="display:flex;align-items:center;justify-content:flex-end;gap:6px">
-            <div class="prog" style="width:60px;height:6px"><div class="prog-bar" style="width:${Math.min(100, metricPct)}%"></div></div>
+            <div class="prog" style="width:60px;height:6px"><div class="prog-bar ${barSemClass}" style="width:${Math.min(100, metricPct)}%"></div></div>
             <span class="dt-num" style="min-width:34px;font-weight:700">${metricPct}%</span>
           </div>
         </td>
@@ -4571,20 +4687,21 @@ function vDashboard() {
   html += `</div>`;
 
   // ── GRÁFICOS DE BARRAS HORIZONTALES DE PRODUCTOS GENERALES DE LA TIENDA ──
+  const storeProds = storeCatalog();
   html += `
   <div class="sec-hd"><div class="sec-label">Desempeño de Productos Generales de Tienda (Unidades)</div></div>
   <div class="card card-body" style="margin-bottom:20px">`;
 
-  if (prods.length === 0) {
-    html += `<div class="empty-box"><div class="empty-icon">📊</div><div class="empty-title">Sin productos registrados</div></div>`;
+  if (storeProds.length === 0) {
+    html += `<div class="empty-box"><div class="empty-icon">📊</div><div class="empty-title">Sin productos asignados a Meta General de Tienda</div></div>`;
   } else {
     html += `<div class="db-barchart">`;
-    prods.forEach(p => {
+    storeProds.forEach(p => {
       const sp = getStoreProductRecord(p.id, activeMonth);
       const target = sp.target_units || 40;
       const actual = sp.actual_units || 0;
       const pPct = target > 0 ? Math.round((actual / target) * 100) : 0;
-      const pColor = pPct >= 100 ? 'var(--green)' : pPct >= 60 ? 'var(--accent)' : 'var(--red)';
+      const pColor = pPct >= 100 ? 'var(--green)' : (isClosedPastMonth ? 'var(--red)' : (pPct >= 60 ? 'var(--accent)' : 'var(--red)'));
       html += `
       <div class="db-bar-row">
         <div class="db-bar-label" title="${esc(p.name)}">${esc(p.name)}</div>
@@ -4600,15 +4717,10 @@ function vDashboard() {
   }
   html += `</div>`;
 
-  // ── SECCIÓN DE OBSERVACIONES Y COMENTARIOS DE EVALUACIÓN ──
+  // ── SECCIÓN DE OBSERVACIONES Y COMENTARIOS DE EVALUACIÓN (VISIBLES PARA TODO EL EQUIPO) ──
   const comments = (S.workerComments || []).filter(c => {
-    if (isAdmin) {
-      if (df.worker !== 'all') return String(c.worker_id) === String(df.worker);
-      return true;
-    } else {
-      // Personal solo ve comentarios dirigidos a él
-      return String(c.worker_id) === String(S.session.id);
-    }
+    if (df.worker !== 'all') return String(c.worker_id) === String(df.worker);
+    return true;
   });
 
   html += `
@@ -4703,17 +4815,30 @@ function wireDashboard(root) {
     });
   }
 
-  // Actualización inmediata para colaborador, estado y periodo
-  ['#dbf-worker', '#dbf-status', '#dbf-period'].forEach(selId => {
+  // Actualización inmediata para colaborador, estado, periodo y rango de fechas
+  ['#dbf-worker', '#dbf-status', '#dbf-period', '#dbf-from', '#dbf-to'].forEach(selId => {
     const el = root.querySelector(selId);
     if (el) {
       el.addEventListener('change', () => {
         if (!S.dash) S.dash = {};
         const key = selId.replace('#dbf-', '');
         S.dash[key] = el.value;
+        if ((selId === '#dbf-from' || selId === '#dbf-to') && el.value) {
+          S.dash.period = 'custom';
+        }
         render();
       });
     }
+  });
+
+  // Clic en cualquier fila del Ranking de Colaboradores para abrir detalle de productos
+  root.querySelectorAll('.db-worker-row').forEach(tr => {
+    tr.addEventListener('click', () => {
+      const wid = tr.dataset.workerDetail;
+      if (!wid) return;
+      const activeMonth = (S.dash && S.dash.month) || S.selectedMonth || localMonthStr();
+      openM('worker-product-detail', { workerId: wid, month: activeMonth });
+    });
   });
 
   if (ap) ap.addEventListener('click', async () => {
@@ -5209,7 +5334,7 @@ function wireContent(root) {
     const pollos = parseFloat((root.querySelector('#store-total-pollos') || {}).value) || 0;
     const acc = getStoreActualSales(S.selectedMonth);
 
-    const prods = (S.products || []).filter(p => p.active);
+    const prods = storeCatalog();
     const records = [];
     for (const p of prods) {
       const tInp = root.querySelector(`.store-prod-target[data-pid="${p.id}"]`);
@@ -5251,6 +5376,45 @@ function wireContent(root) {
 
   const btnSaveStoreProds = root.querySelector('#btn-save-store-products');
   if (btnSaveStoreProds) btnSaveStoreProds.addEventListener('click', saveAllStoreData);
+
+  /* ── METAS TIENDA: AGREGAR / QUITAR PRODUCTO DEL CATÁLOGO INDEPENDIENTE DE TIENDA ── */
+  const btnAddStoreProd = root.querySelector('#btn-add-store-prod');
+  if (btnAddStoreProd) {
+    btnAddStoreProd.addEventListener('click', async () => {
+      const sel = root.querySelector('#store-add-prod-sel');
+      const pid = sel ? sel.value : '';
+      if (!pid) {
+        toast('Selecciona un producto para agregar a Tienda.');
+        return;
+      }
+      btnAddStoreProd.disabled = true;
+      try {
+        await api.toggleStoreProduct(pid, 1);
+        toast('✓ Producto agregado a Meta General de Tienda');
+        await syncFromD1();
+      } catch (e) {
+        toast('Error agregando producto: ' + e.message);
+        btnAddStoreProd.disabled = false;
+      }
+    });
+  }
+
+  root.querySelectorAll('.btn-remove-store-prod').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const pid = btn.dataset.pid;
+      const pname = btn.dataset.pname || 'este producto';
+      if (!confirm(`¿Quitar "${pname}" de Meta General (Tienda)?\n\nSeguirá disponible en el catálogo de Mozos y Anfitrionas.`)) return;
+      btn.disabled = true;
+      try {
+        await api.toggleStoreProduct(pid, 0);
+        toast(`"${pname}" quitado de Meta General de Tienda`);
+        await syncFromD1();
+      } catch (e) {
+        toast('Error quitando producto: ' + e.message);
+        btn.disabled = false;
+      }
+    });
+  });
 
   /* ── PROYECTADO: RECÁLCULO DINÁMICO Y GUARDADO ── */
   function recalcDailyProjectionRow(day) {
